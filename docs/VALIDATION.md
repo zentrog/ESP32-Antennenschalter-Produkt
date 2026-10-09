@@ -30,7 +30,7 @@ Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehen
 
 ## Quellrevision der Release-Dateien
 
-Firmware und LittleFS für 1.8.3 wurden aus Firmware-Quellcommit `015fb39ab048cf37b5b19a7b2d2d0f47d37589c7` gebaut. Der folgende Dokumentations- und Manifest-Commit ändert keine Firmwarequellen. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest und werden vor Veröffentlichung mit den Dateien verglichen.
+Firmware und LittleFS für 1.8.3 wurden aus Firmware-Quellcommit `015fb39ab048cf37b5b19a7b2d2d0f47d37589c7` gebaut. Der folgende Dokumentations- und Manifest-Commit ändert keine Firmwarequellen. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest; die GitHub-Release-Dateien wurden nach dem Upload gegen Größe und SHA-256 geprüft.
 
 ## Buildstand
 
@@ -50,13 +50,14 @@ PlatformIO Core 6.1.19, Espressif32 6.12.0, Arduino-ESP32 2.0.17. Für den Build
 | Prüfung | Ergebnis |
 |---|---|
 | Öffentliche Sichtbarkeit des Produkt-Repositories | PASS; GitHub-API meldet öffentlich |
-| GitHub-Updateprüfung auf beiden ESPs, zuletzt geprüft vor Veröffentlichung von 1.8.1 | PASS; beide melden installiert 1.8.0 und GitHub `v1.8.0` |
-| Manuelles OTA von GitHub auf einem bestehenden Gerät | OFFEN; wird nach Veröffentlichung vom Benutzer geprüft |
-| Konfiguration nach Firmware-OTA | OFFEN; bis zum manuellen Lauf wurde keine Firmware auf den ESPs geflasht |
-| Wetterdienst nach Live-Fehler `HTTP -1` | MASTER erholte sich beim erneuten Abruf; neue 5-Minuten-Fehlerwiederholung ist in 1.8.1 und 1.8.2 enthalten und am Gerät noch OFFEN |
-| Signalwege auf den zwei vorhandenen ESPs | 40 Wege per API bestätigt; Layoutrevision 89, YAGI 20 px und 2 Rasterzeilen |
+| GitHub-Updateprüfung auf beiden ESPs | PASS; installiert `1.8.3`, GitHub meldet `v1.8.3`, kein neueres Update verfügbar |
+| OTA 1.8.2 → 1.8.3 auf Master und Follower | PASS; beide Geräte starteten in ihrer bisherigen Rolle wieder |
+| Konfiguration nach OTA | PASS; Relais, Funktionen, Geräte, Signalwege, Layout und WLAN-Einträge stimmen mit den vor dem OTA lokal gespeicherten Sicherungen überein |
+| Weboberfläche nach OTA | PASS; beide Geräte liefern Cachekennung `1.8.3-motor-100s` und die 100-Sekunden-Eingabegrenze |
+| Gerätespeicherungen vor OTA | PASS; zwei geprüfte Sicherungsdateien liegen lokal außerhalb des Repositorys |
+| Physischer Motorlauf mit 50 Sekunden | OFFEN; auf den ESPs wurde keine Motorfahrt ausgelöst |
 
-Beim letzten Live-Abgleich vor Veröffentlichung von 1.8.1 führten beide ESPs Firmware 1.8.0. Auf ihnen wurden nur die Weboberflächendateien aktualisiert. Die gespeicherten 40 Signalwege sind erhalten. WLAN-Kennwörter, Rufzeichen, Postleitzahlen und lokale Geräte-IP-Adressen werden hier nicht dokumentiert.
+Gerätenamen, Rufzeichen, Postleitzahlen, WLAN-Namen und Kennwörter sowie lokale IP-Adressen werden hier nicht dokumentiert. Die Sicherungsdateien bleiben ausschließlich lokal.
 
 ## Schutzregeln für den manuellen Updateversuch
 
