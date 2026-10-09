@@ -182,7 +182,7 @@ bool Storage::validate(const LocalConfig& c,String& err) const {
     if(!functionIds.insert(f.id).second){err=L(c,"Doppelte Funktions-ID ","Duplicate function ID ")+f.id;return false;}
     if(f.type!=FunctionType::Storm && relayIds.find(f.relayId)==relayIds.end()){err=L(c,"Funktion ","Function ")+f.label+L(c," verweist auf unbekanntes Relais"," refers to an unknown relay");return false;}
     if(f.type==FunctionType::Antenna && f.group.isEmpty()){err=L(c,"Antennenfunktion ","Antenna function ")+f.label+L(c," benötigt eine Schaltgruppe"," requires a switching group");return false;}
-    if(f.type==FunctionType::Timed && (f.durationMs<100 || f.durationMs>30000)){err=L(c,"Zeitaktion ","Timed action ")+f.label+L(c," muss 0,1..30 s sein"," must be 0.1..30 s");return false;}
+    if(f.type==FunctionType::Timed && (f.durationMs<100 || f.durationMs>100000)){err=L(c,"Zeitaktion ","Timed action ")+f.label+L(c," muss 0,1..100 s sein"," must be 0.1..100 s");return false;}
   }
   for(auto &f:c.functions){
     if(!f.enabled || f.requiresFunctionId.isEmpty())continue;

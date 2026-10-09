@@ -116,7 +116,7 @@ bool RelayEngine::execute(const String&id,String&err){
   if(!f->requiresFunctionId.isEmpty()&&!isFunctionActive(f->requiresFunctionId)){err=RL(cfg_,"Funktion ist bei der aktuellen Antenne gesperrt","Function is locked for the current antenna");return false;}
   for(auto&x:cfg_->functions)if(x.enabled&&x.type==FunctionType::Timed){auto*rr=relay(x.relayId);if(rr)setRelay(*rr,false);}
   store_->motorStart();setRelay(*r,true);state_.motorRunning=true;state_.motorFunctionId=f->id;runningRelay_=f->relayId;pendingToken_=f->stateToken.length()?f->stateToken:f->label;
-  uint32_t dur=f->durationMs>30000U?30000U:f->durationMs;
+  uint32_t dur=f->durationMs>100000U?100000U:f->durationMs;
   motorEnd_=millis()+dur;motorGpio_=r->gpio;motorOffLevel_=r->activeLow?HIGH:LOW;motorTimerExpired_=false;
   if(motorTimer_){esp_timer_stop(motorTimer_);esp_timer_start_once(motorTimer_,(uint64_t)dur*1000ULL);}
   return true;
