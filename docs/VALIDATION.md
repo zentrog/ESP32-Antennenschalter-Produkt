@@ -11,6 +11,10 @@ Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehen
 - Nach einem erfolgreichen Wetterabruf beträgt das Abrufintervall 30 Minuten. Nach einem fehlgeschlagenen Abruf wird nach 5 Minuten erneut versucht; bis dahin bleibt ein vorhandener gültiger Stand sichtbar.
 - Die Bedienoberfläche zeigt eine einheitliche Schriftgröße, eine größere YAGI-Fläche für H/V, die Firmwareversion im Kopfbereich und besser lesbare Fußzeilenangaben.
 
+## Quellrevision der Release-Dateien
+
+Firmware und LittleFS wurden aus Quell-Commit `de1b18fe9dd7836b828ee9df0d6396423beba1ef` gebaut. Der folgende Commit `b3a1903a3255eb799d024bf94bab18c680dfe1b2` korrigierte ausschließlich die SHA-256-Prüfsummen im Manifest; die Binärdateien blieben unverändert.
+
 ## Buildstand
 
 | Prüfung | Ergebnis |
