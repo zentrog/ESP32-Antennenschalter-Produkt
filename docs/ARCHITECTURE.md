@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Quellstand: Firmware 1.8.1 / API 6.
+Quellstand: Firmware 1.8.2 / API 6.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 

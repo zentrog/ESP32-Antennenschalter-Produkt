@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Firmware 1.8.1
+# HTTP/JSON-API – Firmware 1.8.2
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
