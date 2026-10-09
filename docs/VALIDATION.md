@@ -19,7 +19,7 @@ Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehen
 
 ## Quellrevision der Release-Dateien
 
-Firmware und LittleFS für 1.8.2 werden aus dem endgültigen Quellstand gebaut. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest und werden vor Veröffentlichung mit den Dateien verglichen.
+Firmware und LittleFS für 1.8.2 wurden aus Firmware-Quellcommit `ad4c002bf84c89943c1c7bf49de64f25fe473ce4` gebaut. Der folgende Dokumentations- und Manifest-Commit ändert keine Firmwarequellen. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest und werden vor Veröffentlichung mit den Dateien verglichen.
 
 ## Buildstand
 
