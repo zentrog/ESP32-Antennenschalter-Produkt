@@ -1,0 +1,23 @@
+# Leere Produktinstallation prüfen
+
+Die PlatformIO-Umgebungen esp32dev und esp32dev-jungfrau bauen dieselbe leere Produktkonfiguration. Keine davon enthält WLAN-Zugangsdaten oder Beispielgeräte.
+
+## Erwarteter Erststart nach Löschen eines neuen Testgeräts
+
+- Kein gespeichertes WLAN; das Gerät zeigt sein Einrichtungs-WLAN.
+- Rufzeichen, Postleitzahl, Beschreibung und Standort sind leer.
+- Es sind keine Relais, Schaltfunktionen, logischen Geräte, Routen oder Layout-Beispiele angelegt.
+- Die Verbundrolle ist unassigned; eine Systemkennung oder ein Systemname ist nicht vorgegeben.
+- Der Anwender trägt WLAN, Platine, Relais und Anlagenteile selbst ein.
+
+Technische Werte wie Controller-ID, neutraler Gerätename, Firmwareversion und benötigte NTP-Server sind keine persönlichen Anlagendaten.
+
+## Sicherer Testablauf
+
+1. Verwende einen neuen oder ausdrücklich entbehrlichen ESP. Ein vollständiges Löschen entfernt Gerätespeicher und gespeicherte Konfigurationen.
+2. Lade die Firmware und bei einem neuen Gerät einmalig das LittleFS-Dateisystem.
+3. Verbinde dich mit dem angezeigten Einrichtungs-WLAN und öffne die Einrichtungsseite.
+4. Lies die Grunddaten und Konfigurationslisten aus. Prüfe, dass Identität und Listen leer sind.
+5. Notiere nur Version, Buildumgebung und die Anzahl der Einträge. Keine Kennwörter, Rufzeichen oder privaten Gerätekonfigurationen in ein öffentliches Prüfprotokoll schreiben.
+
+Der Test verändert oder löscht keine Konfiguration der bereits eingerichteten Anlagen. Ergebnisse nur nach tatsächlicher Ausführung in docs/VALIDATION.md eintragen.

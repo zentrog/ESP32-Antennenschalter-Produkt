@@ -1,0 +1,13 @@
+.pio/
+.vscode/
+work/
+backups/
+_backup*/
+_fix-backup*/
+_wifi-backup*/
+*.bak
+*.bak-*
+*.s3-backup
+*.local
+*.bin
+*.elf
