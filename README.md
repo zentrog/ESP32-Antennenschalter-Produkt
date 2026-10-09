@@ -2,7 +2,7 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktueller Produktkandidat: Firmware 1.8.2.
+Aktueller Produktkandidat: Firmware 1.8.3.
 
 ## Für Anwender
 

@@ -1,4 +1,4 @@
-# Prüfprotokoll – Produktversion 1.8.2
+# Prüfprotokoll – Produktversion 1.8.3
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -17,9 +17,20 @@ Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehen
 - Versionshinweise werden sicher als Text eingesetzt und nicht als HTML interpretiert.
 - Der Cache-Schlüssel der Weboberfläche wurde auf 1.8.2 angehoben.
 
+## Änderungen in 1.8.3
+
+- Die Laufzeitbegrenzung zeitgesteuerter Relaisfunktionen wurde von 30 auf 100 Sekunden erhöht. Die Oberfläche, Konfigurationsprüfung und Motorsteuerung verwenden dieselbe Obergrenze.
+- Die bestehenden gespeicherten Laufzeiten werden nicht automatisch verändert.
+
+## Buildstatus 1.8.3
+
+- C++-Kompilierung und Linken von `esp32dev` und `esp32dev-jungfrau`: PASS.
+- Erzeugung beider Firmwaredateien und des LittleFS-Abbilds: PASS.
+- Eine temporäre `sitecustomize.py` im temporären Verzeichnis lädt IntelHex aus der PlatformIO-Python-Umgebung vor dem gesperrten Zusatzpfad. Installierte PlatformIO-Dateien wurden nicht verändert.
+
 ## Quellrevision der Release-Dateien
 
-Firmware und LittleFS für 1.8.2 wurden aus Firmware-Quellcommit `ad4c002bf84c89943c1c7bf49de64f25fe473ce4` gebaut. Der folgende Dokumentations- und Manifest-Commit ändert keine Firmwarequellen. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest und werden vor Veröffentlichung mit den Dateien verglichen.
+Firmware und LittleFS für 1.8.3 wurden aus Firmware-Quellcommit `015fb39ab048cf37b5b19a7b2d2d0f47d37589c7` gebaut. Der folgende Dokumentations- und Manifest-Commit ändert keine Firmwarequellen. Die SHA-256-Prüfsummen der drei Release-Dateien stehen im Manifest und werden vor Veröffentlichung mit den Dateien verglichen.
 
 ## Buildstand
 
