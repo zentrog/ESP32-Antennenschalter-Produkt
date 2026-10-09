@@ -69,7 +69,9 @@ Bei einer drehbaren Yagi erscheinen **Horizontal** und **Vertikal** nur bei der 
 
 Ein normaler Neustart stellt gespeicherte statische Schaltzustände wieder her. Eine unterbrochene Motor-Zeitfahrt wird aus Sicherheitsgründen nicht fortgesetzt; ihre Position gilt dann als unbekannt.
 
-**Online nach Update suchen** liest die neueste stabile Version von GitHub. Die Prüfung installiert nichts automatisch. Zum Aktualisieren lädst du von der GitHub-Release-Seite die Firmwaredatei herunter, deren Board-Ziel zu deinem Gerät passt: `firmware-esp32dev.bin` für das normale ESP32-DevKit oder `firmware-esp32dev-jungfrau.bin` für die entsprechend gebaute Jungfrau-Version. Danach startest du die Installation bewusst über **Konfigurieren → Programm/Update → Manuelles OTA**. Vor einem normalen OTA-Update sichert der ESP seine vorhandene Konfiguration.
+**Online nach Update suchen** liest die neueste stabile Version von GitHub. Die Prüfung installiert nichts automatisch. Zum Aktualisieren lädst du von der GitHub-Release-Seite die Firmwaredatei herunter, deren Board-Ziel zu deinem Gerät passt: `firmware-esp32dev.bin` für das normale ESP32-DevKit oder `firmware-esp32dev-jungfrau.bin` für die entsprechend gebaute Jungfrau-Version. Danach startest du **Konfigurieren → Programm/Update → Manuelles OTA**. Die Update-Seite fordert zuerst eine geprüfte Sicherungsdatei mit Geräte-, Anlagen- und WLAN-Konfiguration an. Lade sie herunter, speichere sie auf deinem Computer und bestätige das ausdrücklich. Erst dann wird das Firmware-Update freigegeben. Der ESP erstellt zusätzlich eine interne Sicherung; diese interne Kopie ersetzt deine Datei auf dem Computer nicht.
+
+Das Wetter wird nach einem erfolgreichen Abruf alle 30 Minuten aktualisiert. Nach einem fehlgeschlagenen Abruf versucht der ESP es nach 5 Minuten erneut und zeigt bis dahin den letzten gültigen Wetterstand an.
 
 Eine Datei für das Dateisystem ist nur für einen neuen ESP oder eine ausdrücklich gewünschte Neuinitialisierung. Sie gehört nicht zu einem normalen Update.
 
@@ -91,3 +93,4 @@ Wenn der ESP sein Dateisystem nicht einhängen kann, formatiert die Firmware es 
 - **Anlagenteil:** Echtes Gerät wie Funkgerät, PA oder Antenne.
 - **Signalweg:** Erlaubte Reihenfolge vom Funkgerät bis zur Antenne.
 - **Master/Slave:** Der Master koordiniert den Verbund. Jeder Slave steuert seine eigenen lokalen Ausgänge.
+

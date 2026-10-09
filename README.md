@@ -2,7 +2,7 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktueller Produktkandidat: Firmware 1.8.0.
+Aktueller Produktkandidat: Firmware 1.8.1.
 
 ## Für Anwender
 
@@ -33,7 +33,7 @@ Beim ersten Flashen eines neuen Gerätes muss zusätzlich das LittleFS-Dateisyst
 
 ## Updates
 
-Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die Prüfung zeigt nur Informationen; die Installation wird bewusst vom Benutzer gestartet. Release-Dateien und Änderungen stehen nach Einrichtung des öffentlichen Produkt-Repositories auf der [GitHub-Release-Seite](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest).
+Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die Prüfung installiert nichts automatisch. Für ein Update lädst du die passende Firmware von der [GitHub-Release-Seite](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest) herunter und startest das manuelle OTA am Gerät. Vor dem Hochladen musst du die Sicherungsdatei mit der Konfiguration und den WLAN-Daten auf deinem Computer speichern und bestätigen.
 
 ## Projektunterlagen
 
@@ -46,3 +46,4 @@ Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die P
 ## Datenschutz
 
 WLAN-Kennwörter, Rufzeichen, Postleitzahlen, Anlagenkonfigurationen und Gerätekennungen gehören in den ESP und nicht in öffentliche Quelltexte, Screenshots oder GitHub-Protokolle. Vor einer Veröffentlichung müssen Dateien und die erreichbare Git-Historie geprüft sein.
+

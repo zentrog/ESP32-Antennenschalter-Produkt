@@ -178,7 +178,7 @@ bool WifiManager::connectKnownNetworks() {
   if (found < 0) found = 0;
 
   // Priority is the vector order: first saved network wins.
-  // The firmware provisions the two default development WLANs once; saved networks remain user-managed.
+  // Only networks explicitly saved by the user or provisioned by an authorized master are considered.
   // A single incomplete startup scan must never suppress the highest-priority WLAN.
   for (size_t i = 0; i < nets.size(); ++i) {
     const auto& net = nets[i];
@@ -592,3 +592,4 @@ void WifiManager::serviceFallbackReconnect() {
   fallbackConnectStartedAt_ = now;
   Serial.println("WLAN: Fallback-Wiederverbindung startet fuer gespeicherten Zugang " + String(fallbackNetworkIndex_ + 1));
 }
+

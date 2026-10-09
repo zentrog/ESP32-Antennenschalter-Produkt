@@ -11,7 +11,7 @@ class Storage {
   bool loadLocal(LocalConfig& c, String& err);
   bool saveLocal(LocalConfig& c, String& err);
   bool loadShared(SharedConfig& c, String& err);
-  bool saveShared(SharedConfig& c, String& err);
+  bool saveShared(SharedConfig& c, String& err, bool allowRouteShrink = false);
   void defaults(LocalConfig& c, SharedConfig& s);
   bool validate(const LocalConfig& c, String& err) const;
 
@@ -52,3 +52,4 @@ class Storage {
   bool writeLocalFile(const char* path,const LocalConfig& c,String& err);
   bool writeSharedFile(const char* path,const SharedConfig& c,String& err);
 };
+

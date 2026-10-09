@@ -197,7 +197,7 @@ bool FederationService::makePeerMaster(const String&id,String&error){
 }
 
 bool FederationService::pullSharedFrom(PeerInfo&p){
-  if(!sameSystem(p)||!s_||!store_||!p.online)return false;HTTPClient h;h.setTimeout(1800);h.begin("http://"+p.ip+"/api/shared?internal=1");addSystemHeaders(h);int code=h.GET();String body=code==200?h.getString():String();h.end();if(code!=200)return false;JsonDocument d;if(deserializeJson(d,body))return false;SharedConfig ns;parseSharedConfig(d,ns);String e;if(!store_->saveShared(ns,e)){store_->addError("SHARED_PULL",e);return false;}*s_=ns;if(relay_)relay_->setStormMode(ns.systemStormMode);return true;
+  if(!sameSystem(p)||!s_||!store_||!p.online)return false;HTTPClient h;h.setTimeout(1800);h.begin("http://"+p.ip+"/api/shared?internal=1");addSystemHeaders(h);int code=h.GET();String body=code==200?h.getString():String();h.end();if(code!=200)return false;JsonDocument d;if(deserializeJson(d,body))return false;if(!d["layout"].is<JsonArray>()||!d["displayGroups"].is<JsonArray>()||!d["routes"].is<JsonArray>()){store_->addError("SHARED_PULL","Unvollständige gemeinsame Konfiguration abgewiesen");return false;}SharedConfig ns;parseSharedConfig(d,ns);String e;if(!store_->saveShared(ns,e,true)){store_->addError("SHARED_PULL",e);return false;}*s_=ns;if(relay_)relay_->setStormMode(ns.systemStormMode);return true;
 }
 void FederationService::pushSharedToFollowers(){
   if(!isCoordinator()||!c_||!s_)return;
@@ -496,6 +496,7 @@ void WeatherService::loop(){
   xSemaphoreTake(mutex_,portMAX_DELAY);if(pendingLocationSave_){save=true;savedPostal=pendingPostal_;savedPlace=pendingPlace_;savedLat=pendingLat_;savedLon=pendingLon_;pendingLocationSave_=false;}xSemaphoreGive(mutex_);
   if(save&&store_)store_->saveWeatherLocation(savedPostal,savedLat,savedLon,savedPlace);
   if(WiFi.status()!=WL_CONNECTED)return;
-  uint32_t now=millis();xSemaphoreTake(mutex_,portMAX_DELAY);uint32_t interval=30UL*60UL*1000UL;if(postalCode_.isEmpty()||workerRunning_||(lastFetch_!=0&&now-lastFetch_<interval)){xSemaphoreGive(mutex_);return;}lastFetch_=now;workerRunning_=true;info_.enabled=true;info_.fetching=true;xSemaphoreGive(mutex_);
+  uint32_t now=millis();xSemaphoreTake(mutex_,portMAX_DELAY);uint32_t interval=info_.error.isEmpty()?30UL*60UL*1000UL:5UL*60UL*1000UL;if(postalCode_.isEmpty()||workerRunning_||(lastFetch_!=0&&now-lastFetch_<interval)){xSemaphoreGive(mutex_);return;}lastFetch_=now;workerRunning_=true;info_.enabled=true;info_.fetching=true;xSemaphoreGive(mutex_);
   if(xTaskCreate(&WeatherService::workerThunk,"weather-fetch",8192,this,1,nullptr)!=pdPASS){xSemaphoreTake(mutex_,portMAX_DELAY);workerRunning_=false;info_.fetching=false;info_.error="Wetter-Hintergrundabruf konnte nicht gestartet werden";xSemaphoreGive(mutex_);}
 }
+

@@ -397,8 +397,13 @@ bool Storage::readSharedFile(const char* path,SharedConfig& c,String& err){
  #endif
   c=x;return true;
 }
-bool Storage::saveShared(SharedConfig& c,String& err){
+bool Storage::saveShared(SharedConfig& c,String& err,bool allowRouteShrink){
   if(c.revisionOrigin.isEmpty()){err="Ursprungskennung der gemeinsamen Anordnung fehlt";return false;}
+  if(quietFsExists("/shared.json")){
+    SharedConfig previous;String previousError;
+    if(!readSharedFile("/shared.json",previous,previousError)){err="Vorhandene gemeinsame Konfiguration ist nicht lesbar; Überschreiben zum Schutz der Daten verweigert: "+previousError;return false;}
+    if(previous.routes.size()>c.routes.size()&&!allowRouteShrink){err="Signalwege wurden zum Schutz vor versehentlichem Löschen nicht gespeichert";return false;}
+  }
   if(!writeSharedFile("/shared.tmp",c,err))return false;SharedConfig chk;String e;if(!readSharedFile("/shared.tmp",chk,e)){quietFsRemove("/shared.tmp");err=e;return false;}
   if(!quietFsRemove("/shared.bak")){err="Alte Anordnungssicherung konnte nicht entfernt werden";return false;}
   if(quietFsExists("/shared.json")&&!quietFsRename("/shared.json","/shared.bak")){err="Aktuelle Anordnung konnte nicht gesichert werden";return false;}
@@ -559,3 +564,4 @@ void Storage::factoryReset(){
   quietFsRemove("/shared.json");quietFsRemove("/shared.bak");quietFsRemove("/shared.tmp");
   state_.clear();errors_.clear();wifi_.clear();
 }
+

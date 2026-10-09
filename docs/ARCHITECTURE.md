@@ -1,10 +1,14 @@
 # Architektur – ESP32-Antennenschalter
 
-Quellstand: Firmware 1.8.0 / API 6.
+Quellstand: Firmware 1.8.1 / API 6.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
-Die Online-Updateprüfung fragt die neueste stabile Veröffentlichung bei GitHub ab und zeigt sie an. Die Firmware wird niemals automatisch installiert.
+Die Online-Updateprüfung fragt die neueste stabile Veröffentlichung bei GitHub ab und zeigt sie an. Die Firmware wird niemals automatisch installiert. Vor einem Firmware-Update muss der Benutzer auf der Update-Seite eine geprüfte Sicherungsdatei mit lokaler Konfiguration, gemeinsamer Konfiguration und WLAN-Daten herunterladen und bestätigen. Der Upload wird ohne diesen Schritt abgewiesen.
+
+Der Wetterdienst aktualisiert nach einem erfolgreichen Abruf alle 30 Minuten. Schlägt ein Abruf fehl, bleibt der letzte gültige Stand sichtbar und der nächste Versuch erfolgt nach 5 Minuten.
+
+Unvollständige Konfigurationsanfragen werden abgewiesen. Vorhandene Signalwege können nur durch eine ausdrücklich bestätigte Löschaktion reduziert werden. Die gemeinsame Konfiguration wird vor dem Austausch zusätzlich als vorherige Generation auf dem ESP gehalten.
 
 ## Implementierter Bestand
 Einzelcontroller führen Schaltaktionen über den lokalen RelayEngine aus. WebUI, MQTT, externe API und Verbundaufrufe sollen diesen Steuerkern verwenden. GPIO-, Board- und Relaiszuordnung bleiben lokal. Gemeinsame Systemdaten werden über Revisionen zwischen zugeordneten Controllern synchronisiert.
@@ -27,4 +31,3 @@ Build, Simulation und reale Mehrgerätebeobachtung werden getrennt in docs/VALID
 
 Im klassischen ESP32-Boardprofil dürfen GPIO2/5/12/15 (und GPIO0 im 38-Pin-Profil) als Relaisausgänge konfiguriert werden. Die Oberfläche kennzeichnet sie als Strapping-Risikopins und verlangt eine bewusste Bestätigung. UART0-, Flash- und reine Eingangspins bleiben ausgeschlossen. Ein Warnhinweis ersetzt keine Prüfung der realen Relaisbeschaltung; GPIO12 kann beim Reset die Flash-Versorgungsauswahl beeinflussen.
 
-Im klassischen ESP32-Boardprofil dürfen GPIO2/5/12/15 (und GPIO0 im 38-Pin-Profil) als Relaisausgänge konfiguriert werden. Die Oberfläche kennzeichnet sie als Strapping-Risikopins und verlangt eine bewusste Bestätigung. UART0-, Flash- und reine Eingangspins bleiben ausgeschlossen. Ein Warnhinweis ersetzt keine Prüfung der realen Relaisbeschaltung; GPIO12 kann beim Reset die Flash-Versorgungsauswahl beeinflussen.

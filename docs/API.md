@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Firmware 1.8.0
+# HTTP/JSON-API – Firmware 1.8.1
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -37,5 +37,6 @@ Statische aktive Funktionsgruppen werden auf jedem ESP lokal gespeichert und bei
 
 
 `GET /api/board` kennzeichnet Strapping-Pins als `caution`. Die Relaiskonfiguration akzeptiert sie nach ausdrücklicher UI-Bestätigung; GPIO12/15/5/2 und im 38-Pin-Profil GPIO0 bleiben als bewusst riskante Ausgänge sichtbar. UART0-, Flash- und reine Eingangspins werden weiterhin durch die Backendvalidierung abgelehnt.
+
 
 

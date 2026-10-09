@@ -1,45 +1,50 @@
-# Prüfprotokoll – Produktversion 1.8.0
+# Prüfprotokoll – Produktversion 1.8.1
 
-Alte Ergebnisse anderer Versionen gelten nicht als Nachweis für diese Produktversion.
+Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
-## Änderungen an der Produktversion
+## Änderungen in 1.8.1
 
-- Neue Geräte und Factory-Resets starten laut Quelltext ohne private Identität, WLAN-Zugangsdaten, Relais, Funktionen oder Geräte.
-- Entwicklungs-WLANs und Standard-Beispielgeräte wurden aus dem aktuellen Produktpfad entfernt.
-- Die Onlineprüfung ist auf das neueste stabile Release des Produkt-Repositories eingestellt und installiert nichts automatisch. Das Ziel-Repository existiert noch nicht; der Live-Aufruf ist daher OFFEN.
-- Normale Firmware-Updates müssen bestehende Gerätekonfigurationen erhalten.
-- Ein fehlgeschlagener LittleFS-Mount darf nicht automatisch formatieren; neue Geräte erhalten das Dateisystem ausdrücklich beim Erstflash.
+- Unvollständige Konfigurationsanfragen werden abgewiesen; vorhandene Relais, Funktionen, Geräte, Anordnung und Signalwege sind gegen versehentlich leere Listen geschützt.
+- Gespeicherte Signalwege werden zusätzlich als vorherige Generation auf dem ESP vorgehalten.
+- Vor manuellen Firmware- und Rückschaltvorgängen muss eine geprüfte Sicherungsdatei heruntergeladen und bestätigt werden. Sie enthält lokale und gemeinsame Konfiguration sowie WLAN-Zugangsdaten.
+- Updateprüfung und Downloadseite verwenden GitHub. Die Prüfung installiert keine Firmware automatisch.
+- Nach einem erfolgreichen Wetterabruf beträgt das Abrufintervall 30 Minuten. Nach einem fehlgeschlagenen Abruf wird nach 5 Minuten erneut versucht; bis dahin bleibt ein vorhandener gültiger Stand sichtbar.
+- Die Bedienoberfläche zeigt eine einheitliche Schriftgröße, eine größere YAGI-Fläche für H/V, die Firmwareversion im Kopfbereich und besser lesbare Fußzeilenangaben.
 
-## Aktueller Prüfstand
+## Buildstand
 
 | Prüfung | Ergebnis |
 |---|---|
-| Datenschutzscan der vorgesehenen Quell-, Dokument- und Release-Dateien | PASS; alte Sicherungsordner ausgeschlossen |
-| Bestehendes GitHub-Repository für öffentliche Nutzung | NICHT GEEIGNET; getrennte Historie nötig |
-| esp32dev-Build | PASS |
-| esp32dev-jungfrau-Build | PASS |
-| LittleFS-Abbild esp32dev-jungfrau | PASS |
-| Statische Prüfung der leeren Startwerte | PASS |
-| Erststart mit leerem Testgerät | OFFEN |
-| Updateprüfung gegen öffentliches GitHub-Release | OFFEN; das Ziel-Repository ist noch nicht angelegt |
-| OTA mit Vorher-/Nachher-Konfigurationsvergleich | OFFEN |
-| Öffentliche Repository-Sichtbarkeit | OFFEN |
+| PlatformIO `esp32dev` | PASS |
+| PlatformIO `esp32dev-jungfrau` | PASS |
+| LittleFS-Abbild `esp32dev` für Erstinstallation | PASS |
+| Flashverbrauch `esp32dev` | 1.444.821 / 1.507.328 Byte (95,9 %) |
+| Flashverbrauch `esp32dev-jungfrau` | 1.443.225 / 1.507.328 Byte (95,7 %) |
+| RAMverbrauch beider Umgebungen | 52.920 / 327.680 Byte (16,1 %) |
 
-## Buildnachweis
+PlatformIO Core 6.1.19, Espressif32 6.12.0, Arduino-ESP32 2.0.17. Für den Build auf dieser Windows-Installation wurde eine temporäre lokale Python-Importanpassung verwendet, weil ein mitgeliefertes, schreibgeschütztes IntelHex-Modul sonst den Bootloader-Build verhindert. Es wurden keine installierten PlatformIO-Dateien geändert.
 
-- Datum: 09.10.2026
-- PlatformIO Core 6.1.19; Espressif32 6.12.0; Arduino-ESP32 2.0.17.
-- Beide Umgebungen wurden mit PlatformIO Core gebaut. RAM jeweils 52.912 / 327.680 Byte (16,1 %).
-- Flash esp32dev: 1.439.009 / 1.507.328 Byte (95,5 %).
-- Flash esp32dev-jungfrau: 1.437.417 / 1.507.328 Byte (95,4 %).
-- LittleFS-Abbild wurde für esp32dev-jungfrau erfolgreich erzeugt.
-- Für esptool wurde eine temporäre, projektlokale Python-Startanpassung verwendet, die die installierte IntelHex-Kopie vor einer schreibgeschützten Vendor-Kopie lädt. Keine installierten Berechtigungen wurden geändert.
-- Der Firmware-Binärscan fand vier eindeutige Treffer eines allgemeinen `sk-`-Musters. Jeder Treffer wurde in der unveränderten Espressif-MbedTLS-Archivdatei `libmbedtls_2.a` wiedergefunden; die Muster stehen nicht im Projektquelltext. Der gezielte Scan fand keine bekannten API-Schlüssel, E-Mail-Adressen, Rufzeichen, WLAN-Namen oder privaten Geräte-IP-Adressen.
+## Live-Stand und offene Prüfungen
 
-## Schutzregeln für bestehende Geräte
+| Prüfung | Ergebnis |
+|---|---|
+| Öffentliche Sichtbarkeit des Produkt-Repositories | PASS; GitHub-API meldet öffentlich |
+| GitHub-Updateprüfung auf beiden ESPs, Stand vor Veröffentlichung von 1.8.1 | PASS; beide melden installiert 1.8.0 und GitHub `v1.8.0` |
+| Manuelles OTA von GitHub auf einem bestehenden Gerät | OFFEN; wird nach Veröffentlichung vom Benutzer geprüft |
+| Konfiguration nach Firmware-OTA | OFFEN; bis zum manuellen Lauf wurde keine Firmware auf den ESPs geflasht |
+| Wetterdienst nach Live-Fehler `HTTP -1` | MASTER erholte sich beim erneuten Abruf; neue 5-Minuten-Fehlerwiederholung ist nur im 1.8.1-Kandidaten enthalten und am Gerät noch OFFEN |
+| Signalwege auf den zwei vorhandenen ESPs | 40 Wege per API bestätigt; Layoutrevision 89, YAGI 20 px und 2 Rasterzeilen |
 
-- Vorher und nachher vergleichen: Firmwareversion, Master-/Slave-Rolle, Rufzeichen, Postleitzahl, WLAN-Namen (niemals Kennwörter), Relais, Funktionen, Geräte, Signalwege, gespeicherte Auswahl, Motor, TX und Peer-Status.
-- Keine Konfigurations-API, keinen Factory-Reset und keinen LittleFS-Upload verwenden.
-- Bei einer Abweichung sofort stoppen. Keine automatische Wiederherstellung oder Änderung an der Konfiguration versuchen.
+Die beiden ESPs führen zur Protokollzeit noch Firmware 1.8.0. Auf ihnen wurden nur die Weboberflächendateien aktualisiert. Die gespeicherten 40 Signalwege sind erhalten. WLAN-Kennwörter, Rufzeichen, Postleitzahlen und lokale Geräte-IP-Adressen werden hier nicht dokumentiert.
 
-Nach einem erfolgreichen Lauf werden Datum, Commit, Board, PlatformIO-/Frameworkversion, Werkzeugausgabe und bereinigte Vorher-/Nachher-Zahlen ergänzt. Kennwörter und andere private Konfigurationswerte gehören nie in dieses Protokoll.
+## Schutzregeln für den manuellen Updateversuch
+
+- Vor dem OTA die Sicherungsdatei auf den Computer herunterladen und speichern. Sie enthält WLAN-Kennwörter und muss privat bleiben.
+- Nur die passende Firmwaredatei hochladen. Das LittleFS-Abbild überschreibt den Dateispeicher und ist ausschließlich für die Erstinstallation vorgesehen.
+- Nach dem Neustart Version, Master-/Follower-Rolle, Rufzeichen, PLZ, WLAN, Relais, Funktionen, Geräte, Signalwege, gespeicherte Auswahl und Peer-Status kontrollieren.
+- Bei einer Abweichung anhalten. Keine Konfigurations-API, keinen Factory-Reset und keinen LittleFS-Upload verwenden.
+
+## Datenschutz vor Veröffentlichung
+
+Prüfe vor dem Upload Quelltext, Dokumente, Binärdateien, Anhänge und erreichbare Git-Historie auf Zugangsdaten, personenbezogene Angaben, KI-Dienste und Geräte-Konfigurationen. Veröffentlichte Prüfsummen müssen exakt zu den angehängten Release-Dateien gehören.
+
