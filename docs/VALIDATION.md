@@ -77,8 +77,8 @@ Gerätenamen, Rufzeichen, Postleitzahlen, WLAN-Namen und Kennwörter sowie lokal
 | LittleFS-Erstabild `esp32dev` und `esp32dev-jungfrau` | PASS; enthält nun getrennte Basis- und Responsive-CSS-Dateien |
 | Vollständiges OTA-Paket `esp32dev` | PASS; genau 1.507.328 Byte; Roh-Firmware 1.453.392 Byte; Webdateien 48.268 Byte; 5.632 Byte Reserve vor Endmarkierung |
 | Vollständiges OTA-Paket `esp32dev-jungfrau` | PASS; genau 1.507.328 Byte; Roh-Firmware 1.451.808 Byte; Webdateien 48.268 Byte; 7.216 Byte Reserve vor Endmarkierung |
-| SHA-256 `firmware-esp32dev.bin` | `3865733fc61a6da791a0a6ba234cb40c491ae3d06d0b7a6d04dee4031700751d` |
-| SHA-256 `firmware-esp32dev-jungfrau.bin` | `9eba922c577739d9cfa4784b45485964930477ab6c0df8b5f6c20d7325cdcf83` |
+| SHA-256 `firmware-esp32dev.bin` | `5da76afe3f3a55d38cdcb9a2bcca5ce451015a6efe2d19281f46fe4454432d23` |
+| SHA-256 `firmware-esp32dev-jungfrau.bin` | `5210e0dc02d61465bf77440ab249e1b87965e93a1a318c4bff8565a2b0147343` |
 | Brotli-Entpacken, Inhalt und CRC32 der Paketdateien | PASS; der Paketbau prüft die drei extrahierten Dateien gegen die Quellvorlagen |
 | ESP32-Imageprüfung des vollständigen Pakets | PASS; beide Images besitzen gültigen ESP32-Checksum- und SHA-256-Wert, esptool 4.9.0 |
 | Öffentliche Quellenprüfung | PASS; im vollständigen erreichbaren Git-Verlauf keine Treffer für bekannte WLAN-Namen, Betreiber-Rufzeichen, PLZ oder private Geräte-IP; Konfigurationsdateien sind nicht Teil des Pakets |
