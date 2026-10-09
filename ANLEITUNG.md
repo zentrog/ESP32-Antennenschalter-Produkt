@@ -20,7 +20,7 @@ Diese Anleitung erklärt den Einstieg ohne Vorwissen. Eine neue Installation sta
 ## 3. Einen ganz neuen ESP zum ersten Mal programmieren
 
 1. Verbinde den ESP32 per USB-Datenkabel mit dem PC.
-2. Wähle in PlatformIO **esp32dev** für ein übliches ESP32-DevKit mit 30 Pins. **esp32dev-jungfrau** ist ebenfalls eine leere Startkonfiguration.
+2. Wähle in PlatformIO **esp32dev** für das übliche ESP32-DevKit mit 30 Pins. Es gibt nur noch einen Firmware-Build.
 3. Nur beim allerersten Einrichten eines neuen Geräts musst du auch das Dateisystem laden: In PlatformIO unter **Project Tasks → esp32dev → Platform → Build Filesystem Image**, danach **Upload Filesystem Image**.
 4. Lade anschließend unter **Project Tasks → esp32dev → General → Upload** die Firmware.
 5. Wenn der Upload bei „Connecting…“ wartet, halte die Taste **BOOT** am ESP gedrückt. Lass sie los, sobald der Upload beginnt.
@@ -67,11 +67,15 @@ Bei einer drehbaren Yagi erscheinen **Horizontal** und **Vertikal** nur bei der 
 
 ## 8. Neustart und Updates
 
+Die Bedienseite behält auf Handy, Laptop und Monitor die gespeicherten Positionen der Anlagenteile bei. Bei kleinerem Fenster werden Raster und Schrift proportional verkleinert; die Karten werden nicht automatisch in eine andere Anordnung verschoben.
+
 Ein normaler Neustart stellt gespeicherte statische Schaltzustände wieder her. Eine unterbrochene Motor-Zeitfahrt wird aus Sicherheitsgründen nicht fortgesetzt; ihre Position gilt dann als unbekannt.
 
-**Online nach Update suchen** liest die neueste stabile Version von GitHub. Die Prüfung installiert nichts automatisch. Zum Aktualisieren lädst du von der GitHub-Release-Seite die Firmwaredatei herunter, deren Board-Ziel zu deinem Gerät passt: `firmware-esp32dev.bin` für das normale ESP32-DevKit oder `firmware-esp32dev-jungfrau.bin` für die entsprechend gebaute Jungfrau-Version. Jede dieser einzelnen OTA-Dateien enthält die Firmware und die dazugehörige Weboberfläche vollständig. Das Update schreibt nur in den jeweils inaktiven Programmplatz; WLAN und alle Geräteeinstellungen im LittleFS bleiben erhalten. Es ist keine zweite Webdatei und kein separates Dateisystem-Update nötig. Danach startest du **Konfigurieren → Programm/Update → Manuelles OTA**. Die Update-Seite fordert zuerst eine geprüfte Sicherungsdatei mit Geräte-, Anlagen- und WLAN-Konfiguration an. Lade sie herunter, speichere sie auf deinem Computer und bestätige das ausdrücklich. Erst dann wird das Firmware-Update freigegeben. Der ESP erstellt zusätzlich eine interne Sicherung; diese interne Kopie ersetzt deine Datei auf dem Computer nicht.
+**Neueste Firmware direkt herunterladen** lädt mit einem Klick die einzige vollständige Firmwaredatei von GitHub herunter. Die Release-Seite muss nicht geöffnet und keine Datei daraus ausgewählt werden. Die Onlineprüfung installiert nichts automatisch. Danach startest du **Konfigurieren → Programm/Update → Manuelles OTA** und wählst die heruntergeladene Datei aus. Das Update schreibt nur in den jeweils inaktiven Programmplatz; WLAN und Geräteeinstellungen im LittleFS bleiben erhalten.
 
-Die vollständige OTA-Datei wird mit `node tools/build-ota-package.mjs esp32dev` oder `node tools/build-ota-package.mjs esp32dev-jungfrau` gebaut. Node.js, npm, PlatformIO und die festgelegte Terser-Version werden benötigt. Der Paketbau prüft die komprimierten Webdateien, ihre Prüfsumme und den verfügbaren Programmspeicherplatz.
+Vor dem Update muss eine Sicherungsdatei auf deinem Computer gespeichert und bestätigt werden. Sie enthält die lokalen Einstellungen des ESP, dessen WLANs und die gemeinsame Anlagenkonfiguration. In einem Verbund reicht die Sicherung des Masters nicht für eine vollständige Wiederherstellung: Öffne jeden ESP über seine eigene Adresse und lade dort separat eine Sicherung herunter. Der Dateiname enthält Controller-ID und IP; dieselben Angaben stehen auch in der Datei. Die interne Sicherung des ESP ersetzt deine Datei auf dem Computer nicht.
+
+Die vollständige OTA-Datei wird mit `node tools/build-ota-package.mjs esp32dev` gebaut. Node.js, npm, PlatformIO und die festgelegte Terser-Version werden benötigt. Der Paketbau prüft die komprimierten Webdateien, ihre Prüfsumme und den verfügbaren Programmspeicherplatz.
 
 Das Wetter wird nach einem erfolgreichen Abruf alle 30 Minuten aktualisiert. Nach einem fehlgeschlagenen Abruf versucht der ESP es nach 5 Minuten erneut und zeigt bis dahin den letzten gültigen Wetterstand an.
 

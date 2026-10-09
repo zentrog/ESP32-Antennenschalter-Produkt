@@ -13,7 +13,7 @@ const temp = resolve(root, '.pio', 'ota-package');
 const partitionSize = 0x170000;
 const magic = Buffer.from('ANTUIBR1');
 
-if (!['esp32dev', 'esp32dev-jungfrau'].includes(env)) throw new Error(`Unsupported release environment: ${env}`);
+if (env !== 'esp32dev') throw new Error(`Unsupported release environment: ${env}`);
 mkdirSync(outDir, { recursive: true }); mkdirSync(temp, { recursive: true });
 const pio = resolve(process.env.USERPROFILE, '.platformio', 'penv', 'Scripts', 'pio.exe');
 const build = spawnSync(pio, ['run', '-e', env], { cwd: root, stdio: 'inherit', shell: false });

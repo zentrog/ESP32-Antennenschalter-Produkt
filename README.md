@@ -2,9 +2,11 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktueller Produktkandidat: Firmware 1.8.4.
+Aktueller Produktkandidat: Firmware 1.8.5.
 
-Die Release-Datei `firmware-esp32dev.bin` bzw. `firmware-esp32dev-jungfrau.bin` enthält jeweils die vollständige Firmware und Weboberfläche für ein einziges manuelles OTA-Update. Die getrennte LittleFS-Partition mit WLAN und Gerätekonfiguration wird dabei nicht überschrieben.
+Die gespeicherte Anordnung der Anlagenteile bleibt auf Handy, Laptop und großem Monitor an denselben Rasterpositionen. Die Ansicht verkleinert Raster und Beschriftungen an die verfügbare Fläche; sie ordnet die Geräte nicht automatisch um.
+
+Die Release-Datei `firmware-esp32dev.bin` enthält die vollständige Firmware und Weboberfläche für ein manuelles OTA-Update. Die getrennte LittleFS-Partition mit WLAN und Gerätekonfiguration wird dabei nicht überschrieben.
 
 ## Für Anwender
 
@@ -24,18 +26,18 @@ Ein normales Firmware-Update löscht keine vorhandenen Geräteeinstellungen. Vor
 
 ## Bauen
 
-Benötigt werden Visual Studio Code und PlatformIO IDE. Das Standardziel für ein übliches ESP32-DevKit mit 30 Pins ist **esp32dev**; **esp32dev-jungfrau** baut dieselbe leere Startkonfiguration.
+Benötigt werden Visual Studio Code und PlatformIO IDE. Für das übliche ESP32-DevKit mit 30 Pins wird nur das PlatformIO-Ziel **esp32dev** verwendet.
 
 Im PlatformIO-Terminal:
 
     pio run -e esp32dev
-    pio run -e esp32dev-jungfrau
-
 Beim ersten Flashen eines neuen Gerätes muss zusätzlich das LittleFS-Dateisystem gebaut und geladen werden. Das überschreibt den Gerätespeicher und gehört nicht zu einem normalen Firmware-Update. Die vollständigen Schritte stehen in [ANLEITUNG.md](ANLEITUNG.md).
 
 ## Updates
 
-Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die Prüfung installiert nichts automatisch. Sie zeigt Versionshinweise als kurze, lesbare Zusammenfassung und setzt sie sicher als Text ein. Für ein Update lädst du die passende Firmware von der [GitHub-Release-Seite](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest) herunter und startest das manuelle OTA am Gerät. Vor dem Hochladen musst du die Sicherungsdatei mit der Konfiguration und den WLAN-Daten auf deinem Computer speichern und bestätigen.
+Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die Schaltfläche **Neueste Firmware direkt herunterladen** lädt die einzige vollständige Firmware-Datei direkt herunter, ohne die Release-Seite zu öffnen oder ein Asset auszuwählen. Danach startest du das manuelle OTA am Gerät.
+
+Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die gemeinsame Anlagenkonfiguration und dessen gespeicherte WLANs. Im Verbund sammelt der Master die lokalen Einstellungen der Slaves nicht ein: Öffne deshalb jeden ESP über seine eigene Adresse und lade dort eine eigene Sicherungsdatei herunter. Controller-ID und IP stehen im Dateinamen und in der Datei.
 
 ## Projektunterlagen
 

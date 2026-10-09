@@ -1,4 +1,4 @@
-# Prüfprotokoll – Produktversion 1.8.4
+# Prüfprotokoll – Produktversion 1.8.5
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -85,10 +85,30 @@ Gerätenamen, Rufzeichen, Postleitzahlen, WLAN-Namen und Kennwörter sowie lokal
 | Manuelles OTA von GitHub auf echtem ESP | OFFEN; Veröffentlichung und Nutzerlauf stehen noch aus |
 | Smartphoneansicht am echten Gerät | OFFEN; Desktop-Testansichten sind kein Ersatz für den Handytest |
 
+## Änderungen in 1.8.5 (Arbeitsstand)
+
+- Sicherungsdateien erhalten einen Dateinamen mit Controller-ID und aktueller IP-Adresse. Dieselbe Zuordnung wird im JSON-Inhalt mitgeführt.
+- Sicherungsdialoge erklären direkt am Download: Die Sicherung umfasst den ESP, dessen eigene Oberfläche geöffnet wurde, plus gemeinsame Anlagenkonfiguration und dessen WLANs. Für eine vollständige Verbundsicherung wird jeder ESP einzeln auf seiner eigenen Adresse gesichert.
+- Die Bedienoberfläche behält die gespeicherten 12×6-Rasterpositionen über Bildschirmgrößen hinweg bei. Responsive Regeln skalieren die Rasterfläche und Beschriftungen, ohne Karten automatisch neu anzuordnen.
+- Vier sichtbar angelegte Reihen wie in der gespeicherten Benutzeranordnung bleiben erhalten; vier Reihen werden nicht global erzwungen.
+- Vollständiges OTA-Paket enthält Firmware und alle geänderten Webdateien in einer Datei. LittleFS mit den vorhandenen Einstellungen wird beim OTA nicht geschrieben.
+- Es gibt nur noch den Build `esp32dev` und eine OTA-Datei. Die frühere Jungfrau-Variante wurde aus dem aktiven Build und den aktuellen Download-Anweisungen entfernt.
+- Die Schaltfläche „Neueste Firmware direkt herunterladen“ verwendet GitHub Releases/latest/download mit dem festen einzigen Assetnamen. Sie öffnet keine Release-Auswahlseite.
+
+## Buildstatus 1.8.5 (Arbeitsstand)
+
 | Prüfung | Ergebnis |
 |---|---|
-| GitHub-Hauptzweig enthält v1.8.4 | OFFEN; noch nicht veröffentlicht |
-| GitHub-Release mit beiden kompletten OTA-Dateien | OFFEN; noch nicht veröffentlicht |
+| PlatformIO `esp32dev` plus vollständiges OTA-Paket | PASS; Firmware 1.449.237 / 1.507.328 B, 52.960 / 327.680 B RAM; Paket 1.507.328 B mit Firmware 1.455.808 B, Webdateien 48.537 B und 2.947 B Reserve |
+| SHA-256 `firmware-esp32dev.bin` | `f789f44ef19942126bb72bf9252c8443f3f72f686e79e4a3505be408a36a8af5` |
+| ESP32-Imageprüfung | PASS; `esptool` 4.9.0 meldet gültige Image-Prüfsumme und SHA-256 für die vollständige 1.507.328-Byte-Datei |
+| GitHub-Veröffentlichung und OTA auf echtem ESP | OFFEN |
+| Positionsgleichheit und Scrollfreiheit auf echten Handy-, Laptop- und 4K-Ansichten | OFFEN; noch keine Sichtprüfung auf diesen Geräten |
+
+| Prüfung | Ergebnis |
+|---|---|
+| GitHub-Hauptzweig enthält v1.8.4 | PASS; Release-Tag zeigt auf den veröffentlichten Stand |
+| GitHub-Release v1.8.4 mit beiden damaligen OTA-Dateien | PASS; historische Release-Fassung |
 
 ## Schutzregeln für den manuellen Updateversuch
 

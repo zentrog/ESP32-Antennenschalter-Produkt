@@ -392,9 +392,7 @@ bool Storage::readSharedFile(const char* path,SharedConfig& c,String& err){
   for(JsonObject q:d["layout"].as<JsonArray>()){LayoutItem z;z.key=String((const char*)(q["key"]|""));z.x=q["x"]|0;z.y=q["y"]|0;z.w=q["w"]|3;z.h=q["h"]|1;z.fontPx=q["fontPx"]|20;z.visible=q["visible"]|true;x.layout.push_back(z);}
   for(JsonObjectConst q:d["displayGroups"].as<JsonArrayConst>()){DisplayGroupConfig z;displayGroupFrom(q,z);x.displayGroups.push_back(z);}
   for(JsonObjectConst q:d["routes"].as<JsonArrayConst>()){RouteConfig z;routeFrom(q,z);x.routes.push_back(z);}
- #if !defined(ANTCTRL_JUNGFRAU)
   if(x.displayGroups.empty())x.displayGroups={{"radios","Funkgeräte",10},{"middle","PA / Tuner / Filter",20},{"antennas","Antennen",30}};
- #endif
   c=x;return true;
 }
 bool Storage::saveShared(SharedConfig& c,String& err,bool allowRouteShrink){
@@ -412,17 +410,13 @@ bool Storage::saveShared(SharedConfig& c,String& err,bool allowRouteShrink){
 bool Storage::loadShared(SharedConfig& c,String& err){
   auto migrate=[this,&err](SharedConfig& x)->bool{
     if(x.schema>=5){
- #if !defined(ANTCTRL_JUNGFRAU)
       if(x.displayGroups.empty())x.displayGroups={{"radios","Funkgeräte",10},{"middle","PA / Tuner / Filter",20},{"antennas","Antennen",30}};
- #endif
       return true;
     }
     bool hadStorm=x.schema>=4;
     x.schema=5;
     if(!hadStorm)x.systemStormMode=false;
- #if !defined(ANTCTRL_JUNGFRAU)
     if(x.displayGroups.empty())x.displayGroups={{"radios","Funkgeräte",10},{"middle","PA / Tuner / Filter",20},{"antennas","Antennen",30}};
- #endif
     x.revision++;
     String e;
     if(!saveShared(x,e)){err="Umstellung der Anlagenstruktur auf Schema 5 fehlgeschlagen: "+e;return false;}
