@@ -9,7 +9,10 @@
 #include <WiFiClientSecure.h>
 #include <Update.h>
 #include <esp_system.h>
+#include <esp_partition.h>
+#include <esp_ota_ops.h>
 #include <sys/stat.h>
+#include <cstring>
 #include <vector>
 
 static const char* PREUPDATE_LOCAL="/preupdate-local.json";
@@ -24,6 +27,42 @@ static File uiUploadFile;
 static uint32_t safetyBackupFreshAtMs=0;
 static bool updateBackupDownloaded=false;
 static const uint32_t SAFETY_BACKUP_FRESH_MS=5U*60U*1000U;
+
+#pragma pack(push,1)
+struct UiBundleFooter {
+  char magic[8];
+  uint32_t indexOffset,indexSize,appOffset,appSize,cssOffset,cssSize,payloadCrc32;
+};
+#pragma pack(pop)
+static_assert(sizeof(UiBundleFooter)==36,"OTA UI bundle footer layout must match the package builder");
+static const char UI_BUNDLE_MAGIC[8]={'A','N','T','U','I','B','R','1'};
+static const esp_partition_t* uiBundlePartition=nullptr;
+static UiBundleFooter uiBundleFooter{};
+static bool uiBundleChecked=false,uiBundleValid=false;
+static uint32_t uiBundleCrc32(uint32_t crc,const uint8_t*data,size_t n){
+  crc=~crc;for(size_t i=0;i<n;++i){crc^=data[i];for(uint8_t b=0;b<8;++b)crc=(crc>>1)^(0xEDB88320U&-(crc&1U));}return ~crc;
+}
+static bool loadUiBundle(){
+  if(uiBundleChecked)return uiBundleValid;uiBundleChecked=true;
+  uiBundlePartition=esp_ota_get_running_partition();if(!uiBundlePartition||uiBundlePartition->size<sizeof(UiBundleFooter))return false;
+  uint32_t footerAt=uiBundlePartition->size-sizeof(UiBundleFooter);
+  if(esp_partition_read(uiBundlePartition,footerAt,&uiBundleFooter,sizeof(uiBundleFooter))!=ESP_OK)return false;
+  if(memcmp(uiBundleFooter.magic,UI_BUNDLE_MAGIC,sizeof(UI_BUNDLE_MAGIC))!=0)return false;
+  uint64_t indexEnd=(uint64_t)uiBundleFooter.indexOffset+uiBundleFooter.indexSize;
+  uint64_t appEnd=(uint64_t)uiBundleFooter.appOffset+uiBundleFooter.appSize;
+  uint64_t cssEnd=(uint64_t)uiBundleFooter.cssOffset+uiBundleFooter.cssSize;
+  if(uiBundleFooter.indexOffset<0x1000||uiBundleFooter.indexSize==0||uiBundleFooter.appSize==0||uiBundleFooter.cssSize==0||
+     indexEnd!=uiBundleFooter.appOffset||appEnd!=uiBundleFooter.cssOffset||cssEnd>footerAt)return false;
+  uint32_t crc=0;uint8_t buf[512];uint32_t left=(uint32_t)(cssEnd-uiBundleFooter.indexOffset),at=uiBundleFooter.indexOffset;
+  while(left){size_t n=left>sizeof(buf)?sizeof(buf):left;if(esp_partition_read(uiBundlePartition,at,buf,n)!=ESP_OK)return false;crc=uiBundleCrc32(crc,buf,n);at+=(uint32_t)n;left-=(uint32_t)n;}
+  uiBundleValid=crc==uiBundleFooter.payloadCrc32;return uiBundleValid;
+}
+static bool sendBundledUi(WebServer&server,const char*name,const char*mime,uint32_t offset,uint32_t length){
+  if(!loadUiBundle()||length==0)return false;
+  server.sendHeader("Cache-Control",strcmp(name,"index.html")==0?"no-cache, must-revalidate":"public, max-age=31536000, immutable");
+  server.sendHeader("Content-Encoding","br");server.setContentLength(length);server.send(200,mime,"");
+  uint8_t buf[512];uint32_t sent=0;while(sent<length){size_t n=length-sent>sizeof(buf)?sizeof(buf):length-sent;if(esp_partition_read(uiBundlePartition,offset+sent,buf,n)!=ESP_OK){server.client().stop();return true;}server.sendContent((const char*)buf,n);sent+=(uint32_t)n;}return true;
+}
 
 static bool littleFsExistsQuiet(const char* path){
   if(!path||!*path)return false;String full="/littlefs"+String(path);struct stat st;return ::stat(full.c_str(),&st)==0;
@@ -199,8 +238,9 @@ void WebUi::setupRoutes(){
  server_.onNotFound([this](){server_.sendHeader("Location","http://192.168.4.1/",true);server_.send(302,"text/plain","");});
 }
 void WebUi::routes(){
- server_.on("/",HTTP_GET,[this](){File f=LittleFS.open("/index.html","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"UI missing":"Oberfläche fehlt");return;}server_.sendHeader("Cache-Control","no-cache, must-revalidate");server_.streamFile(f,"text/html; charset=utf-8");f.close();});
- server_.on("/app.js",HTTP_GET,[this](){File f=LittleFS.open("/app.js","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"app.js missing":"app.js fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"application/javascript; charset=utf-8");f.close();});
+ server_.on("/",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"index.html","text/html; charset=utf-8",uiBundleFooter.indexOffset,uiBundleFooter.indexSize))return;File f=LittleFS.open("/index.html","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"UI missing":"Oberfläche fehlt");return;}server_.sendHeader("Cache-Control","no-cache, must-revalidate");server_.streamFile(f,"text/html; charset=utf-8");f.close();});
+ server_.on("/responsive.css",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"responsive.css","text/css; charset=utf-8",uiBundleFooter.cssOffset,uiBundleFooter.cssSize))return;File f=LittleFS.open("/responsive.css","r");if(!f){server_.send(404,"text/plain; charset=utf-8","responsive.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
+ server_.on("/app.js",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"app.js","application/javascript; charset=utf-8",uiBundleFooter.appOffset,uiBundleFooter.appSize))return;File f=LittleFS.open("/app.js","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"app.js missing":"app.js fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"application/javascript; charset=utf-8");f.close();});
  server_.on("/style.css",HTTP_GET,[this](){File f=LittleFS.open("/style.css","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"style.css missing":"style.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
  server_.serveStatic("/logo.png",LittleFS,"/logo.png","max-age=604800");
  server_.serveStatic("/favicon.ico",LittleFS,"/favicon.ico","max-age=604800");

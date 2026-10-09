@@ -1,4 +1,4 @@
-# Prüfprotokoll – Produktversion 1.8.3
+# Prüfprotokoll – Produktversion 1.8.4
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -41,9 +41,8 @@ Firmware und LittleFS für 1.8.3 wurden aus Firmware-Quellcommit `015fb39ab048cf
 | LittleFS-Abbild `esp32dev` für Erstinstallation | PASS |
 | Flashverbrauch `esp32dev` | 1.444.821 / 1.507.328 Byte (95,9 %) |
 | Flashverbrauch `esp32dev-jungfrau` | 1.443.225 / 1.507.328 Byte (95,7 %) |
-| RAMverbrauch beider Umgebungen | 52.920 / 327.680 Byte (16,1 %) |
 
-PlatformIO Core 6.1.19, Espressif32 6.12.0, Arduino-ESP32 2.0.17. Für den Build auf dieser Windows-Installation wurde eine temporäre lokale Python-Importanpassung verwendet, weil ein mitgeliefertes, schreibgeschütztes IntelHex-Modul sonst den Bootloader-Build verhindert. Es wurden keine installierten PlatformIO-Dateien geändert.
+PlatformIO Core 6.1.19, Espressif32 6.12.0, Arduino-ESP32 2.0.17. Der lokale Build benötigt wegen eines schreibgeschützten IntelHex-Zusatzmoduls eine temporäre Python-Importanpassung unter `%TEMP%`; installierte PlatformIO-Dateien werden nicht verändert.
 
 ## Live-Stand und offene Prüfungen
 
@@ -59,12 +58,44 @@ PlatformIO Core 6.1.19, Espressif32 6.12.0, Arduino-ESP32 2.0.17. Für den Build
 
 Gerätenamen, Rufzeichen, Postleitzahlen, WLAN-Namen und Kennwörter sowie lokale IP-Adressen werden hier nicht dokumentiert. Die Sicherungsdateien bleiben ausschließlich lokal.
 
+## Änderungen in 1.8.4
+
+- Die Bedienansicht ordnet die Anlagenteile bei kürzeren Laptopfenstern und Telefonen automatisch neu an. Auf großen Ansichten bleibt das gespeicherte Raster erhalten.
+- Die Bedienseite verwendet weiterhin die vorhandene Ein-Seiten-Ansicht ohne innere oder äußere Scrollbereiche. Schrift und Abstände passen sich an die verfügbare Fläche an; die Footerzeile bleibt sichtbar.
+- Die Fußzeile zeigt wieder den vom Betreiber ausdrücklich freigegebenen Namen und die E-Mail-Adresse.
+- Konfigurationsdaten, WLAN-Daten, Rufzeichen, Postleitzahlen, Geräte, Signalwege und GPIO-Belegungen wurden nicht verändert oder in den Release eingebettet.
+- Cache-Kennungen der Weboberfläche auf v1.8.4 angehoben.
+- Das OTA-Paket enthält Firmware, `index.html`, `app.js` und `responsive.css` in einer einzigen Datei. Die drei Webdateien liegen Brotli-komprimiert und CRC32-geprüft im freien Ende derselben Programmpartition. Die Firmware liefert diese Dateien nach einem gültigen Prüfsummenabgleich direkt aus dem App-Slot aus.
+- Das bisherige Updateformular bleibt kompatibel: Es schreibt die eine, auf die volle OTA-Slotgröße aufgefüllte Datei in die inaktive App-Partition. Der Build bricht ab, wenn Firmware, Oberflächenpaket und Endmarkierung nicht vollständig hineinpassen. LittleFS wird nicht aktualisiert und Konfigurationsdateien bleiben unangetastet.
+
+## Buildstatus 1.8.4
+
+| Prüfung | Ergebnis |
+|---|---|
+| PlatformIO `esp32dev` Firmware | PASS; 1.446.809 / 1.507.328 Byte Flash, 52.960 / 327.680 Byte RAM |
+| PlatformIO `esp32dev-jungfrau` Firmware | PASS; 1.445.233 / 1.507.328 Byte Flash, 52.960 / 327.680 Byte RAM |
+| LittleFS-Erstabild `esp32dev` und `esp32dev-jungfrau` | PASS; enthält nun getrennte Basis- und Responsive-CSS-Dateien |
+| Vollständiges OTA-Paket `esp32dev` | PASS; genau 1.507.328 Byte; Roh-Firmware 1.453.392 Byte; Webdateien 48.268 Byte; 5.632 Byte Reserve vor Endmarkierung |
+| Vollständiges OTA-Paket `esp32dev-jungfrau` | PASS; genau 1.507.328 Byte; Roh-Firmware 1.451.808 Byte; Webdateien 48.268 Byte; 7.216 Byte Reserve vor Endmarkierung |
+| SHA-256 `firmware-esp32dev.bin` | `3865733fc61a6da791a0a6ba234cb40c491ae3d06d0b7a6d04dee4031700751d` |
+| SHA-256 `firmware-esp32dev-jungfrau.bin` | `9eba922c577739d9cfa4784b45485964930477ab6c0df8b5f6c20d7325cdcf83` |
+| Brotli-Entpacken, Inhalt und CRC32 der Paketdateien | PASS; der Paketbau prüft die drei extrahierten Dateien gegen die Quellvorlagen |
+| ESP32-Imageprüfung des vollständigen Pakets | PASS; beide Images besitzen gültigen ESP32-Checksum- und SHA-256-Wert, esptool 4.9.0 |
+| Öffentliche Quellenprüfung | PASS; im vollständigen erreichbaren Git-Verlauf keine Treffer für bekannte WLAN-Namen, Betreiber-Rufzeichen, PLZ oder private Geräte-IP; Konfigurationsdateien sind nicht Teil des Pakets |
+| Manuelles OTA von GitHub auf echtem ESP | OFFEN; Veröffentlichung und Nutzerlauf stehen noch aus |
+| Smartphoneansicht am echten Gerät | OFFEN; Desktop-Testansichten sind kein Ersatz für den Handytest |
+
+| Prüfung | Ergebnis |
+|---|---|
+| GitHub-Hauptzweig enthält v1.8.4 | OFFEN; noch nicht veröffentlicht |
+| GitHub-Release mit beiden kompletten OTA-Dateien | OFFEN; noch nicht veröffentlicht |
+
 ## Schutzregeln für den manuellen Updateversuch
 
 - Vor dem OTA die Sicherungsdatei auf den Computer herunterladen und speichern. Sie enthält WLAN-Kennwörter und muss privat bleiben.
-- Nur die passende Firmwaredatei hochladen. Das LittleFS-Abbild überschreibt den Dateispeicher und ist ausschließlich für die Erstinstallation vorgesehen.
+- Nur die passende vollständige OTA-Datei hochladen. Die Datei enthält Firmware und Oberfläche; sie aktualisiert nicht LittleFS.
 - Nach dem Neustart Version, Master-/Follower-Rolle, Rufzeichen, PLZ, WLAN, Relais, Funktionen, Geräte, Signalwege, gespeicherte Auswahl und Peer-Status kontrollieren.
-- Bei einer Abweichung anhalten. Keine Konfigurations-API, keinen Factory-Reset und keinen LittleFS-Upload verwenden.
+- Die Sicherungsdatei aufbewahren, bis alle Einstellungen nach dem Update geprüft sind.
 
 ## Datenschutz vor Veröffentlichung
 

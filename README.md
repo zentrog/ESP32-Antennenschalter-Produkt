@@ -2,7 +2,9 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktueller Produktkandidat: Firmware 1.8.3.
+Aktueller Produktkandidat: Firmware 1.8.4.
+
+Die Release-Datei `firmware-esp32dev.bin` bzw. `firmware-esp32dev-jungfrau.bin` enthält jeweils die vollständige Firmware und Weboberfläche für ein einziges manuelles OTA-Update. Die getrennte LittleFS-Partition mit WLAN und Gerätekonfiguration wird dabei nicht überschrieben.
 
 ## Für Anwender
 

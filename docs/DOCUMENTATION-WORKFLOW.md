@@ -12,8 +12,9 @@
 2. Halte README, Anwenderanleitung, Projektstatus und passende technische Dokumente auf derselben Versionsnummer.
 3. Bei Änderungen an Firmware, Oberfläche, Build-Einstellungen oder Partitionen Manifest und Prüfprotokoll aktualisieren.
 4. Baue die betroffenen PlatformIO-Umgebungen und notiere tatsächliches Ergebnis und Speicherverbrauch.
-5. Kennzeichne nicht ausgeführte Prüfungen als offen. Ein Build beweist keine Funktion am Gerät.
-6. Vor einem öffentlichen Upload alle freizugebenden Dateien und Release-Dateien prüfen. Keine private Alt-Historie oder Sicherungsverzeichnisse übernehmen.
+5. Für Veröffentlichungen der ESP32-DevKit-Umgebungen baue `node tools/build-ota-package.mjs esp32dev` und `node tools/build-ota-package.mjs esp32dev-jungfrau`. Jede einzelne erzeugte OTA-Datei muss Firmware und alle geänderten Webdateien enthalten; eine separate UI-Datei genügt nicht. Der Paketbauer verweigert den Release, wenn sich `style.css` ändert, ohne dass das OTA-Paketformat dafür erweitert wurde.
+6. Kennzeichne nicht ausgeführte Prüfungen als offen. Ein Build beweist keine Funktion am Gerät.
+7. Vor einem öffentlichen Upload alle freizugebenden Dateien und Release-Dateien prüfen. Keine private Alt-Historie oder Sicherungsverzeichnisse übernehmen.
 
 ## Mindestangaben im Prüfprotokoll
 

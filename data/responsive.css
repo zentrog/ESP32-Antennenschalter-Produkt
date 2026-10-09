@@ -1,0 +1,59 @@
+/* v1.8.4: keep the complete control page in view at every viewport size. */
+body.control-mode footer{display:flex!important;flex:0 0 auto}
+body.control-mode .button-canvas.logical-mode{display:flex!important;flex:1 1 0;flex-direction:column!important;min-width:0!important;min-height:0!important;overflow:hidden!important}
+body.control-mode .logical-mode .live-route-toolbar{position:relative;flex:0 0 auto;width:100%;min-width:0}
+body.control-mode .logical-mode .logical-system-layout{flex:1 1 0;width:100%;min-width:0;height:0;min-height:0;overflow:hidden}
+body.control-mode .logical-mode .logical-layout-grid{width:100%;height:100%;min-height:0}
+body.control-mode .logical-layout-grid .logical-device{font-size:clamp(16px,max(var(--logical-font,20px),1.05vw),32px)}
+body.control-mode .logical-layout-grid .logical-radio-select,
+body.control-mode .logical-layout-grid .logical-antenna-main{font-size:clamp(16px,max(var(--logical-font,20px),1.05vw),32px)}
+@media(max-height:1100px){
+ body.control-mode header{padding:clamp(3px,.8vh,7px) clamp(6px,1vw,12px)}
+ body.control-mode nav{padding:clamp(2px,.5vh,5px) 7px}
+ body.control-mode main{padding:clamp(3px,.7vh,7px) clamp(5px,.8vw,9px)}
+ body.control-mode #control.view.active{gap:clamp(3px,.6vh,6px)}
+ body.control-mode .logical-layout-grid{width:100%;min-width:0!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;min-height:0!important}
+ body.control-mode .logical-layout-grid>.logical-device{grid-column:auto!important;grid-row:auto!important}
+ body.control-mode .logical-device{padding:clamp(3px,.6vh,7px);gap:2px}
+ body.control-mode .logical-device .logical-radio-select,
+ body.control-mode .logical-device .logical-antenna-main{min-height:clamp(30px,5.5vh,44px);padding:clamp(3px,.5vh,7px)}
+ body.control-mode .live-route-toolbar{gap:clamp(4px,.6vw,8px);padding:clamp(4px,.6vh,7px)}
+}
+@media(max-width:620px){
+ body.control-mode header{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:3px;padding:3px 4px}
+ body.control-mode .brand{flex:1 1 auto;max-width:none;min-width:0;gap:3px}
+ body.control-mode .brand-logo{width:22px;height:22px}
+ body.control-mode .brand h1{font-size:.72rem;white-space:nowrap}
+ body.control-mode .eyebrow,body.control-mode #identity{display:none}
+ body.control-mode #headerCallsign{display:none}
+ body.control-mode .clock{flex:0 1 auto;width:auto;max-width:40%;min-width:0;margin-left:auto}
+ body.control-mode .clock #dateLabel,body.control-mode .clock #utcTime{display:none}
+ body.control-mode .clock #dateLine{font-size:.6rem}
+ body.control-mode .clock #localTime{font-size:.5rem;line-height:1.1}
+ body.control-mode footer{justify-content:center;margin-top:0;padding:2px 4px;gap:3px 8px;font-size:.58rem}
+ body.control-mode #footerRights{max-width:100%;overflow-wrap:anywhere;text-align:center}
+ body.control-mode .logical-mode .live-route-toolbar{grid-template-columns:minmax(72px,.32fr) minmax(0,1fr);gap:4px;padding:4px}
+ body.control-mode .route-toolbar-title>b{font-size:.57rem}
+ body.control-mode .route-toolbar-title>span{display:none}
+ body.control-mode .route-selection-state{min-height:26px;padding:3px 5px;font-size:.61rem;line-height:1.1}
+ body.control-mode .logical-layout-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important}
+ body.control-mode .logical-device .logical-category,
+ body.control-mode .logical-device .logical-owner,
+ body.control-mode .logical-device .logical-group-tag{display:none}
+ body.control-mode .logical-device .logical-radio-select,
+ body.control-mode .logical-device .logical-antenna-main{min-height:clamp(29px,5.5vh,40px);font-size:clamp(12px,3.6vw,18px);padding:2px 4px}
+ body.control-mode .logical-device.category-antenna:has(.logical-actions){display:grid;grid-template-columns:minmax(0,1fr) 38px;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:3px}
+ body.control-mode .logical-device.category-antenna:has(.logical-actions) .logical-antenna-main{grid-column:1;grid-row:1}
+ body.control-mode .logical-device.category-antenna:has(.logical-actions) .logical-actions{grid-column:2;grid-row:1;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:2px;margin:0}
+ body.control-mode .logical-device.category-antenna:has(.logical-actions) .logical-action{min-height:0;padding:1px;font-size:.62rem}
+}
+@media(max-height:620px){
+ body.control-mode .brand-logo{width:22px;height:22px}
+ body.control-mode .brand h1{font-size:.78rem}
+ body.control-mode .control-head button{padding:3px 5px;font-size:.62rem}
+ body.control-mode .controller-badge{padding:2px 4px;font-size:.56rem}
+ body.control-mode .weather-current{padding:2px 5px;gap:4px}
+ body.control-mode .weather-icon{font-size:1.25rem}
+ body.control-mode .ticker-row{min-height:22px;padding:1px 3px}
+ body.control-mode footer{font-size:.52rem}
+}
