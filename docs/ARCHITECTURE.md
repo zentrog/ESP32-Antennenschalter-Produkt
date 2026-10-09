@@ -1,10 +1,10 @@
 # Architektur – ESP32-Antennenschalter
 
-Quellstand: Firmware 1.8.4 / API 6.
+Quellstand: Firmware 1.8.5 / API 6.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
-Release-OTA-Dateien enthalten neben dem normalen ESP32-Programmabbild ein komprimiertes, CRC32-geprüftes Paket aus `index.html`, `app.js` und `responsive.css` im unbenutzten Ende derselben OTA-Programmpartition. Der v1.8.3-OTA-Handler schreibt die vollständige Datei in die inaktive Programmpartition und formatiert LittleFS nicht. Die Firmware ab v1.8.4 erkennt das Paket anhand seines Endmarkers und liefert die Webdateien daraus aus; fehlt ein gültiges Paket, verwendet sie LittleFS. Damit erfolgen Programm- und Weboberflächenupdate über eine Datei und die vorhandenen Konfigurationsdateien bleiben erhalten.
+Release-OTA-Dateien enthalten neben dem normalen ESP32-Programmabbild ein komprimiertes, CRC32-geprüftes Paket aus `index.html`, `app.js` und `responsive.css` im unbenutzten Ende derselben OTA-Programmpartition. Der OTA-Handler schreibt die vollständige Datei in die inaktive Programmpartition und formatiert LittleFS nicht. Die Firmware erkennt das Paket anhand seines Endmarkers und liefert die Webdateien daraus aus; fehlt ein gültiges Paket, verwendet sie LittleFS. Damit erfolgen Programm- und Weboberflächenupdate über eine Datei und die vorhandenen Konfigurationsdateien bleiben erhalten.
 
 Die Online-Updateprüfung fragt die neueste stabile Veröffentlichung bei GitHub ab und zeigt sie an. Die Firmware wird niemals automatisch installiert. Vor einem Firmware-Update muss der Benutzer auf der Update-Seite eine geprüfte Sicherungsdatei mit lokaler Konfiguration dieses ESP, gemeinsamer Konfiguration und dessen WLAN-Daten herunterladen und bestätigen. Im Verbund werden Slave-Konfigurationen nicht vom Master exportiert; für eine vollständige Verbundsicherung wird jeder ESP einzeln über seine eigene Adresse gesichert. Dateiname und Datei enthalten Controller-ID und IP.
 

@@ -15,6 +15,9 @@
 5. Für die einzige ESP32-DevKit-Veröffentlichung baue `node tools/build-ota-package.mjs esp32dev`. Die erzeugte OTA-Datei muss Firmware und alle geänderten Webdateien enthalten; eine separate UI-Datei genügt nicht. Der Paketbauer verweigert den Release, wenn sich `style.css` ändert, ohne dass das OTA-Paketformat dafür erweitert wurde.
 6. Kennzeichne nicht ausgeführte Prüfungen als offen. Ein Build beweist keine Funktion am Gerät.
 7. Vor einem öffentlichen Upload alle freizugebenden Dateien und Release-Dateien prüfen. Keine private Alt-Historie oder Sicherungsverzeichnisse übernehmen.
+8. Für einen Produktrelease genau ein stabiles GitHub-Release aus dem geprüften `main`-Stand erstellen und ausschließlich `release-assets/firmware-esp32dev.bin` anhängen. Die Datei muss Firmware und alle geänderten Webdateien enthalten.
+9. Nach der Veröffentlichung über die öffentliche Release-API prüfen: neuester Tag, stabiler Status, genau ein Asset, erwartete Dateigröße. Danach `/releases/latest/download/firmware-esp32dev.bin` anonym abrufen und SHA-256 mit dem lokalen Paket vergleichen.
+10. Release- und Downloadprüfung mit Datum und Firmware-Quellcommit in `docs/VALIDATION.md` eintragen. OTA am echten Gerät und Ansichten auf echten Bildschirmgrößen bleiben eigene offene Prüfungen, bis sie ausgeführt wurden.
 
 ## Mindestangaben im Prüfprotokoll
 
