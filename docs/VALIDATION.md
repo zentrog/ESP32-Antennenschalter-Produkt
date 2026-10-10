@@ -1,3 +1,10 @@
+# Prüfprotokoll – Firmware 1.8.12
+
+- Änderungen vor dem Eingriff: Arbeitsbaum sauber auf Branch `v1.8.4-ota-bundle`; Release-Quelle war 1.8.11. Betroffen: `src/WebUi.cpp`, Versions-/Cachemarker, `README.md`, `ANLEITUNG.md`, `docs/ARCHITECTURE.md` und dieses Protokoll. WLAN, Gerätekonfiguration, Relais, Signalwege und LittleFS-Migration bleiben unangetastet.
+- Ursache: Das inline JavaScript der manuellen Update-Seite war syntaktisch ungültig, weil der übersetzte Hinweistext mit einfachen Anführungszeichen in das Script eingesetzt wurde. Dadurch wurde der Klick-Handler nicht ausgeführt und das deaktivierte Sicherungshäkchen blieb gesperrt.
+- Korrektur: Das Häkchen ist direkt bedienbar und steuert nur die Freigabe der Uploadfelder. Die ESP-seitige Sperre `updateBackupDownloaded` bleibt unverändert und lehnt Upload/Rollback weiterhin ab, bis `/api/update-backup` erfolgreich abgerufen wurde.
+- Build: PASS; PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 3.20017.241212+sha.dcc1105b, Xtensa-GCC 8.4.0+2021r2-patch5, esptool 4.9.0. RAM 52.384 / 327.680 Byte; Firmware 1.362.640 Byte. Paket: PASS; 1.507.328 Byte, UI Brotli 61.758 Byte, gzip 73.162 Byte, Reserve 9.692 Byte. Paket-SHA-256 `6DF4144A7DC636721D72CED19DF9A000B2CC2BD0D134C77A5B22329E4F53A372`. Browser-JavaScript-Syntaxprüfung am Live-ESP für den Fehlerfall: FAIL bestätigt; korrigierter Quellhandler ist syntaktisch einfach und benötigt keine Textinterpolation. GitHub-Release/ESP-Update/Readback: `OFFEN` bis tatsächlich ausgeführt; Anwenderhinweis: „Fehlerbehebung: Sicherungshäkchen ließ sich nach Download nicht aktivieren.“
+- Noch erforderlicher Bediennachweis: Auf dem Testgerät Sicherung herunterladen, lokal speichern, Häkchen setzen und prüfen, dass Datei- sowie Installationsfelder freigegeben werden. Ein Upload wird erst nach eigenem Freigabeschritt gestartet.
 # Prüfprotokoll – Firmware 1.8.11
 
 - Neueste stabile Firmware: **1.8.11**, GitHub-Release [v1.8.11](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.11). API 6; genau ein Produkt-Asset `firmware-esp32dev.bin`.
