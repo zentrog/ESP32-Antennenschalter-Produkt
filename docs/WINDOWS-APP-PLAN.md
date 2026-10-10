@@ -165,6 +165,7 @@ Der ESP bestätigt nach Import die tatsächlich gespeicherten Daten durch Readba
 ## 6. Öffentliche Hinweise, Lizenz und Datenschutz
 
 - Im Programm: Produktname, Versionsnummer, Copyright-/Urheberangabe, Projektkontakt, Lizenz und Links zu Anleitung sowie Datenschutz-/Nutzungshinweisen.
+- Vom Betreiber zur öffentlichen Projektangabe freigegeben: **Andreas Bodyn (DO1ANB)**, **andreas.bodyn@gmx.de**; vorgesehene Kennzeichnung: **© 2026 Andreas Bodyn (DO1ANB)**. Diese Kontaktangaben dürfen in README, App-Info und Projekt-Footer erscheinen. Private Anlagen-PLZ, WLAN-Daten und Konfigurationen bleiben davon getrennt und werden nicht veröffentlicht.
 - Im GitHub-Release: Quellcommit, Änderungsübersicht, unterstützte ESP-Modelle/Windows-Versionen, Dateityp je Firmwarepaket, Hash/Signatur und bekannte Grenzen.
 - Drittanbieterbibliotheken, Firmwarekomponenten und Flasher müssen mit ihren Lizenztexten/NOTICE-Dateien ausgeliefert werden. App-, Firmware- und Dokumentationslizenz dürfen nicht ungeprüft gleichgesetzt werden.
 - Test-/Vorabversionen werden eindeutig gekennzeichnet; stabile und experimentelle Releases nicht verwechseln.
@@ -211,7 +212,7 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Welches Provisionierungsprotokoll wird über USB genutzt; unterstützt Firmware bereits einen sicheren Einrichtungs-Hotspot und QR-Code?
 - Welche Wiederherstellung auf ESP-Ersatzhardware mit anderer MAC ist zulässig und wie werden neue Identitäten verteilt?
 - Welche Angaben sind wirklich zwingend, welche optional, und welche Prüfregeln sind pro Anlagenprofil konfigurierbar?
-- Welche Lizenz gilt für Anwendung, Firmware, Dokumentation und abgeleitete Komponenten; wer hält Copyright und Schlüssel?
+- Welche Lizenz gilt für Anwendung, Firmware, Dokumentation und abgeleitete Komponenten; wie werden Drittbeiträge behandelt und wer hält Veröffentlichungsschlüssel? Projektkontakt/gewünschte Copyright-Angabe sind vom Betreiber benannt; die konkrete Lizenz ist noch nicht gewählt.
 
 ## 10. Umsetzungshistorie
 

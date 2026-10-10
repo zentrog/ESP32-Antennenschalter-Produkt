@@ -50,6 +50,10 @@ Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die
 
 Die Windows-App ist optional und noch nicht implementiert. Firmware bleibt separat herunterladbar, manuell installierbar und eigenständig gepflegt. Die App wird später einen zusätzlichen geführten Weg bieten.
 
+## Projektkontakt und Urheberangabe
+
+© 2026 Andreas Bodyn (DO1ANB) · Projektkontakt: [andreas.bodyn@gmx.de](mailto:andreas.bodyn@gmx.de)
+
 ## Datenschutz
 
-WLAN-Kennwörter, Rufzeichen, Postleitzahlen, Anlagenkonfigurationen und Gerätekennungen gehören in den ESP und nicht in öffentliche Quelltexte, Screenshots oder GitHub-Protokolle. Vor einer Veröffentlichung müssen Dateien und die erreichbare Git-Historie geprüft sein.
+WLAN-Kennwörter, private Postleitzahlen, Anlagenkonfigurationen und Gerätekennungen gehören in den ESP und nicht in öffentliche Quelltexte, Screenshots oder GitHub-Protokolle. Der Projektkontakt und das Rufzeichen DO1ANB sind vom Betreiber ausdrücklich zur öffentlichen Projektangabe freigegeben. Vor jeder Veröffentlichung müssen Dateien und die erreichbare Git-Historie auf nicht freigegebene private Daten geprüft sein.
