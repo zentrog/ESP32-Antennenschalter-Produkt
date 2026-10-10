@@ -493,3 +493,12 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - GitHub-Abruf vom ESP: Der Aufruf wurde gestartet und der ESP kam mit v1.8.24 nach einem Neustart zurück. Die aufrufende Windows-Anfrage erreichte jedoch innerhalb von 90 Sekunden keine HTTP-Antwort. Da vor und nach dem Flash dieselbe Versionsnummer aktiv war, reicht dieser Lauf allein nicht als eindeutiger Flashnachweis; Status `TEILWEISE`.
 - Korrektur in v1.8.25: Wenn die lokale Verbindung beim erwarteten ESP-Neustart abreißt, bleibt die Updateoberfläche aktiv und prüft bis zu 90 Sekunden Controller-ID, Firmwareversion und Neustart, bevor sie Erfolg meldet. Die Update-Seite prüft außerdem, ob wirklich eine neuere stabile Version existiert.
 - Verifikation des Versionswechsels 1.8.24 → 1.8.25 über den echten GitHub-Abruf, inklusive Antwort-/Neustartbestätigung und identischer Konfigurations-/WLAN-Sicherung: OFFEN bis Test-ESP-Lauf abgeschlossen.
+
+## Firmware 1.8.25/1.8.26 – Hintergrund-OTA gegen Watchdog-Neustart
+
+- Reproduzierter Hardwarefehler nach v1.8.25: Der Ein-Klick-Aufruf von v1.8.24 startete einen Watchdog-Neustart (`TG1WDT_SYS_RESET`); der ESP kam mit v1.8.24 zurück. Das Update war somit NICHT erfolgreich.
+- Ursache: Der GitHub-Download und Flash liefen synchron im Webserver-Request. Während dieses langen Aufrufs konnte der ESP-Webtask den Watchdog nicht zuverlässig bedienen.
+- v1.8.26 verschiebt den Abruf und Flash in einen eigenen FreeRTOS-Hintergrundauftrag. Der HTTP-Aufruf antwortet sofort; `/api/update/status` meldet laufend/erfolgreich/Fehler. Beide Updateansichten prüfen anschließend den Versions- und Controller-Readback.
+- Buildstatus v1.8.26: PASS; PlatformIO RAM 52.768 / 327.680 Byte, Firmware 1.367.376 Byte, UI Brotli 63.236 Byte + gzip 74.885 Byte, vollständiges Paket 1.507.328 Byte, OTA-Reserve 1.755 Byte. JavaScript-Syntax und `git diff --check` PASS. SHA-256 `2340CC22ADD07E9DFCB89058778B5FC8C2C5DF9B4EA66BE68EC121B8139DCE82`.
+- E2E-OTA v1.8.24 → v1.8.26 am ESP32-28FDE2842178 (`192.168.0.154`), Firmware-Readback, Konfigurations-/WLAN-Gleichheit und verlässliche Erfolgsanzeige: OFFEN bis Hardwarelauf abgeschlossen.
+- Verbund-Update: weiterhin nur Einzelgerät. Ein Master-Button, der Slaves mit sichert/aktualisiert, ist nicht implementiert.
