@@ -178,7 +178,7 @@ async function saveSharedNow(){
 function scheduleSharedSave(delay=0){if(!sharedDirty)markSharedDirty();clearTimeout(window._sharedTimer);window._sharedTimer=setTimeout(saveSharedNow,delay)}
 async function flushSharedSave(){if(sharedDirty&&!savingShared)await saveSharedNow();while(savingShared)await new Promise(r=>setTimeout(r,25));return !sharedDirty}
 
-function applyViewMode(view){document.body.classList.toggle("control-mode",view==="control");let stage=$("#appStage");if(view==="control")requestAnimationFrame(fitControlViewport);else if(stage){stage.style.left="";stage.style.top="";stage.style.transform="";delete document.body.dataset.controlScale}}
+function applyViewMode(view){document.body.classList.toggle("control-mode",view==="control");let stage=$("#appStage");if(view==="control")requestAnimationFrame(fitControlViewport);else if(stage){stage.style.left="";stage.style.top="";stage.style.width="";stage.style.transform="";delete document.body.dataset.controlScale}}
 $$("nav button").forEach(b=>b.onclick=()=>{$$("nav button").forEach(x=>x.classList.toggle("active",x===b));$$(".view").forEach(v=>v.classList.toggle("active",v.id===b.dataset.view));applyViewMode(b.dataset.view);if(b.dataset.view==="config")loadConfig();if(b.dataset.view==="diag")loadDiag()});
 applyViewMode("control");
 
@@ -302,17 +302,35 @@ function routesShareDifferentSwitches(a,b){let ar=liveRouteStateBase(a).requirem
 async function selectLogicalRoute(routeId){if(routeCommandBusy)return;let route=(shared.routes||[]).find(r=>r.id===routeId);if(!route)return;let state=liveRouteState(route),base=liveRouteStateBase(route),topology=routeTopologyState(route);if(topology.kind!=="ok"||!["active","inactive","partial"].includes(base.kind)){toast(topology.message||state.reason||sysText("Signalweg ist derzeit nicht verfügbar","Signal path is currently unavailable"));return}routeCommandBusy=true;renderLogicalControl();try{let active=routesNeedingShutdown(),targetActive=base.kind==="active";if(targetActive&&active.length===1){let off=await post("/api/route/deactivate",{id:route.id});if(!off.confirmed)throw new Error(off.error||sysText("Signalweg konnte nicht deaktiviert werden","Signal path could not be deactivated"));toast(sysText(`Signalweg getrennt: ${route.label||route.id}`,`Signal path disconnected: ${route.label||route.id}`))}else{let keepTarget=targetActive;for(let old of active){if(keepTarget&&old.id===route.id)continue;let off=await post("/api/route/deactivate",{id:old.id});if(!off.confirmed)throw new Error(off.error||sysText(`Der bisherige Signalweg ${old.label||old.id} konnte nicht getrennt werden`,`The previous signal path ${old.label||old.id} could not be disconnected`))}if(!targetActive){let res=await post("/api/route/activate",{id:route.id});if(!res.confirmed)throw new Error(res.error||sysText("Signalweg wurde nicht bestätigt","Signal path was not confirmed"));toast(sysText(`Verbunden: ${route.label||route.id}`,`Connected: ${route.label||route.id}`))}else toast(sysText(`Andere aktive Signalwege getrennt; ${route.label||route.id} bleibt verbunden`,`Other active signal paths disconnected; ${route.label||route.id} remains connected`))}await refresh()}catch(e){toast(e.message);await refresh()}finally{routeCommandBusy=false;renderLogicalControl()}}
 function logicalTimedActions(d){let c=d.controller,linked=new Set(Array.isArray(d.functionIds)?d.functionIds:[]),staticIds=new Set((c.functions||[]).filter(f=>linked.has(f.id)&&f.type==="antenna").map(f=>f.id)),seen=new Set(),out=[];(c.functions||[]).filter(f=>f.type==="timed"&&(linked.has(f.id)||staticIds.has(f.requires))).forEach(f=>{if(seen.has(f.id))return;seen.add(f.id);let requiredOk=!f.requires||c.activeByGroup?.[f.requiresGroup||"ANT"]===f.requires||Object.values(c.activeByGroup||{}).includes(f.requires),locked=!c.online||c.snapshotStale||c.txActive||c.stormMode||!requiredOk||(c.motorRunning&&c.motorFunctionId!==f.id),running=c.motorRunning&&c.motorFunctionId===f.id,remembered=c.polarization===(f.stateToken||f.label),u=shared.ui||{},style=running?(u.runningColor||"#d67d00"):locked?(u.lockedColor||"#555b65"):remembered?(u.rememberedColor||"#b83232"):(u.normalColor||"#275c91"),remain=running?Number(c.motorRemainingMs||0):0;out.push(`<button class="func action-func logical-action" data-logical-action-c="${esc(c.controllerId)}" data-logical-action-f="${esc(f.id)}" ${locked?"disabled":""} data-running="${running?"1":"0"}" data-total="${Number(f.durationMs||7500)}" ${running?`data-end="${Date.now()+remain}"`:""} style="background:${esc(style)}">${running?`<span class="action-name">${esc(f.label)}</span><span class="countdown">${(remain/1000).toFixed(1)} ${t("seconds")}</span><span class="progress"></span>`:esc(f.label)}</button>`)});return out.length?`<div class="logical-actions">${out.join("")}</div>`:""}
 function logicalToggleActions(d){let c=d.controller,linked=new Set(Array.isArray(d.functionIds)?d.functionIds:[]),fs=(c.functions||[]).filter(f=>f.type==="toggle"&&linked.has(f.id));if(!fs.length)return "";let u=shared.ui||{},wholeCard=d.category==="supply"&&fs.length===1;return `<div class="logical-actions power-actions">${fs.map(f=>{let active=c.activeByGroup?.[f.group]===f.id,locked=!f.configured||!c.online||c.snapshotStale||c.txActive||c.stormMode||c.motorRunning,style=locked?(u.lockedColor||"#555b65"):active?(u.powerActiveColor||"#259b55"):(u.powerInactiveColor||"#275c91");if(wholeCard)return `<span class="power-toggle-state ${active?"is-on":"is-off"} ${locked?"is-locked":""}" data-toggle-c="${esc(c.controllerId)}" data-toggle-f="${esc(f.id)}" data-toggle-active="${active?"1":"0"}" data-toggle-locked="${locked?"1":"0"}" aria-hidden="true" title="${esc(active?sysText("Strom ist eingeschaltet","Power is on"):sysText("Strom ist ausgeschaltet","Power is off"))}" style="--power-state-color:${esc(style)}"></span>`;let label=f.configured?(active?sysText("AUS","OFF"):sysText("EIN","ON")):sysText("GPIO fehlt","GPIO missing");return `<button type="button" class="func power-toggle-button" data-toggle-c="${esc(c.controllerId)}" data-toggle-f="${esc(f.id)}" ${locked?"disabled":""} aria-pressed="${active}" title="${esc(f.configured?sysText("Stromversorgung umschalten","Toggle power supply"):sysText("Bitte zuerst ein Relais/GPIO zuordnen","Assign a relay/GPIO first"))}" style="background:${esc(style)}">${esc(label)}</button>`}).join("")}</div>`}
- function drawLiveRouteLines(previewId=""){
-  let layout=document.querySelector(".logical-system-layout"),svg=document.querySelector(".route-lines-svg");if(!layout||!svg)return;while(svg.firstChild)svg.removeChild(svg.firstChild);let rect=layout.getBoundingClientRect(),scale=Number(document.body.dataset.controlScale)||1,w=Math.max(layout.scrollWidth,layout.clientWidth),h=Math.max(layout.scrollHeight,layout.clientHeight);svg.setAttribute("viewBox",`0 0 ${w} ${h}`);svg.setAttribute("width",w);svg.setAttribute("height",h);let cards=[...layout.querySelectorAll(".logical-device")],cardFor=k=>cards.find(x=>x.dataset.deviceKey===k),routes=(shared.routes||[]).filter(r=>r.enabled!==false&&(liveRouteState(r).kind==="active"||r.id===previewId));
+function drawLiveRouteLines(previewId=""){
+ let layout=document.querySelector(".logical-system-layout"),svg=document.querySelector(".route-lines-svg");if(!layout||!svg)return;
+ while(svg.firstChild)svg.removeChild(svg.firstChild);
+ let rect=layout.getBoundingClientRect(),scale=Number(document.body.dataset.controlScale)||1,w=Math.max(layout.scrollWidth,layout.clientWidth),h=Math.max(layout.scrollHeight,layout.clientHeight);
+ svg.setAttribute("viewBox",`0 0 ${w} ${h}`);svg.setAttribute("width",w);svg.setAttribute("height",h);
+ let cards=[...layout.querySelectorAll(".logical-device")],cardFor=k=>cards.find(x=>x.dataset.deviceKey===k),routes=(shared.routes||[]).filter(r=>r.enabled!==false&&(liveRouteState(r).kind==="active"||r.id===previewId));
  let defs=document.createElementNS("http://www.w3.org/2000/svg","defs");svg.appendChild(defs);
  const safeId=x=>String(x||"route").replace(/[^a-zA-Z0-9_-]/g,"_");
- routes.forEach((r,ri)=>{let active=liveRouteState(r).kind==="active",nodes=(r.deviceKeys||[]).map(cardFor),color=r.color||"#3f8fd2",mid=safeId(r.id)+"_"+ri,marker=document.createElementNS("http://www.w3.org/2000/svg","marker");marker.setAttribute("id",mid);marker.setAttribute("viewBox","0 0 10 10");marker.setAttribute("refX","9");marker.setAttribute("refY","5");marker.setAttribute("markerWidth","7");marker.setAttribute("markerHeight","7");marker.setAttribute("orient","auto-start-reverse");let arrow=document.createElementNS("http://www.w3.org/2000/svg","path");arrow.setAttribute("d","M 0 0 L 10 5 L 0 10 z");arrow.setAttribute("fill",color);marker.appendChild(arrow);defs.appendChild(marker);
-  let lane=((ri%2===0?1:-1)*(Math.floor(ri/2)+1))*7;
-   for(let i=1;i<nodes.length;i++){let a=nodes[i-1],b=nodes[i];if(!a||!b)continue;let ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),x1=(ar.left-rect.left+ar.width/2)/scale+layout.scrollLeft,y1=(ar.top-rect.top+ar.height/2)/scale+layout.scrollTop,x2=(br.left-rect.left+br.width/2)/scale+layout.scrollLeft,y2=(br.top-rect.top+br.height/2)/scale+layout.scrollTop,dx=x2-x1,dy=y2-y1,dstr;
-    if(Math.abs(dx)>=Math.abs(dy)){let dir=dx>=0?1:-1,ax=((dir>0?ar.right:ar.left)-rect.left)/scale+layout.scrollLeft,bx=((dir>0?br.left:br.right)-rect.left)/scale+layout.scrollLeft,sy=y1+lane,ey=y2+lane,mx=(ax+bx)/2+lane*dir;dstr=`M ${ax} ${sy} H ${mx} V ${ey} H ${bx}`}
-    else{let dir=dy>=0?1:-1,ay=((dir>0?ar.bottom:ar.top)-rect.top)/scale+layout.scrollTop,by=((dir>0?br.top:br.bottom)-rect.top)/scale+layout.scrollTop,sx=x1+lane,ex=x2+lane,my=(ay+by)/2+lane*dir;dstr=`M ${sx} ${ay} V ${my} H ${ex} V ${by}`}
+ routes.forEach((r,ri)=>{
+  let active=liveRouteState(r).kind==="active",nodes=(r.deviceKeys||[]).map(cardFor),color=r.color||"#3f8fd2",mid=safeId(r.id)+"_"+ri;
+  let marker=document.createElementNS("http://www.w3.org/2000/svg","marker");marker.setAttribute("id",mid);marker.setAttribute("viewBox","0 0 10 10");marker.setAttribute("refX","9");marker.setAttribute("refY","5");marker.setAttribute("markerWidth","7");marker.setAttribute("markerHeight","7");marker.setAttribute("orient","auto-start-reverse");
+  let arrow=document.createElementNS("http://www.w3.org/2000/svg","path");arrow.setAttribute("d","M 0 0 L 10 5 L 0 10 z");arrow.setAttribute("fill",color);marker.appendChild(arrow);defs.appendChild(marker);
+  let lane=((ri%2===0?1:-1)*(Math.floor(ri/2)+1))*7*scale;
+  for(let i=1;i<nodes.length;i++){
+   let a=nodes[i-1],b=nodes[i];if(!a||!b)continue;
+   let ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),ax=ar.left+ar.width/2,ay=ar.top+ar.height/2,bx=br.left+br.width/2,by=br.top+br.height/2,dx=bx-ax,dy=by-ay;
+   let blockers=cards.filter(c=>c!==a&&c!==b).map(c=>{let q=c.getBoundingClientRect();return{left:q.left-7,top:q.top-7,right:q.right+7,bottom:q.bottom+7}});
+   const clear=(p,q)=>!blockers.some(o=>Math.abs(p.y-q.y)<.5?p.y>o.top&&p.y<o.bottom&&Math.max(Math.min(p.x,q.x),o.left)<Math.min(Math.max(p.x,q.x),o.right):Math.abs(p.x-q.x)<.5&&p.x>o.left&&p.x<o.right&&Math.max(Math.min(p.y,q.y),o.top)<Math.min(Math.max(p.y,q.y),o.bottom));
+   const rate=points=>{let hits=0,length=0;for(let j=1;j<points.length;j++){let p=points[j-1],q=points[j];length+=Math.abs(q.x-p.x)+Math.abs(q.y-p.y);if(!clear(p,q))hits++}return{points,score:hits*100000+length+points.length*12}};
+   let paths=[],right=dx>=0,down=dy>=0,sx=right?ar.right:ar.left,ex=right?br.left:br.right,sy=ay+lane,ey=by+lane,midX=(sx+ex)/2,startY=down?ar.bottom:ar.top,endY=down?br.top:br.bottom,startX=ax+lane,endX=bx+lane,midY=(startY+endY)/2;
+   paths.push(rate([{x:sx,y:sy},{x:midX,y:sy},{x:midX,y:ey},{x:ex,y:ey}]));
+   paths.push(rate([{x:startX,y:startY},{x:startX,y:midY},{x:endX,y:midY},{x:endX,y:endY}]));
+   let xs=new Set([rect.left+8,rect.right-8,midX]),ys=new Set([rect.top+8,rect.bottom-8,midY]);blockers.forEach(o=>{xs.add(o.left-8);xs.add(o.right+8);ys.add(o.top-8);ys.add(o.bottom+8)});
+   for(let x of xs)if(x>rect.left+2&&x<rect.right-2)paths.push(rate([{x:sx,y:sy},{x,y:sy},{x,y:ey},{x:ex,y:ey}]));
+   for(let y of ys)if(y>rect.top+2&&y<rect.bottom-2)paths.push(rate([{x:startX,y:startY},{x:startX,y},{x:endX,y},{x:endX,y:endY}]));
+   let best=paths.sort((p,q)=>p.score-q.score)[0].points,dstr=best.map((p,j)=>`${j?"L":"M"} ${(p.x-rect.left)/scale+layout.scrollLeft} ${(p.y-rect.top)/scale+layout.scrollTop}`).join(" ");
    let halo=document.createElementNS("http://www.w3.org/2000/svg","path");halo.setAttribute("d",dstr);halo.setAttribute("class","route-line-halo");halo.setAttribute("stroke-width",active?"8":"6");svg.appendChild(halo);
-   let path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",dstr);path.setAttribute("stroke",color);path.setAttribute("stroke-width",active?"3.5":"2");path.setAttribute("opacity",active?".92":".55");path.setAttribute("fill","none");path.setAttribute("stroke-linecap","round");path.setAttribute("stroke-linejoin","round");path.setAttribute("marker-end",`url(#${mid})`);if(!active)path.setAttribute("stroke-dasharray","8 7");svg.appendChild(path)}
+   let path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",dstr);path.setAttribute("stroke",color);path.setAttribute("stroke-width",active?"3.5":"2");path.setAttribute("opacity",active?".92":".55");path.setAttribute("fill","none");path.setAttribute("stroke-linecap","round");path.setAttribute("stroke-linejoin","round");path.setAttribute("marker-end",`url(#${mid})`);if(!active)path.setAttribute("stroke-dasharray","8 7");svg.appendChild(path);
+  }
  });
 }
 function renderLogicalControl(){
@@ -340,14 +358,23 @@ function renderControl(){
 function fitControlViewport(){
  if(!document.body.classList.contains("control-mode"))return;
  let stage=$("#appStage");if(!stage)return;
- // Measure the complete, unscaled page. The grid must first be allowed to
- // grow to its card content; scaling a fixed 1080px box only scales clipping.
- stage.style.transform="none";stage.style.left="0px";stage.style.top="0px";
- const width=stage.offsetWidth,height=Math.max(stage.offsetHeight,stage.scrollHeight);
- if(!width||!height)return;
- const scale=Math.min(window.innerWidth/width,window.innerHeight/height);
- const left=Math.max(0,(window.innerWidth-width*scale)/2),top=Math.max(0,(window.innerHeight-height*scale)/2);
- stage.style.left=`${left}px`;stage.style.top=`${top}px`;stage.style.transform=`scale(${scale})`;
+ const viewportWidth=window.innerWidth,viewportHeight=window.innerHeight;
+ if(!viewportWidth||!viewportHeight)return;
+ // Keep a single uniform scale, but adapt the unscaled canvas width to the
+ // viewport aspect ratio. This fills wide screens instead of letterboxing
+ // them when the content height is the limiting dimension.
+ stage.style.transform="none";stage.style.left="0px";stage.style.top="0px";stage.style.width="1920px";
+ let low=.02,high=Math.min(2,viewportWidth/1920),best=low;
+ for(let i=0;i<12;i++){
+  const candidate=(low+high)/2;
+  stage.style.width=`${viewportWidth/candidate}px`;
+  const height=Math.max(stage.offsetHeight,stage.scrollHeight);
+  if(height*candidate<=viewportHeight){best=candidate;low=candidate}else high=candidate;
+ }
+ stage.style.width=`${viewportWidth/best}px`;
+ const height=Math.max(stage.offsetHeight,stage.scrollHeight),scale=Math.min(best,viewportHeight/height);
+ const top=Math.max(0,(viewportHeight-height*scale)/2);
+ stage.style.left="0px";stage.style.top=`${top}px`;stage.style.transform=`scale(${scale})`;
  document.body.dataset.controlScale=String(scale);
  requestAnimationFrame(()=>drawLiveRouteLines(routePreviewId));
 }

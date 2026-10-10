@@ -1,5 +1,13 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.22 · Ganze Breite und freie Signalwegführung
+
+- Fehlerbehebung: Die Gesamtfläche wird weiterhin einheitlich skaliert, passt ihre logische Breite jetzt aber an das tatsächliche Browserfenster an. Die vorherige Höhenbegrenzung ließ auf breiten Monitoren links und rechts unnötig viel freie Fläche. Die Rasterpositionen bleiben gleich; browser viewport in CSS-Pixeln berücksichtigt automatisch Windows-Skalierung und Browserzoom, deshalb gibt es keine getrennten Full-HD-/4K-Builds.
+- Fehlerbehebung: Signalwegpfeile enden an den Kartenrändern. Vor dem Zeichnen werden orthogonale Direktwege und freie Ausweichkorridore bewertet; ein Pfeil wird nicht mehr durch eine unbeteiligte Gerätekarte gelegt.
+- Build: PASS mit PlatformIO Core 6.2.0 / Espressif32 6.12.0; RAM 52.232 / 327.680 Byte; Firmwareabbild 1.362.528 Byte.
+- OTA-Paket: PASS; Einzeldatei 1.507.328 Byte, OTA-Slot 1.507.328 Byte, Reserve 7.926 Byte. UI Brotli 62.563 Byte + gzip 74.235 Byte. JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich: PASS. SHA-256 `B6E55D506C810962B718A173526241149E9D2877C632AB6C5819E5ECF0BAFE7D`.
+- Öffentlicher Direktdownload und Sichtprüfung auf den beiden gezeigten Monitoren: noch offen.
+
 ## Firmware 1.8.21 · Inhaltsbewahrende Gesamtanpassung
 
 - Fehlerursache: v1.8.20 skalierte eine starre 1920×1080-Fläche optisch per `transform`. Das Raster und die umgebenden Bereiche wurden gleichzeitig auf die Fensterhöhe gepresst; Karten erhielten dadurch zu wenig Höhe und schnitten ihre Inhalte mit `overflow:hidden` ab. Auflösung des Screenshots: unveränderte 12×6-Anordnung, aber Kartenbeschriftungen und Bedienflächen am Kartenrand abgeschnitten.
