@@ -189,7 +189,8 @@ Der ESP bestätigt nach Import die tatsächlich gespeicherten Daten durch Readba
 
 - Im Programm: Produktname, Versionsnummer, Copyright-/Urheberangabe, Projektkontakt, Lizenz und Links zu Anleitung sowie Datenschutz-/Nutzungshinweisen.
 - Vom Betreiber zur öffentlichen Projektangabe freigegeben: **Andreas Bodyn (DO1ANB)**, **andreas.bodyn@gmx.de**; vorgesehene Kennzeichnung: **© 2026 Andreas Bodyn (DO1ANB)**. Diese Kontaktangaben dürfen in README, App-Info und Projekt-Footer erscheinen. Private Anlagen-PLZ, WLAN-Daten und Konfigurationen bleiben davon getrennt und werden nicht veröffentlicht.
-- Optionale freiwillige Projektunterstützung über [PayPal.Me](https://paypal.me/andreasbodyn). Die App darf die Unterstützung anbieten, aber weder Downloads, Funktionen noch Support davon abhängig machen oder einen Supportanspruch aus einer Zahlung ableiten.
+- Optionale freiwillige Projektunterstützung über [PayPal.Me](https://paypal.me/andreasbodyn): In der Windows-App gibt es einen klar als freiwillig bezeichneten Unterstützungsbutton; in der Firmware erscheint derselbe dezente Button im Footer; die Projekt-/Downloadseite verlinkt ebenfalls direkt auf PayPal.Me. Ein Klick öffnet ausschließlich den PayPal.Me-Link im Browser. Es gibt keine eingebettete Zahlung und keine automatische Weiterleitung.
+- Unterstützung darf niemals Voraussetzung für Download, Installation, Updates, Funktionen oder Support sein. Ein Beitrag begründet keinen Supportanspruch. Copyright, Projektkontakt und Bedienfunktionen bleiben sichtbar und werden durch den Button nicht verdrängt.
 - Im GitHub-Release: Quellcommit, Änderungsübersicht, unterstützte ESP-Modelle/Windows-Versionen, Dateityp je Firmwarepaket, Hash/Signatur und bekannte Grenzen.
 - Drittanbieterbibliotheken, Firmwarekomponenten und Flasher müssen mit ihren Lizenztexten/NOTICE-Dateien ausgeliefert werden. App-, Firmware- und Dokumentationslizenz dürfen nicht ungeprüft gleichgesetzt werden.
 - Test-/Vorabversionen werden eindeutig gekennzeichnet; stabile und experimentelle Releases nicht verwechseln.
@@ -228,6 +229,7 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - der HTTPS-Mail-Endpunkt leitet Berichte tatsächlich über einen eingerichteten SMTP-/E-Mail-API-Provider weiter, speichert keine vollständigen Berichte dauerhaft, schützt alle Zugangsdaten serverseitig und zeigt Zustellerfolg oder einen brauchbaren Fehler;
 - Diagnosen keine unerwarteten Relais-/Motoraktionen auslösen;
 - Datenschutz, Lizenz, Copyright, Drittanbieterhinweise und verständliche Anleitung vollständig sind;
+- der freiwillige Unterstützungsbutton in App und Firmware sowie der Link auf der Projektseite ausschließlich den bestätigten PayPal.Me-Link öffnen und keine Funktion oder Unterstützung an eine Zahlung knüpfen;
 - die tatsächlich unterstützten Windows- und ESP-Versionen auf realen Systemen geprüft und genannt sind.
 
 ## 9. Offene Entscheidungen
