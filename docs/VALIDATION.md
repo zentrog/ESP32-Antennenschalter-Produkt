@@ -377,3 +377,13 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - Erststart: das Einrichtungs-WLAN `AntennaController-842178` wurde in der WLAN-Suche sichtbar. Damit ist der Jungfrau-Startweg aktiv. Netzwerk-Readback von Konfigurationslisten nach einer Verbindung mit dem Einrichtungs-WLAN: noch `OFFEN`.
 - Konfigurationsimport wurde nicht durch Codex ausgelöst. Der Betreiber spielt die Sicherungsdatei selbst über **Konfigurieren → Sicherheit → Sicherung / Wiederherstellung → Konfiguration importieren** ein. Manuelle Schritte wurden in `ANLEITUNG.md` und `docs/FRESH-INSTALL.md` ergänzt.
 - Keine produktiven ESPs verändert.
+
+## Firmware 1.8.14: Stromtaster und GitHub-Release
+
+- Release `v1.8.14`: PASS; veröffentlicht als neuestes stabiles Release auf GitHub, getaggt auf Commit `9e267c092dccc7419032925e3b050eb4dc829acc`. Releasehinweis: „Funktion: Eigenständige Stromtaster für Geräte.“
+- Release-Asset: PASS; genau eine manuell installierbare Firmwaredatei `firmware-esp32dev.bin`, 1.507.328 Byte. SHA-256 `515822A52344D4EF8D1F5DBE280CABC2E2EEF94B1A16DA03EAA5BD70A0EB03FA`.
+- Direktdownload: PASS; anonymer Download über `/releases/latest/download/firmware-esp32dev.bin` stimmt in Größe und SHA-256 mit dem gebauten Releasepaket überein.
+- Test-ESP OTA: PASS; ESP32-28FDE2842178 auf 192.168.0.154 meldet Firmware 1.8.14 / API 7. Die vorhandene lokale, gemeinsame und WLAN-Konfiguration wurde vor und nach dem Firmware-OTA gesichert und verglichen.
+- Strom-Kategorie: PASS; vier frei benennbare Anlagenteile „Strom Funkgerät 1“ bis „Strom Funkgerät 4“ mit unabhängigen Ein/Aus-Funktionen werden angezeigt. Ohne zugeordnetes Relais/GPIO sind die Taster sichtbar, aber gesperrt; die spätere Relaiszuordnung erfolgt durch den Betreiber.
+- Bestandswege: PASS; die vorhandenen 16 Signalwege und sonstigen Konfigurationsfelder blieben beim Hinzufügen der Strom-Anlagenteile erhalten.
+- Build/Paket: PASS; RAM 52.384 / 327.680 Byte, Firmwareabbild 1.364.976 Byte, OTA-Paket 1.507.328 Byte. UI Brotli 62.462 Byte, gzip 74.063 Byte, Paketreserve 5.751 Byte. Paket-SHA-256 wie oben.
