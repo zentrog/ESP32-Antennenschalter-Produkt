@@ -789,6 +789,9 @@ void WebUi::otaInstallLatest(){
 }
 void WebUi::otaInstallTask(void*context){static_cast<WebUi*>(context)->otaInstallLatestWorker();vTaskDelete(nullptr);}
 void WebUi::otaInstallLatestWorker(){
+  // Let the web task deliver the HTTP 202 response before the OTA task can
+  // consume bandwidth or restart the controller.
+  vTaskDelay(pdMS_TO_TICKS(1500));
   WiFiClientSecure tls;tls.setCACertBundle(GITHUB_TRUST_BUNDLE);HTTPClient h;h.setConnectTimeout(15000);h.setTimeout(45000);h.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
   if(!h.begin(tls,"https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin")){setOtaJobState(OTA_JOB_FAILED,"GitHub-Download konnte nicht vorbereitet werden");return;}
   int code=h.GET();int32_t expected=h.getSize();if(code!=200||expected<512U*1024U||expected>3U*1024U*1024U){h.end();String msg="GitHub-Firmwaredownload fehlgeschlagen (HTTP "+String(code)+")";setOtaJobState(OTA_JOB_FAILED,msg.c_str());return;}
