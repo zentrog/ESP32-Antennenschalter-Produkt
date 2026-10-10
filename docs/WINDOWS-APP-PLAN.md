@@ -166,6 +166,7 @@ Der ESP bestätigt nach Import die tatsächlich gespeicherten Daten durch Readba
 
 - Im Programm: Produktname, Versionsnummer, Copyright-/Urheberangabe, Projektkontakt, Lizenz und Links zu Anleitung sowie Datenschutz-/Nutzungshinweisen.
 - Vom Betreiber zur öffentlichen Projektangabe freigegeben: **Andreas Bodyn (DO1ANB)**, **andreas.bodyn@gmx.de**; vorgesehene Kennzeichnung: **© 2026 Andreas Bodyn (DO1ANB)**. Diese Kontaktangaben dürfen in README, App-Info und Projekt-Footer erscheinen. Private Anlagen-PLZ, WLAN-Daten und Konfigurationen bleiben davon getrennt und werden nicht veröffentlicht.
+- Optionale freiwillige Projektunterstützung über [PayPal.Me](https://paypal.me/andreasbodyn). Die App darf die Unterstützung anbieten, aber weder Downloads, Funktionen noch Support davon abhängig machen oder einen Supportanspruch aus einer Zahlung ableiten.
 - Im GitHub-Release: Quellcommit, Änderungsübersicht, unterstützte ESP-Modelle/Windows-Versionen, Dateityp je Firmwarepaket, Hash/Signatur und bekannte Grenzen.
 - Drittanbieterbibliotheken, Firmwarekomponenten und Flasher müssen mit ihren Lizenztexten/NOTICE-Dateien ausgeliefert werden. App-, Firmware- und Dokumentationslizenz dürfen nicht ungeprüft gleichgesetzt werden.
 - Test-/Vorabversionen werden eindeutig gekennzeichnet; stabile und experimentelle Releases nicht verwechseln.

@@ -54,6 +54,8 @@ Die Windows-App ist optional und noch nicht implementiert. Firmware bleibt separ
 
 © 2026 Andreas Bodyn (DO1ANB) · Projektkontakt: [andreas.bodyn@gmx.de](mailto:andreas.bodyn@gmx.de)
 
+Freiwillige Unterstützung: [PayPal.Me](https://paypal.me/andreasbodyn). Das Projekt bleibt frei verfügbar; Unterstützung ist freiwillig und begründet keinen Anspruch auf Support.
+
 ## Datenschutz
 
 WLAN-Kennwörter, private Postleitzahlen, Anlagenkonfigurationen und Gerätekennungen gehören in den ESP und nicht in öffentliche Quelltexte, Screenshots oder GitHub-Protokolle. Der Projektkontakt und das Rufzeichen DO1ANB sind vom Betreiber ausdrücklich zur öffentlichen Projektangabe freigegeben. Vor jeder Veröffentlichung müssen Dateien und die erreichbare Git-Historie auf nicht freigegebene private Daten geprüft sein.
