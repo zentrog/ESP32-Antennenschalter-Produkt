@@ -8,7 +8,7 @@
 - Build/Paket: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.232 / 327.680 Byte; Firmwareabbild 1.355.957 Byte. Vollständiges OTA-Paket 1.498.501 Byte; OTA-Slot 1.507.328 Byte; Reserve 8.827 Byte. Im Vergleich zum unmittelbar vorherigen Build ist das Firmwareabbild 7.280 Byte kleiner. UI Brotli 62.188 Byte + gzip 73.709 Byte.
 - Paketbauer: JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich PASS.
 - Visuelle Gegenprüfung auf dem problematischen Laptop: OFFEN; Screenshot/Bericht des Betreibers nach Installation erforderlich.
-- GitHub-Veröffentlichung: noch offen.
+- GitHub-Veröffentlichung: PASS; neuestes stabiles Release [v1.8.20](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.20), Tag auf Commit `62d9ea6`. Genau ein Asset `firmware-esp32dev.bin`, 1.507.328 Byte. Anonymer Direktdownload `/releases/latest/download/firmware-esp32dev.bin` stimmt bytegenau mit dem lokalen Paket überein; SHA-256 `45A8B0E60545DCEA89FB037CC8955C8C4B13608E5125C41B1E5A0F75A8040355`. Build- und Downloadprüfung am 10.10.2026.
 
 ## Firmware 1.8.19 · Einheitliche Skalierung und UTF-8-Sicherung
 
