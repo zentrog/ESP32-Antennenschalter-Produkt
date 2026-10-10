@@ -16,6 +16,8 @@ const magic = Buffer.from('ANTUIBR3');
 if (env !== 'esp32dev') throw new Error(`Unsupported release environment: ${env}`);
 mkdirSync(outDir, { recursive: true }); mkdirSync(temp, { recursive: true });
 const pio = resolve(process.env.USERPROFILE, '.platformio', 'penv', 'Scripts', 'pio.exe');
+const trustBundle = spawnSync('py', ['-3', resolve(root, 'tools', 'convert_github_trust_bundle.py')], { cwd: root, stdio: 'inherit', shell: false });
+if (trustBundle.status !== 0) throw new Error('GitHub CA bundle generation failed');
 const build = spawnSync(pio, ['run', '-e', env], { cwd: root, stdio: 'inherit', shell: false });
 if (build.status !== 0) throw new Error(`PlatformIO build failed: ${env}`);
 const image = readFileSync(firmware);
