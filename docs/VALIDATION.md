@@ -1,14 +1,14 @@
 # Prüfprotokoll – Firmware 1.8.10
 
-- Arbeitsstand: Firmware 1.8.10 / API 6; Veröffentlichung und anonymer GitHub-Download für diesen Stand werden erst nach Live-Prüfung als bestanden geführt.
-- Ein Produktbuild (`esp32dev`) und das einzige vollständige OTA-Asset `firmware-esp32dev.bin` wurden lokal gebaut.
+- Neueste stabile Firmware: **1.8.10**, GitHub-Release [v1.8.10](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.10). API 6.
+- Firmware-Quellcommit und Release-Tag: `5308d89edb4b2337aecfdb2bfb766dad5e5ce9ec` / `v1.8.10`. Genau ein vollständiges Produkt-OTA-Asset `firmware-esp32dev.bin`.
 - Build: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.568 Byte; OTA-Datei 1.507.328 Byte; 8.766 Byte Reserve im festen Slot.
 - OTA-Datei SHA-256: `1C09D3202F6C2CA453BC960CB8EC3928C1945E09746B145995AFE6C1F66DB238`.
 - Änderungen: `style.css` liegt nun ebenfalls im CRC32-geprüften Firmwarepaket. Nach erfolgreicher Paketprüfung werden nur vier alte Hauptoberflächenkopien aus LittleFS entfernt; Einzeldatei-UI-Uploads werden bei gültigem Paket abgewiesen.
 - Echtes Testgerät (Controller-ID-Suffix `28FDE2842178`): OTA von 1.8.9 auf 1.8.10 bestanden. Lokale Konfiguration, gemeinsame Konfiguration und WLAN-Zustand stimmen im vollständigen Vorher-/Nachher-JSON-Vergleich exakt überein.
 - Live-HTTP: Startseite, JavaScript und beide CSS-Dateien liefern HTTP 200 mit gzip; Dekomprimierte Inhalte stimmen jeweils per SHA-256 exakt mit dem Paketquellstand überein. Der Einzeldatei-Upload wird mit HTTP 409 abgewiesen.
 - `setup.html`, Logo und Favicon bleiben erhalten. Die produktiven ESPs blieben unangetastet.
-- GitHub-Tag/Asset, anonymer Direktdownload und unabhängiger LittleFS-Dateiliste-Readback: `OFFEN` bis zur jeweiligen Prüfung.
+- Veröffentlichung: PASS; öffentliche Release-API meldet v1.8.10 als neueste stabile Version und genau ein Produkt-Asset. Anonymer Direktdownload vom `/releases/latest/download/firmware-esp32dev.bin` PASS; 1.507.328 Byte und SHA-256 stimmen mit dem lokalen Paket überein.
 
 Ältere Abschnitte sind Versionshistorie. Ein dortiger PASS gilt nur für die ausdrücklich genannte Version. Build- oder HTTP-Readback belegt nicht automatisch den Löschstatus jeder einzelnen LittleFS-Datei.
 
@@ -322,6 +322,6 @@ Prüfe vor dem Upload Quelltext, Dokumente, Binärdateien, Anhänge und erreichb
 | UI-Einzeldatei-Upload | PASS; gezielter Uploadversuch mit `style.css` lieferte HTTP 409 mit der erwarteten Ablehnung; keine Datei wurde aktiviert. |
 | produktive ESPs | OFFEN / nicht angefasst. |
 | LittleFS-Dateiliste nach Löschung | OFFEN; die Firmware bietet keinen Dateiliste-Readback. Paket-Auslieferung und Neustart wurden live geprüft, die physische Abwesenheit jedes Pfads kann nicht separat per API bestätigt werden. |
-| GitHub-Veröffentlichung und Direktdownload | OFFEN; nach Veröffentlichung zu prüfen. |
+| GitHub-Veröffentlichung und Direktdownload | PASS; v1.8.10 ist öffentlich neueste stabile Version, genau ein Produkt-Asset; anonymer Direktdownload 1.507.328 Byte, SHA-256 entspricht dem lokalen Paket. |
 
 Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und bleiben lokal außerhalb der Veröffentlichung.
