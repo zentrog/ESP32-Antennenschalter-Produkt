@@ -6,7 +6,8 @@
 - Fehlerbehebung: Signalwegpfeile enden an den Kartenrändern. Vor dem Zeichnen werden orthogonale Direktwege und freie Ausweichkorridore bewertet; ein Pfeil wird nicht mehr durch eine unbeteiligte Gerätekarte gelegt.
 - Build: PASS mit PlatformIO Core 6.2.0 / Espressif32 6.12.0; RAM 52.232 / 327.680 Byte; Firmwareabbild 1.362.528 Byte.
 - OTA-Paket: PASS; Einzeldatei 1.507.328 Byte, OTA-Slot 1.507.328 Byte, Reserve 7.926 Byte. UI Brotli 62.563 Byte + gzip 74.235 Byte. JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich: PASS. SHA-256 `B6E55D506C810962B718A173526241149E9D2877C632AB6C5819E5ECF0BAFE7D`.
-- Öffentlicher Direktdownload und Sichtprüfung auf den beiden gezeigten Monitoren: noch offen.
+- GitHub-Veröffentlichung: PASS; neuestes stabiles Release [v1.8.22](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.22), Tag `3215dca`. Genau eine Datei `firmware-esp32dev.bin`, 1.507.328 Byte. Anonymer Direktdownload `/releases/latest/download/firmware-esp32dev.bin` bytegenau mit lokalem Image verglichen; SHA-256 `B6E55D506C810962B718A173526241149E9D2877C632AB6C5819E5ECF0BAFE7D`. Veröffentlichung und Vergleich am 10.10.2026.
+- Sichtprüfung der Version 1.8.22 auf den beiden gezeigten Monitoren: OFFEN bis sie dort installiert wurde. Die Bilder in der Anfrage zeigen 1.8.21.
 
 ## Firmware 1.8.21 · Inhaltsbewahrende Gesamtanpassung
 
