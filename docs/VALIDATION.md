@@ -1,15 +1,20 @@
 # Prüfprotokoll – Firmware 1.8.11
 
-- Arbeits-/Releaseversion: Firmware 1.8.11, API 6; Release noch nicht veröffentlicht. Vorgesehen ist genau ein vollständiges Produkt-OTA-Asset `firmware-esp32dev.bin`.
+- Neueste stabile Firmware: **1.8.11**, GitHub-Release [v1.8.11](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.11). API 6; genau ein Produkt-Asset `firmware-esp32dev.bin`.
+- Firmware-Quellcommit und Release-Tag: `3d111b4d4701cccbedfbf3dafca8e8c8ec556ac5` / `v1.8.11`. Die nachträgliche Dokumentationsaktualisierung auf `main` verändert das Release-Tag nicht.
+- Anwenderhinweis: „Fehlerbehebung: Sicherungsdatei ließ sich auf der manuellen Update-Seite teils nicht herunterladen.“
 - Build: PASS; PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 3.20017.241212+sha.dcc1105b, Xtensa-GCC 8.4.0+2021r2-patch5, esptool 4.9.0. Node.js 24.19.0, npm 11.17.0; minifiziertes JavaScript-Syntaxchecking PASS.
-- Buildspeicher: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.040 Byte.
-- Vollständiges OTA-Paket: PASS; 1.507.328 Byte im festen Slot 1.507.328 Byte. Enthält Firmware plus Brotli 61.757 Byte und gzip 73.162 Byte für die vier Hauptoberflächendateien; verbleibende Reserve 9.293 Byte. Paketprüfer hat Footer, CRC32 und komprimierte Inhalte geprüft.
+- Speicher: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.040 Byte.
+- Vollständiges OTA-Paket: PASS; 1.507.328 Byte im festen Slot 1.507.328 Byte. Enthält Firmware sowie Brotli 61.757 Byte und gzip 73.162 Byte für die vier Hauptoberflächendateien; verbleibende Reserve 9.293 Byte. Paketprüfer: Footer, CRC32 und komprimierte Inhalte PASS.
 - OTA-Datei SHA-256: `0A898194B8614BB7A1F1C25B4EED92C3A5192F87736DCDAA619CEB6C7307411F`.
-- Änderung: Auf der manuellen Update-Seite ist die Sicherung jetzt ein normaler same-origin Browserlink mit Dateianhang statt eines erst nach `fetch()` künstlich ausgelösten Klicks. Die Seite öffnet den Download in einem neuen Tab; ausdrückliche Speicherbestätigung und serverseitige Voraussetzung vor Update/Rückkehr bleiben erhalten.
-- Anlass: Der Betreiber meldete, dass der bisherige Button „Konfigurationssicherung herunterladen“ keine sichtbare Reaktion zeigte. Das Verhalten der neuen Seite muss nach dem Flash am echten ESP noch geprüft werden.
-- Test-ESP vor Update: COM13, USB-Seriell CH340, IP `192.168.0.154`, Firmware 1.8.10, Controller-ID-Suffix `842178`, Rolle Master. Produktive ESPs bleiben unangetastet. Flash und Readback für 1.8.11 stehen noch aus.
-- GitHub-Release und anonymer Download: OFFEN; Veröffentlichung erfolgt erst nach Tag/Commit-Abgleich. Die erfolgreiche echte E-Mail-Prüfung aus 1.8.10 ist in der Versionshistorie belegt und wurde hier nicht erneut ausgeführt.
-- Installierte Hilfsprogramme: PlatformIO Core 6.2.0 steht sowohl dem Benutzer als auch dem in der Projekt-Buildkette verwendeten PlatformIO-Environment zur Verfügung; die zuvor gemeldete Core-Versionswarnung ist behoben.
+- Änderung: Der Button auf der manuellen Update-Seite ist jetzt ein normaler Browserlink zum geprüften Sicherungs-Endpunkt. Der Browser verarbeitet den Anhang nativ in einem neuen Tab statt nach einem asynchronen `fetch()` einen künstlichen Download-Klick auszulösen. Das manuelle Speicherhäkchen und die serverseitige Sperre vor Update/Rückkehr bleiben bestehen.
+- Testgerät vorher: COM13, USB-Seriell CH340, `192.168.0.154`, Firmware 1.8.10, Controller-ID-Suffix `842178`, Master. OTA-Update auf 1.8.11 über `/update`: PASS. Nachher dieselbe Controller-ID, IP und Master-Rolle.
+- Konfigurationserhalt: PASS; vor dem OTA gespeicherte lokale Sicherung liegt privat außerhalb des Repositorys. Danach stimmen lokale Konfiguration, gemeinsame Konfiguration und WLAN-Zustand beim vollständigen JSON-Vergleich überein. Die produktiven ESPs wurden nicht verändert.
+- Live-HTTP: `/update` liefert HTTP 200, Version 1.8.11 und den neuen direkten Link `/api/update-backup`. Der Sicherungs-Endpunkt lieferte HTTP 200, Format `AntennaControllerSafetyBackupV2` und `Content-Disposition` als Anhang; Inhalt und Zuordnung zu 1.8.11 / Controller-IP stimmen.
+- Browser-Klick auf den sichtbaren Sicherungslink im Benutzerbrowser: `OFFEN` bis zum angekündigten manuellen Klicktest. Der neue Link und der Endpunkt sind am ESP geprüft; die Browseroberfläche selbst wurde nicht automatisiert angeklickt.
+- GitHub-Veröffentlichung: PASS; `v1.8.11` ist neueste stabile Veröffentlichung mit genau einem Produkt-Asset. Anonymer Direktdownload `/releases/latest/download/firmware-esp32dev.bin`: 1.507.328 Byte; SHA-256 stimmt vollständig mit dem lokalen Paket überein.
+- Installierte Hilfsprogramme: PlatformIO Core 6.2.0 steht sowohl dem Benutzer als auch dem in der Projekt-Buildkette verwendeten Environment zur Verfügung; die vorherige Core-Versionswarnung ist behoben.
+- Frühere separate Prüfung: Das Diagnoseformular wurde am 10.10.2026 mit Firmware 1.8.10 Ende zu Ende versendet und der Eingang bestätigt. Siehe Versionshistorie; in diesem Update nicht erneut ausgeführt.
 
 Der am 10.10.2026 nachgetragene Meldeformular-Test wurde separat als Dokumentationscommit `79b9d9340fb0bdaeac265a3bf6815cf1454bae85` auf GitHub `main` veröffentlicht; Firmware und Geräte blieben dabei unverändert.
 
