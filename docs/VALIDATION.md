@@ -7,7 +7,7 @@
 - Build/Paket: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.448 / 327.680 Byte; Firmware 1.367.392 Byte; vollständiges OTA-Paket 1.507.328 Byte. UI Brotli 63.863 Byte + gzip 75.618 Byte; Reserve 379 Byte. SHA-256 `E031038ED6DF97FE131BC258F24FBBE00F4E8FDBA38F249A21116D2CBDBD0836`.
 - Paketbauer: JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich PASS.
 - Sichttest auf dem betroffenen Laptop nach Installation: OFFEN. Der Screenshot bestätigt den Fehler in v1.8.17, aber noch nicht die Korrektur.
-- GitHub-Veröffentlichung: OFFEN.
+- GitHub-Veröffentlichung: PASS; neuestes stabiles Release [v1.8.18](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.18). Tag zeigt auf Code-Commit `b18fdd2e4a26db48b00401c7b6549f9a23244d89`. Genau ein Asset `firmware-esp32dev.bin`, 1.507.328 Byte. Anonymer Direktdownload geprüft: SHA-256 stimmt mit dem lokalen Paket überein.
 
 ## Firmware 1.8.17 · Steuerfläche bei flachen Browserfenstern
 
