@@ -44,6 +44,7 @@ void RelayEngine::safeInit(){
 }
 void RelayEngine::emergencyOff(){
   if(motorTimer_) esp_timer_stop(motorTimer_);
+  restorePending_=false;
   bool wasMotor=state_.motorRunning;
   for(auto&r:cfg_->relays)if(r.enabled)setRelay(r,false);
   state_.motorRunning=false;state_.motorFunctionId="";runningRelay_="";pendingToken_="";motorGpio_=-1;motorTimerExpired_=false;
@@ -82,13 +83,17 @@ bool RelayEngine::testGpio(int gpio,String&err){
 }
 void RelayEngine::restore(bool restoreSelections){
   RuntimeState p=store_->loadState();
+  restorePending_=false;
   state_.stormMode=p.stormMode;
   if(p.motorRunning){store_->motorUnknown();state_.polarization="UNKNOWN";store_->addError("MOTOR_INTERRUPTED",RL(cfg_,"Stromausfall/Reset während H/V-Bewegung; Position unbekannt","Power loss/reset during H/V movement; position unknown"));}
   else state_.polarization=p.polarization;
   if(state_.stormMode){ emergencyOff(); state_.stormMode=true; applyStormOutputs(); return; }
   if(!restoreSelections){state_.activeSelections.clear();state_.activeAntennaId="";return;}
   auto saved=p.activeSelections;
-  state_.activeSelections.clear();state_.activeAntennaId="";store_->clearSelections();
+  state_.activeSelections.clear();state_.activeAntennaId="";
+  // Preserve the durable desired state if TX interlock temporarily prevents
+  // restoring outputs during boot. Retry once the interlock is released.
+  if(!saved.empty()&&txActive()){restorePending_=true;return;}
   for(const auto&a:saved){String e;execute(a.functionId,e);if(e.length())store_->addError("RESTORE_FAILED",a.group+": "+e);}
 }
 bool RelayEngine::execute(const String&id,String&err){
@@ -150,6 +155,7 @@ bool RelayEngine::clearGroup(const String&group,String&err){
   std::vector<ActiveSelection> kept;for(const auto&a:state_.activeSelections)if(a.group!=group)kept.push_back(a);state_.activeSelections=kept;state_.activeAntennaId=state_.activeSelections.empty()?"":state_.activeSelections[0].functionId;store_->saveSelection(group,"");return true;
 }
 void RelayEngine::loop(){
+  if(restorePending_&&!state_.stormMode&&!state_.motorRunning&&!txActive())restore(true);
   if(!state_.motorRunning)return;
   if(!motorTimerExpired_ && (int32_t)(millis()-motorEnd_)<0)return;
   auto*r=relay(runningRelay_);if(r)setRelay(*r,false);if(motorTimer_)esp_timer_stop(motorTimer_);motorTimerExpired_=false;motorGpio_=-1;state_.motorRunning=false;state_.polarization=pendingToken_;store_->motorFinished(state_.polarization);state_.motorFunctionId="";runningRelay_="";pendingToken_="";

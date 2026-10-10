@@ -1,6 +1,6 @@
 # Fehler- und Wunschmeldungen
 
-Die Firmware 1.8.7 ergänzt unter **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten noch Rufzeichen, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse oder Backups an. Freitext kann dennoch persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
+Die Firmware 1.8.8 enthält unter **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten noch Rufzeichen, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse oder Backups an. Freitext kann dennoch persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
 
 ## Versandablauf
 

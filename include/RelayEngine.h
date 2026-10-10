@@ -27,6 +27,7 @@ class RelayEngine {
   esp_timer_handle_t motorTimer_=nullptr;
   volatile bool motorTimerExpired_=false;
   int motorGpio_=-1; int motorOffLevel_=LOW;
+  bool restorePending_=false;
   static RelayEngine* instance_;
   static void motorTimerThunk(void* arg);
 

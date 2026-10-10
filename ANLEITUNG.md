@@ -70,6 +70,7 @@ Bei einer drehbaren Yagi erscheinen **Horizontal** und **Vertikal** nur bei der 
 Die Bedienseite behält auf Handy, Laptop und Monitor die gespeicherten Positionen der Anlagenteile bei. Bei kleinerem Fenster werden Raster und Schrift proportional verkleinert; die Karten werden nicht automatisch in eine andere Anordnung verschoben.
 
 Ein normaler Neustart stellt gespeicherte statische Schaltzustände wieder her. Eine unterbrochene Motor-Zeitfahrt wird aus Sicherheitsgründen nicht fortgesetzt; ihre Position gilt dann als unbekannt.
+Ist die TX-Sperre direkt nach dem Einschalten aktiv, bleiben die Relais zunächst aus. Der gespeicherte Zustand bleibt erhalten und wird wieder eingeschaltet, sobald die TX-Sperre frei ist.
 
 **Neueste Firmware direkt herunterladen** lädt mit einem Klick die einzige vollständige Firmwaredatei von GitHub herunter. Die Release-Seite muss nicht geöffnet und keine Datei daraus ausgewählt werden. Die Onlineprüfung installiert nichts automatisch. Danach startest du **Konfigurieren → Programm/Update → Manuelles OTA** und wählst die heruntergeladene Datei aus. Das Update schreibt nur in den jeweils inaktiven Programmplatz; WLAN und Geräteeinstellungen im LittleFS bleiben erhalten.
 

@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.7 / API 6. Die API-Routen des ESP bleiben unverändert; die Diagnoseansicht ergänzt nur den externen HTTPS-Meldeweg.
+Arbeitsstand: Firmware 1.8.8 / API 6. Bei Stromwiederkehr bleiben gespeicherte Schaltzustände erhalten, falls die TX-Sperre ihre Wiederherstellung beim Booten vorübergehend blockiert. Die API-Routen des ESP bleiben unverändert; die Diagnoseansicht ergänzt den externen HTTPS-Meldeweg.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
@@ -27,7 +27,7 @@ Die gemeinsame Konfiguration kann Radio-/Antennen-Endpunkte, vollständige Signa
 
 Node-lokale GPIO-, Board- und Relaiszuordnung darf durch globale Synchronisierung oder fremde Backups nicht überschrieben werden.
 
-Jeder Controller speichert seine aktiven statischen Schaltgruppen lokal in NVS. Nach einem Neustart initialisiert er zunächst alle konfigurierten Ausgänge in AUS-Stellung und stellt danach seine gespeicherten statischen Auswahlen wieder her. Das gilt für zugeordnete Master- und Follower-Geräte; jeder Knoten schaltet nur seine eigenen Relais. Eine unterbrochene H/V-Zeitaktion wird nicht fortgesetzt, weil die Rotorposition dabei unbekannt werden kann. Sie wird als `UNKNOWN` gemeldet.
+Jeder Controller speichert seine aktiven statischen Schaltgruppen lokal in NVS. Nach einem Neustart initialisiert er zunächst alle konfigurierten Ausgänge in AUS-Stellung und stellt danach seine gespeicherten statischen Auswahlen wieder her. Schlägt das wegen einer aktiven TX-Sperre fehl, bleibt der gespeicherte Zustand erhalten und die Wiederherstellung wird nach Freigabe erneut versucht; auch andere fehlgeschlagene Wiederherstellungen löschen den gespeicherten Zustand nicht. Das gilt für zugeordnete Master- und Follower-Geräte; jeder Knoten schaltet nur seine eigenen Relais. Eine unterbrochene H/V-Zeitaktion wird nicht fortgesetzt, weil die Rotorposition dabei unbekannt werden kann. Sie wird als `UNKNOWN` gemeldet.
 
 Build, Simulation und reale Mehrgerätebeobachtung werden getrennt in docs/VALIDATION.md dokumentiert.
 
