@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Arbeitsstand Firmware 1.8.15 / API 7
+# HTTP/JSON-API – Firmware 1.8.23 / API 7
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -22,9 +22,9 @@ GET/PUT /api/controller/config (PUT übernimmt im vollständigen Konfigurationso
 POST /api/controller/test-relay, /api/controller/restart, /api/controller/factory-reset
 
 ## WLAN / Update / externe API
-GET /api/update/check prüft das neueste stabile GitHub-Release. Der Aufruf zeigt nur die Version an und startet kein Update.
+GET /api/update/check prüft das neueste stabile GitHub-Release. Der Aufruf zeigt nur die Version an und startet kein Update. POST /api/update/install-latest lädt nach einer abgerufenen Sicherung ausschließlich `firmware-esp32dev.bin` aus dem neuesten stabilen GitHub-Release über TLS-Root-Prüfung direkt in die OTA-Partition. Die Browseroberfläche lädt vor dem Aufruf die Konfigurations- und WLAN-Sicherung herunter. Der ESP erstellt zusätzlich eine interne Sicherung und erhält LittleFS. Der Endpunkt aktualisiert ausschließlich den aufrufenden ESP; Slaves werden nicht automatisch aktualisiert.
 /api/wifi, /api/wifi/saved, /api/wifi/restore, /api/setup-mode
-/api/update/check, /api/update-backup, /api/ui-upload, /update, /rollback
+/api/update/check, /api/update-backup, /api/update/install-latest, /api/ui-upload, /update, /rollback
 GET /ext/status, POST /ext/execute
 
 Administrative Handler verwenden die konfigurierte Admin-Authentisierung, soweit im jeweiligen Route-Handler registriert. Interne Verbundauthentisierung und lokale Safety sind getrennte Themen. Der Verbundmarker ist keine kryptografische Node-Authentisierung.

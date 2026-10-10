@@ -41,9 +41,9 @@ Beim ersten Flashen eines neuen Gerätes muss zusätzlich das LittleFS-Dateisyst
 
 ## Updates
 
-Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Die Schaltfläche **Neueste Firmware direkt herunterladen** lädt die einzige vollständige Firmware-Datei direkt herunter, ohne die Release-Seite zu öffnen oder ein Asset auszuwählen. Danach startest du das manuelle OTA am Gerät.
+Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Wird eine neuere Version gefunden, startet **Jetzt aktualisieren** mit einem Klick zuerst den Download einer geprüften Sicherung dieses ESPs und danach die Firmwareinstallation direkt aus GitHub. Es muss keine Firmwaredatei mehr gesucht oder ausgewählt werden. Die Sicherung wird im Browser heruntergeladen; zusätzlich speichert der ESP vor dem Flashen eine interne Sicherung. Die LittleFS-Datenpartition mit der Konfiguration wird nicht formatiert.
 
-Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die gemeinsame Anlagenkonfiguration und dessen gespeicherte WLANs. Im Verbund sammelt der Master die lokalen Einstellungen der Slaves nicht ein: Öffne deshalb jeden ESP über seine eigene Adresse und lade dort eine eigene Sicherungsdatei herunter. Controller-ID und IP stehen im Dateinamen und in der Datei.
+Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die gemeinsame Anlagenkonfiguration und dessen gespeicherte WLANs. Im Verbund sammelt der Master die lokalen Einstellungen der Slaves nicht ein: Öffne deshalb jeden ESP über seine eigene Adresse und sichere ihn separat. Die automatische Ein-Klick-Aktualisierung aktualisiert nur den geöffneten ESP. Controller-ID und IP stehen im Sicherungsdateinamen und in der Datei.
 
 ## Projektunterlagen
 

@@ -1,5 +1,13 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.23 · Ein-Klick-OTA
+
+- Funktion: Die OTA-Oberfläche installiert die neueste stabile Firmware direkt vom ESP aus GitHub. Ein Dateiauswahldialog ist nicht mehr nötig. Der bewusste Klick auf „Jetzt aktualisieren“ löst zuerst den Browserdownload einer controllerbezogenen Sicherung aus; vor dem Flashen wird zusätzlich eine geprüfte interne Sicherung erstellt. Ein TLS-Vertrauenspaket beschränkt den Download auf die aktuellen GitHub-Release-Zertifikatsketten. Firmware-OTA aktualisiert weiterhin nur den geöffneten Controller; automatische Slave-Updates sind nicht Bestandteil dieser Version.
+- Build: PASS mit PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 3.20017.241212+sha.dcc1105b und Xtensa-GCC 8.4.0+2021r2-patch5. RAM 52.576 / 327.680 Byte; Firmwareabbild 1.365.120 Byte.
+- OTA-Paket: PASS; 1.507.328 Byte in 1.507.328-Byte-Slot, verbleibende Reserve 4.603 Byte. UI Brotli 62.967 Byte + gzip 74.562 Byte. Paket-SHA-256 `E6D0133DAEECA120F5525887591BEE6883382188C4061E7AF95BD4900264FBF1`.
+- Browser-JavaScript-Syntax: PASS mit `node --check data/app.js`. Paketbauer-Prüfungen für Footer und UI-CRC: PASS.
+- Automatischer Firmwareabruf und Neustart am realen ESP: OFFEN; der neue Endpunkt ist noch nicht auf dem Test-ESP ausgeführt. Keine Live-Installation oder GitHub-Veröffentlichung in diesem Arbeitsgang bestätigt.
+
 ## Firmware 1.8.22 · Ganze Breite und freie Signalwegführung
 
 - Fehlerbehebung: Die Gesamtfläche wird weiterhin einheitlich skaliert, passt ihre logische Breite jetzt aber an das tatsächliche Browserfenster an. Die vorherige Höhenbegrenzung ließ auf breiten Monitoren links und rechts unnötig viel freie Fläche. Die Rasterpositionen bleiben gleich; browser viewport in CSS-Pixeln berücksichtigt automatisch Windows-Skalierung und Browserzoom, deshalb gibt es keine getrennten Full-HD-/4K-Builds.
