@@ -137,6 +137,19 @@ Ergebnisse lauten verständlich etwa **„Geprüft – kein Softwarekonflikt gef
 
 Nach erfolgreicher Einrichtung fragt die App, ob sie eine Desktop-Verknüpfung anlegen soll. Eine fest eingetragene IP kann sich ändern. Bevorzugt wird eine Verknüpfung, die den Controller im lokalen Netz erneut sucht; alternativ wird eine Router-reservierte IP beziehungsweise ein funktionierender lokaler Hostname verwendet. Die App erklärt den Unterschied einfach und legt nichts ohne Zustimmung an.
 
+### 3.9 Fehler melden (Firmware und Windows-App)
+
+In der Firmware-Weboberfläche und in der Windows-App gibt es unter **Diagnose** die gut sichtbare Aktion **Fehler melden**. Sie führt in einfachen Fragen durch den Bericht: Was ist passiert? Was wurde erwartet? Bei welchem Schritt trat es auf? Seit wann beziehungsweise nach welcher Änderung?
+
+- Beide Oberflächen erzeugen ein gemeinsames, versioniertes Diagnosebericht-Format. Die Firmware kann einen Bericht im Browser zum Herunterladen bereitstellen; die App kann Berichte von einem oder mehreren erreichbaren ESPs zusammenstellen.
+- Der Bericht enthält standardmäßig nur für die Fehlersuche nötige technische Angaben: Firmware-/App-/API-Version, ESP-Modell, anonymisierte Gerätezahl/Rollen, Betriebssystem- und USB-Erkennung soweit relevant, Fehlercodes, Ergebnis der Grunddiagnose und einen begrenzten, geheimnisbereinigten Ereignisausschnitt.
+- Standardmäßig ausgeschlossen sind WLAN-Kennwörter, WLAN-Namen, Rufzeichen, PLZ, private IP-Adressen, MAC-Adressen, vollständige Anlagen-/GPIO-Konfigurationen, Backups und freie Notizen mit privaten Angaben. Notizen werden nur aufgenommen, wenn der Nutzer sie sieht und ausdrücklich bestätigt.
+- Vor dem Teilen zeigt die App/Firmware eine Vorschau und weist auf mögliche private Angaben hin. Es gibt keine automatische Telemetrie und keinen stillen Upload. Der Nutzer kann den Bericht lokal speichern, kopieren oder bewusst über einen angebotenen Kontaktweg weitergeben.
+- Als Versandweg kann die App eine vorbereitete E-Mail an den Projektkontakt oder eine GitHub-Issue-Seite öffnen. Das Absenden beziehungsweise Veröffentlichen erfolgt erst nach Prüfung und eigener Aktion des Nutzers. Für Nutzer ohne E-Mail/GitHub bleibt der lokale Download möglich.
+- Ein Bericht hat Größen- und Zeitgrenzen, Versionsfeld, Erstellungsdatum, Zufallsfallnummer und eine verständliche Kurzfassung. Keine unbegrenzten seriellen Logs oder kompletten Flash-/Konfigurationsdumps anhängen.
+- Kann die Software eine Ursache nicht feststellen oder Hardware nicht sehen, muss der Bericht genau das sagen. Kein automatisch formulierter Bericht darf aus einem Softwarehinweis eine bestätigte defekte Hardware ableiten.
+- Fehlerberichte dürfen nie Voraussetzung für Update, Wiederherstellung oder normalen Betrieb sein.
+
 ## 4. Windows-Unterstützung und Paketierung
 
 - Gewünschter Zielbereich: Windows 7 SP1 bis Windows 11; 32-/64-Bit-Abdeckung und Mindestupdates müssen festgelegt werden.
@@ -157,6 +170,7 @@ Vor App-Implementierung ist ein versionierter Gerätevertrag erforderlich:
 - Konfiguration exportieren/importieren, Backup-Schema und Integritätsprüfung
 - gemeinsame gegenüber lokalen Konfigurationsfeldern
 - Update- und Wiederherstellungszustände, Fehlercodes und bestätigter Neustart
+- gemeinsames Diagnosebericht-Schema, Fehlercodes und definierte Geheimnisbereinigung
 - Versionsverhandlung, Schema-Migration und zulässiger Rückschritt
 - sichere Aktionen, die Bestätigung verlangen
 
@@ -181,7 +195,7 @@ Der ESP bestätigt nach Import die tatsächlich gespeicherten Daten durch Readba
 4. **Factory- und OTA-Artefakte:** eindeutig benannte, signierte Pakete mit Manifest, Modell, Version, Flashadressen und Hash bauen.
 5. **Windows-Kompatibilitätsprobe:** Windows 7 SP1, Windows 10 und Windows 11 mit USB-Brücken, TLS/GitHub, COM-Erkennung und fehlenden Treibern untersuchen; danach GUI-Framework/Paketierung entscheiden.
 6. **App-Grundfunktionen:** Erkennung, Bestätigung, Sicherung, Update und Ergebnisbericht bauen.
-7. **Einrichtung und Diagnose:** Konfigurationsassistent, USB-/Handy-Provisionierung, Einzel-/Verbunddiagnose und optionale Desktop-Verknüpfung ergänzen.
+7. **Einrichtung, Diagnose und Fehlerberichte:** Konfigurationsassistent, USB-/Handy-Provisionierung, Einzel-/Verbunddiagnose, gemeinsames anonymisiertes Fehlerbericht-Format, Vorschau und optionale Desktop-Verknüpfung ergänzen.
 8. **Verbund- und Rettungsprüfungen:** fehlender Slave, wechselnde IP, falsches Backup, ältere Version, fehlgeschlagener Download, Abbruch beim Schreiben und Wiederherstellung nach Factory-Install abdecken.
 9. **Dokumentieren und veröffentlichen:** signiertes App-Paket, passende Firmware, Prüfprotokoll, einfache Anleitung, Lizenz-/Drittherstellerhinweise und Release-Notizen synchron aus einem geprüften Commit veröffentlichen.
 
@@ -199,6 +213,8 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Firmware-, Konfigurations- und Betriebssystem-Inkompatibilitäten sicher stoppen;
 - Signatur/Hash, Version, Modell und Flashlayout jedes Pakets geprüft werden;
 - Strom-/USB-Abbruch einen dokumentierten und praktisch geprüften Rettungsweg besitzt;
+- Firmware-Weboberfläche und App erzeugen denselben versionierten Bericht, der standardmäßig keine WLAN-, Identitäts-, Standort- oder Anlagengeheimnisse enthält;
+- Berichtvorschau, lokale Speicherung und bewusstes Teilen funktionieren; kein Bericht wird automatisch versandt;
 - Diagnosen keine unerwarteten Relais-/Motoraktionen auslösen;
 - Datenschutz, Lizenz, Copyright, Drittanbieterhinweise und verständliche Anleitung vollständig sind;
 - die tatsächlich unterstützten Windows- und ESP-Versionen auf realen Systemen geprüft und genannt sind.
