@@ -345,3 +345,13 @@ Prüfe vor dem Upload Quelltext, Dokumente, Binärdateien, Anhänge und erreichb
 Am 10.10.2026 hat der Betreiber die Fehler-/Wunschmeldung direkt in der ESP-Weboberfläche ausgefüllt, den Inhalt in der HTTPS-Vorschau bestätigt und abgesendet. Der Betreiber meldete den Eingang im GMX-Postfach; der Screenshot zeigt die empfangene Nachricht vom konfigurierten Absender, die Firmware-Version 1.8.10 und den expliziten Satz, dass keine Konfiguration angehängt wurde. Damit ist die zuvor offene Prüfung „Bericht absenden“ für den erfolgreichen Normalfall `PASS`. Der Screenshot und die privaten Formularwerte werden nicht öffentlich abgelegt. Fehlerszenarien, Limits und der Download-Fallback bleiben `OFFEN`.
 
 Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und bleiben lokal außerhalb der Veröffentlichung.
+
+## Test-ESP: vollständiges Löschen und Jungfrau-Flash am 10.10.2026
+
+- Auftrag: ausschließlich den ausgewiesenen Test-ESP vollständig löschen und die Standardfirmware ohne vorhandene Anlagen-/WLAN-Konfiguration flashen, damit der Betreiber die Sicherung anschließend manuell einspielen kann.
+- Vorher-Sicherung: PASS; aktuelle `AntennaControllerSafetyBackupV2` mit Firmware 1.8.12, Controller-ID passend zum ESP, vollständige lokale/gemeinsame Konfiguration und WLAN-Zustand. Die persönliche Datei liegt außerhalb des Repositories auf dem Desktop des Betreibers; ihr Inhalt und ihre Geheimnisse sind nicht öffentlich dokumentiert.
+- Identitätsprüfung vor Löschen: COM13 CH340, ESP32-D0WD-V3, MAC stimmt mit der im Sicherungsmetadatum enthaltenen Controller-ID überein. Vollständiges Flash-Erase mit esptool 5.3.1: PASS.
+- Standardabbild anschließend per PlatformIO Core 6.2.0 aufgespielt: Firmware 1.8.12, 1.362.640 Byte. Neues LittleFS-Abbild aus den Produktdateien erstellt und geschrieben: 1.048.576 Byte; Flash-Readback-Hashprüfung der beiden Uploads PASS. WLAN-Zugangsdaten, NVS-Status und LittleFS-Konfiguration wurden durch das vollständige Löschen entfernt; frisches LittleFS enthält nur die Standard-Webdateien.
+- Erststart: das Einrichtungs-WLAN `AntennaController-842178` wurde in der WLAN-Suche sichtbar. Damit ist der Jungfrau-Startweg aktiv. Netzwerk-Readback von Konfigurationslisten nach einer Verbindung mit dem Einrichtungs-WLAN: noch `OFFEN`.
+- Konfigurationsimport wurde nicht durch Codex ausgelöst. Der Betreiber spielt die Sicherungsdatei selbst über **Konfigurieren → Sicherheit → Sicherung / Wiederherstellung → Konfiguration importieren** ein. Manuelle Schritte wurden in `ANLEITUNG.md` und `docs/FRESH-INSTALL.md` ergänzt.
+- Keine produktiven ESPs verändert.

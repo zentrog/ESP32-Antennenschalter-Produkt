@@ -21,3 +21,7 @@ Technische Werte wie Controller-ID, neutraler Gerätename, Firmwareversion und b
 5. Notiere nur Version, Buildumgebung und die Anzahl der Einträge. Keine Kennwörter, Rufzeichen oder privaten Gerätekonfigurationen in ein öffentliches Prüfprotokoll schreiben.
 
 Der Test verändert oder löscht keine Konfiguration der bereits eingerichteten Anlagen. Ergebnisse nur nach tatsächlicher Ausführung in docs/VALIDATION.md eintragen.
+
+## Manuelle Wiederherstellung einer Gerätesicherung
+
+Nach einem vollständigen Flash-Löschen erscheint das offene Einrichtungs-WLAN `AntennaController-XXXXXX`. Zuerst über `http://192.168.4.1` ein WLAN einrichten, damit die Hauptoberfläche im normalen Netzwerk erreichbar wird. Dann dort **Konfigurieren → Sicherheit → Sicherung / Wiederherstellung → Konfiguration importieren** öffnen, die zum Controller passende Sicherungsdatei auswählen und den Import bestätigen. Die JSON-Sicherung enthält lokale und gemeinsame Konfiguration sowie WLAN-Daten.
