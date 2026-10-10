@@ -1,6 +1,6 @@
 #pragma once
 
-#define ANTCTRL_VERSION "1.8.17"
+#define ANTCTRL_VERSION "1.8.18"
 #define ANTCTRL_API_VERSION 7
 #define ANTCTRL_BUILD_DATE __DATE__ " " __TIME__
 

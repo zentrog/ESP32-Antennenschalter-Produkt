@@ -1,5 +1,14 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.18 · Skalierung nach Karten- und Fenstergröße
+
+- Anlass: Betreiber-Screenshot nach 1.8.17 zeigte weiterhin abgeschnittene Gerätenamen und Bedienelemente. Die bisherige Schriftregel berücksichtigte die Gesamtfenstergröße; Karten und Tasten hatten aber feste Mindesthöhen, die eine einzelne Rasterzeile überfüllten.
+- Änderung: Namen und Bedienelemente skalieren anhand der tatsächlichen Höhe und Breite ihrer Rasterkarte; feste Mindesthöhen entfallen. Wetter und Newsticker verkleinern Schrift und Abstände bei Browserhöhen bis 1100 CSS-Pixeln. Rasterpositionen und Signalwege bleiben erhalten. CSS-Cachemarker und Firmwareversion sind auf 1.8.18 gesetzt.
+- Build/Paket: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.448 / 327.680 Byte; Firmware 1.367.392 Byte; vollständiges OTA-Paket 1.507.328 Byte. UI Brotli 63.863 Byte + gzip 75.618 Byte; Reserve 379 Byte. SHA-256 `E031038ED6DF97FE131BC258F24FBBE00F4E8FDBA38F249A21116D2CBDBD0836`.
+- Paketbauer: JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich PASS.
+- Sichttest auf dem betroffenen Laptop nach Installation: OFFEN. Der Screenshot bestätigt den Fehler in v1.8.17, aber noch nicht die Korrektur.
+- GitHub-Veröffentlichung: OFFEN.
+
 ## Firmware 1.8.17 · Steuerfläche bei flachen Browserfenstern
 
 - Ziel: Bei geringer verfügbarer Fensterhöhe werden Schrift, Gerätekarten, Bedienelemente, Wetter, Newsticker und Seitenrahmen gemeinsam verkleinert. Die gespeicherte 12×6-Anordnung und Signalwege bleiben unverändert.

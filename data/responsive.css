@@ -67,6 +67,24 @@ body.control-mode .logical-layout-grid .logical-radio-select{font-size:clamp(8px
 .footer-legal:hover,.footer-legal:focus-visible{color:#fff}
 .footer-legal:focus-visible{outline:2px solid #9ee8ff;outline-offset:2px}
 body.control-mode #footerRights,body.control-mode #footerLicense{font-size:clamp(.62rem,.68vw,.78rem);color:#c4d1de}
+/* Die Systemkacheln koennen 1 Rasterzeile hoch sein. Skalierung deshalb an
+   der realen Kachel ausrichten, nicht nur an der Bildschirmgroesse. */
+body.control-mode .logical-layout-grid .logical-device{container-type:size}
+body.control-mode .logical-layout-grid .logical-device>strong,
+body.control-mode .logical-layout-grid .logical-device .logical-radio-select,
+body.control-mode .logical-layout-grid .logical-device .logical-antenna-main{
+ font-size:clamp(8px,min(var(--logical-font,20px),12cqw,22cqh),var(--logical-font,20px));
+ min-height:0!important;height:auto;line-height:1.08;padding:2px 4px;
+ white-space:normal;overflow-wrap:anywhere
+}
+body.control-mode .logical-layout-grid .logical-device .logical-category,
+body.control-mode .logical-layout-grid .logical-device .logical-owner,
+body.control-mode .logical-layout-grid .logical-device .logical-group-tag{font-size:clamp(6px,8cqh,.72rem);line-height:1.05}
+body.control-mode .logical-layout-grid .logical-device .device-route-badges span{font-size:clamp(6px,6cqh,.65rem);line-height:1;padding:1px 3px}
+body.control-mode .logical-layout-grid .logical-device .logical-bands{font-size:clamp(6px,5.8cqh,.62rem);line-height:1.05}
+body.control-mode .logical-layout-grid .logical-device .logical-action,
+body.control-mode .logical-layout-grid .logical-device .power-toggle-button{font-size:clamp(7px,7cqh,.78rem)!important;line-height:1.05;min-height:0!important;padding:1px 3px!important}
+body.control-mode .logical-layout-grid .logical-device.logical-compact .logical-category{display:none}
 /* Kompakte, flache Browserfenster: Text und Bedienelemente muessen in ihre
    tatsaechlich verfuegbare Rasterzelle passen, statt an 30/44px-Minima zu clippen. */
 @media(max-height:500px){
@@ -83,14 +101,7 @@ body.control-mode #footerRights,body.control-mode #footerLicense{font-size:clamp
  body.control-mode .button-canvas.logical-mode{padding:2px!important;gap:2px}
  body.control-mode .logical-mode .live-route-toolbar{padding:2px 4px;gap:3px}
  body.control-mode .route-selection-state{min-height:0;padding:2px 4px;font-size:clamp(.55rem,1vw,.68rem)}
- body.control-mode .logical-layout-grid .logical-device{font-size:clamp(8px,min(var(--logical-font,20px),2vw,2.8vh),20px);padding:1px;gap:0;border-width:1px;border-radius:5px}
- body.control-mode .logical-device .logical-radio-select,
- body.control-mode .logical-device .logical-antenna-main{min-height:0;height:auto;padding:1px 2px;font-size:inherit;line-height:1;white-space:normal;overflow-wrap:anywhere}
- body.control-mode .logical-device .device-route-badges{gap:0;margin-top:0}
- body.control-mode .logical-device .device-route-badges span{padding:0 2px;font-size:.5em;line-height:1}
- body.control-mode .logical-device .logical-actions{gap:1px;margin-top:0}
- body.control-mode .logical-device .logical-action{min-height:0!important;padding:0 1px!important;font-size:.58em!important;line-height:1}
- body.control-mode .logical-device .power-toggle-button{min-height:0;padding:0;font-size:.58em;line-height:1}
+ body.control-mode .logical-layout-grid .logical-device{padding:1px;gap:0;border-width:1px;border-radius:5px}
  body.control-mode .weather-head,body.control-mode .weather-current,body.control-mode .weather-today{padding-top:1px;padding-bottom:1px}
  body.control-mode .weather-icon{font-size:1rem}
  body.control-mode .weather-metrics{gap:2px}
@@ -98,6 +109,23 @@ body.control-mode #footerRights,body.control-mode #footerLicense{font-size:clamp
  body.control-mode .news{padding:2px 4px}
  body.control-mode .ticker-row{min-height:18px;padding:0 2px;gap:3px}
  body.control-mode footer{padding:1px 3px;gap:2px 5px;font-size:clamp(.48rem,.7vw,.58rem)}
+}
+@media(min-height:501px) and (max-height:1100px){
+ body.control-mode .weather-head{padding-block:clamp(2px,.45vh,5px)}
+ body.control-mode .weather-current{gap:clamp(3px,.8vw,9px);padding-block:clamp(2px,.6vh,6px)}
+ body.control-mode .weather-icon{font-size:clamp(1rem,3vh,2rem)}
+ body.control-mode .weather-temp strong{font-size:clamp(.9rem,2vh,1.35rem)}
+ body.control-mode .weather-temp span,
+ body.control-mode .weather-metrics span,
+ body.control-mode .weather-today{font-size:clamp(.58rem,1.35vh,.76rem)}
+ body.control-mode .weather-metrics{gap:clamp(2px,.55vw,5px)}
+ body.control-mode .weather-metrics span{padding:clamp(1px,.45vh,4px) clamp(2px,.4vw,7px)}
+ body.control-mode .weather-attribution{font-size:clamp(.45rem,.9vh,.54rem);padding-bottom:2px}
+ body.control-mode .news{padding:clamp(2px,.9vh,7px) clamp(4px,.7vw,9px)}
+ body.control-mode .ticker-row{min-height:clamp(20px,3.4vh,34px);padding:clamp(1px,.35vh,3px) clamp(2px,.4vw,5px)}
+ body.control-mode .ticker-source{font-size:clamp(.58rem,1.25vh,.72rem)}
+ body.control-mode .ticker-track,body.control-mode .ticker-static{font-size:clamp(.62rem,1.5vh,.86rem)}
+ body.control-mode .ticker-row time{font-size:clamp(.5rem,1.05vh,.62rem)}
 }
 .report-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .report-form>label{display:grid;gap:4px;color:#b8c9d8;font-size:.9rem}
