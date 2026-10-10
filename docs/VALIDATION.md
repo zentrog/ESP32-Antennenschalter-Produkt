@@ -1,4 +1,4 @@
-# Prüfprotokoll – Produktversion 1.8.6
+# Prüfprotokoll – Produktversion 1.8.7
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -138,7 +138,7 @@ Das öffentliche Release wurde am 10.10.2026 erstellt. Der Direktdownload ist ge
 | GitHub-Hauptzweig enthält v1.8.4 | PASS; Release-Tag zeigt auf den veröffentlichten Stand |
 | GitHub-Release v1.8.4 mit beiden damaligen OTA-Dateien | PASS; historische Release-Fassung |
 
-## Arbeitsstand 1.8.7 – noch nicht veröffentlicht
+## Veröffentlichung 1.8.7
 
 - Diagnose ergänzt ein freiwilliges Formular für Fehler und Wünsche. Vor dem Senden zeigt der externe HTTPS-Endpunkt eine Vorschau mit zweiter Bestätigung; bei Nichterreichbarkeit bleibt der lokale JSON-Download verfügbar.
 - Der Bericht enthält nur vom Benutzer ausgefüllte Felder und die Firmware-Version. WLAN, Rufzeichen, PLZ, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse und Sicherungen werden nicht automatisch angehängt.
@@ -150,15 +150,16 @@ Das öffentliche Release wurde am 10.10.2026 erstellt. Der Direktdownload ist ge
 | JavaScript-Syntax `data/app.js` | PASS; `node --check` |
 | PlatformIO `esp32dev` | PASS; RAM 52.960 / 327.680 Byte (16,2 %), Firmware-ELF 1.451.269 / 1.507.328 Byte (96,3 %) |
 | Vollständiges OTA-Paket | PASS; 1.507.328 Byte, Roh-Firmware 1.457.840 Byte, Brotli-Weboberfläche 48.652 Byte, 800 Byte Reserve |
-| ESP32-Image | PASS; esptool 4.9.0, gültige Prüfsumme und Validierungshash |
+| ESP32-Image | PASS; esptool 4.9.0, gültige Prüfsumme und Validierungshash für genau dieses Paket-SHA |
 | SHA-256 `firmware-esp32dev.bin` | `9dd2658fb53ac48e4e2870f459be088afdc4e609ad0f3953ffeb9eacbd8258f0` |
 | Mail-Endpunkt auf do1anb.de | OFFEN; Live-Abruf liefert HTTP 404. Die Upload-Datei enthält ausschließlich `index.php`; Serverkonfiguration und echter Versandtest fehlen noch. |
 | Berichtformular im echten Browser und SMTP-Zustellung | OFFEN; Hosting-Endpunkt muss zuerst eingerichtet werden. |
 | OTA und Schaltlogik an den echten ESPs | OFFEN; noch kein Gerät mit diesem Arbeitsstand aktualisiert oder geschaltet. |
 | Handy-, Laptop- und 4K-Darstellung | OFFEN; keine Sichtprüfung mit diesen realen Bildschirmgrößen durchgeführt. |
-| GitHub v1.8.7 Release und Direktdownload | OFFEN; veröffentlicht ist weiterhin v1.8.6. |
+| GitHub-Release `v1.8.7` | PASS; öffentlich, stabil und als neueste Version markiert; genau ein Asset `firmware-esp32dev.bin` |
+| Öffentlicher Direktdownload `/releases/latest/download/firmware-esp32dev.bin` | PASS; 1.507.328 Byte, SHA-256 stimmt mit lokalem Paket überein |
 
-Der lokale Build wurde am 10.10.2026 erneut ausgeführt. Wegen nur 800 Byte freiem Platz im festen OTA-Slot darf jede weitere Firmware- oder Oberflächenänderung erneut gegen denselben Paketbauer geprüft werden. Die hier aufgeführten offenen Geräte- und Hostingprüfungen dürfen nicht als bestanden dargestellt werden.
+Der lokale Build und die öffentliche Downloadprüfung wurden am 10.10.2026 ausgeführt. Der Firmware-Quellcommit ist `996f159b94ab92aedfdbec9b533d436d96d1350b`. Wegen nur 800 Byte freiem Platz im festen OTA-Slot muss jede weitere Firmware- oder Oberflächenänderung erneut gegen denselben Paketbauer geprüft werden. Die hier aufgeführten offenen Geräte- und Hostingprüfungen dürfen nicht als bestanden dargestellt werden.
 
 ## Schutzregeln für den manuellen Updateversuch
 
