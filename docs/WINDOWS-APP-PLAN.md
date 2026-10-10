@@ -147,8 +147,11 @@ Name und Rückkontakt sind optionale, getrennte Felder. Der Nutzer kann etwa Nam
 - Der Bericht enthält standardmäßig nur für die Fehlersuche nötige technische Angaben: Firmware-/App-/API-Version, ESP-Modell, anonymisierte Gerätezahl/Rollen, Betriebssystem- und USB-Erkennung soweit relevant, Fehlercodes, Ergebnis der Grunddiagnose und einen begrenzten, geheimnisbereinigten Ereignisausschnitt.
 - Standardmäßig ausgeschlossen sind WLAN-Kennwörter, WLAN-Namen, Rufzeichen, PLZ, private IP-Adressen, MAC-Adressen, vollständige Anlagen-/GPIO-Konfigurationen und Backups. Freitext, Name und Rückkontakt werden nur nach eigener Eingabe des Nutzers aufgenommen.
 - Vor dem Teilen zeigt die App/Firmware eine vollständige Vorschau und weist darauf hin, dass selbst eingegebener Text private Daten oder Zugangsdaten enthalten kann. Name, Kontakt und Beschreibung lassen sich vor dem Erstellen einzeln entfernen oder ändern. Eine automatische Erkennung möglicher Geheimnisse darf nur warnen und ersetzt nicht die Nutzerprüfung.
-- Es gibt keine automatische Telemetrie und keinen stillen Upload. Der Nutzer kann den Bericht lokal speichern, kopieren oder bewusst über einen angebotenen Kontaktweg weitergeben. Vor dem Öffnen von E-Mail oder GitHub wird klar angezeigt, welche Inhalte die externe Anwendung erhält.
-- Als Versandweg kann die App eine vorbereitete E-Mail an den Projektkontakt oder eine GitHub-Issue-Seite öffnen. Das Absenden beziehungsweise Veröffentlichen erfolgt erst nach Prüfung und eigener Aktion des Nutzers. Für Nutzer ohne E-Mail/GitHub bleibt der lokale Download möglich.
+- Der bevorzugte einfache Versand ist eine ausdrücklich vom Nutzer gestartete **„Bericht prüfen und per E-Mail senden“**-Aktion über einen Projekt-E-Mail-Dienst mit HTTPS. Dafür braucht der Nutzer kein eingerichtetes E-Mail-Programm. Nach Vorschau und ausdrücklicher Zustimmung sendet die App den gewählten Bericht an den Projektkontakt und zeigt eine Versandbestätigung oder verständliche Fehlermeldung.
+- Die Firmware-Weboberfläche bietet denselben Ablauf, soweit sichere HTTPS-Übertragung vom Browser aus möglich ist. Da die ESP-Webseite derzeit lokal über HTTP laufen kann, muss die Umsetzung den Übertragungsweg und die Integrität der angezeigten Einwilligung prüfen. Wenn kein sicherer Versand möglich ist, darf sie nicht still auf unsichere Übertragung ausweichen; sie bietet dann lokalen Download und vorbereitete E-Mail als Alternative.
+- E-Mail-Programm und GitHub bleiben optionale Wege. Ein `mailto:` allein ist kein verlässlicher Hauptweg, weil ein E-Mail-Programm fehlen oder nicht eingerichtet sein kann. Die App darf alternativ eine vorbereitete E-Mail oder GitHub-Issue-Seite öffnen; das Teilen erfolgt erst nach Prüfung und eigener Aktion des Nutzers.
+- Der E-Mail-Dienst muss Größenlimits, Missbrauchsschutz und Ratenbegrenzung besitzen, Empfänger/Verarbeitung transparent nennen und Berichte nicht dauerhaft speichern. Unvermeidbare technische Protokolle und deren Aufbewahrungszeit müssen vor Start festgelegt und im Datenschutzhinweis erklärt werden. Kein Zugangsschlüssel für den E-Mail-Dienst darf im ESP, Desktopprogramm oder öffentlichen Repository eingebettet sein.
+- Lokaler Download bleibt immer als Ausweichweg möglich; bei fehlender Internetverbindung kann der Nutzer den Bericht später senden. Fehlerbericht ist nie Voraussetzung für Update, Wiederherstellung oder normalen Betrieb.
 - Ein Bericht hat Größen- und Zeitgrenzen, Versionsfeld, Erstellungsdatum, Zufallsfallnummer und eine verständliche Kurzfassung. Keine unbegrenzten seriellen Logs oder kompletten Flash-/Konfigurationsdumps anhängen.
 - Kann die Software eine Ursache nicht feststellen oder Hardware nicht sehen, muss der Bericht genau das sagen. Kein automatisch formulierter Bericht darf aus einem Softwarehinweis eine bestätigte defekte Hardware ableiten.
 - Fehlerberichte dürfen nie Voraussetzung für Update, Wiederherstellung oder normalen Betrieb sein.
@@ -218,7 +221,8 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Strom-/USB-Abbruch einen dokumentierten und praktisch geprüften Rettungsweg besitzt;
 - Firmware-Weboberfläche und App erzeugen denselben versionierten Bericht, der standardmäßig keine WLAN-, Identitäts-, Standort- oder Anlagengeheimnisse enthält;
 - eigene Fehlerbeschreibung, Wünsche/Verbesserungsideen sowie Name und Rückkontakt können freiwillig eingegeben, einzeln entfernt und vor dem Teilen vollständig geprüft werden;
-- Berichtvorschau, lokale Speicherung und bewusstes Teilen funktionieren; kein Bericht wird automatisch versandt;
+- Berichtvorschau, lokaler Download und bewusster Versand funktionieren auch ohne lokales E-Mail-Programm; kein Bericht wird ohne ausdrückliche Bestätigung versandt;
+- der HTTPS-E-Mail-Dienst speichert keine vollständigen Fehlerberichte dauerhaft, schützt den E-Mail-Zugangsschlüssel und zeigt nach dem Senden Erfolg oder einen brauchbaren Fehler;
 - Diagnosen keine unerwarteten Relais-/Motoraktionen auslösen;
 - Datenschutz, Lizenz, Copyright, Drittanbieterhinweise und verständliche Anleitung vollständig sind;
 - die tatsächlich unterstützten Windows- und ESP-Versionen auf realen Systemen geprüft und genannt sind.
@@ -233,6 +237,7 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Welches Provisionierungsprotokoll wird über USB genutzt; unterstützt Firmware bereits einen sicheren Einrichtungs-Hotspot und QR-Code?
 - Welche Wiederherstellung auf ESP-Ersatzhardware mit anderer MAC ist zulässig und wie werden neue Identitäten verteilt?
 - Welche Angaben sind wirklich zwingend, welche optional, und welche Prüfregeln sind pro Anlagenprofil konfigurierbar?
+- Wo wird der sichere HTTPS-E-Mail-Dienst betrieben, welche Minimaldaten verarbeitet er, wie wird Missbrauch begrenzt und wie lange bleiben technische Versandprotokolle erhalten?
 - Welche Lizenz gilt für Anwendung, Firmware, Dokumentation und abgeleitete Komponenten; wie werden Drittbeiträge behandelt und wer hält Veröffentlichungsschlüssel? Projektkontakt/gewünschte Copyright-Angabe sind vom Betreiber benannt; die konkrete Lizenz ist noch nicht gewählt.
 
 ## 10. Umsetzungshistorie
