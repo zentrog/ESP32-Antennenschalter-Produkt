@@ -125,9 +125,13 @@ Der Release wurde am 09.10.2026 erstellt. Die erfolgreiche öffentliche Direktdo
 | Vollständiges OTA-Paket `firmware-esp32dev.bin` | PASS; 1.507.328 Byte, Firmware 1.457.200 Byte, gebündelte Webdateien 48.640 Byte, 1.452 Byte Reserve |
 | ESP32-Imageprüfung | PASS; esptool 4.9.0, Prüfsumme und Validierungshash gültig |
 | SHA-256 `firmware-esp32dev.bin` | `e59837d962d002ef3851e9c28aa7c23f57472c6ea203583de881f9b77f2ec5b4` |
-| GitHub-Release und öffentlicher Direktdownload | OFFEN |
+| GitHub-Release `v1.8.6` | PASS; öffentlich, stabil, neueste Version, genau ein Asset `firmware-esp32dev.bin` |
+| Öffentlicher Direktdownload `/releases/latest/download/firmware-esp32dev.bin` | PASS; 1.507.328 Byte, SHA-256 entspricht dem lokalen Paket |
+| Firmware-Quellcommit | PASS; `1d790be805e09326629cbcbad21c2ff647669e6e` |
 | Einzelverbindung am echten ESP, Wechsel zwischen unterschiedlichen Gruppen und erneutes Anklicken zum Trennen | OFFEN |
 | Verbund: nicht erreichbarer Controller blockiert einen neuen Weg | OFFEN |
+
+Das öffentliche Release wurde am 10.10.2026 erstellt. Der Direktdownload ist geprüft; der funktionale Schaltversuch auf echter Hardware steht noch aus.
 
 | Prüfung | Ergebnis |
 |---|---|
