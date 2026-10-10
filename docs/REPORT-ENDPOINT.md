@@ -32,6 +32,6 @@ Benötigt werden PHP 7.4+ mit OpenSSL, HTTPS und ausgehendes SMTP-SSL/TLS auf Po
 - Das Diagnoseformular steht jetzt direkt am Anfang des Diagnose-Reiters.
 - Der Footer zeigt Rufzeichen, Name und Projekt-E-Mail.
 - Firmware und Weboberfläche sind gemeinsam in der vollständigen OTA-Datei enthalten. Auf Firmware 1.8.9 wird keine getrennte LittleFS-Weboberfläche als Fallback ausgeliefert. Gzip wird bevorzugt, Brotli nur bei passender Anfrage; beides wurde im Browser auf dem Test-ESP geprüft. Bei nicht unterstützter Komprimierung antwortet das Gerät mit HTTP 406, statt eine möglicherweise ältere Seite zu zeigen.
-- Das Diagnoseformular wurde auf dem Test-ESP sichtbar geöffnet und geprüft. Es wurde kein Bericht versendet. Die Build-, OTA- und Browserprüfung sind im Prüfprotokoll festgehalten; die GitHub-Veröffentlichung ist noch offen.
+- Das Diagnoseformular wurde auf dem Test-ESP sichtbar geöffnet und geprüft. Es wurde kein Bericht versendet. Firmware 1.8.9 samt vollständiger Oberfläche ist als neueste stabile Version veröffentlicht; die genaue Paket- und Direktdownloadprüfung steht im Prüfprotokoll.
 
 Die SMTP-Bereitschaft ist damit bestätigt. Die Spam-Einstufung durch GMX ist eine empfangerspezifische Bewertung und kein Beleg für einen Versand- oder Authentifizierungsfehler; sie garantiert umgekehrt keine Inbox-Zustellung bei anderen Empfängern.

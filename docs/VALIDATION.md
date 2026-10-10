@@ -2,10 +2,11 @@
 
 ## Aktueller veröffentlichter Stand
 
-- Neueste stabile Firmware: **1.8.9**, GitHub-Tag `v1.8.9`.
+- Neueste stabile Firmware: **1.8.9**, GitHub-Release [v1.8.9](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.9).
 - Ein Produktbuild (`esp32dev`) und ein vollständiges OTA-Asset: `firmware-esp32dev.bin`.
 - Paketgröße: 1.507.328 Byte; SHA-256 `5FC0886ECE59A0FB7FB9BD09C587B837CFA0CD89D59CDEB4FEB3D1A9A7555C87`.
-- Veröffentlichung: ein stabiles Release und ein einziges OTA-Asset; öffentlicher Direktdownload nach Upload zu prüfen.
+- Firmware-Quellcommit: `cb16d649a4f2a95ce343ef33bd2b62719c4699d8`; Release-Tag `v1.8.9`.
+- Veröffentlichung: genau ein OTA-Asset; der öffentliche Direktdownload wurde geladen und bytegenau per SHA-256 verifiziert.
 - SMTP-Endpunkt und Berichtversand: live bestätigt; GMX-Spamablage ist für den einzigen Empfänger akzeptiert. Diagnoseformular auf dem ESP sichtbar geprüft; kein Bericht versendet.
 - Reale Geräteprüfungen für Stromausfall-Wiederherstellung, Signalweg-/Verbundausschluss, Motorlauf und Bildschirmgrößen sind nicht pauschal bestanden; siehe jeweilige Zeilen mit `OFFEN`.
 
@@ -272,7 +273,8 @@ Geändert für 1.8.9:
 | Footer und Diagnose | PASS; DO1ANB, Name, E-Mail, Lizenz-/PayPal-Links und Formular „Fehler oder Wunsch melden“ sichtbar |
 | Gerätekonfiguration | PASS; gespeicherte Geräte, Signalwege und Layout wurden nach dem App-OTA ausgelesen; produktive ESPs wurden nicht verändert |
 | Bericht absenden | NICHT AUSGEFÜHRT; der vollständige Klickpfad wurde sichtbar geprüft, aber es wurde keine Nachricht versendet |
-| GitHub-Veröffentlichung | OFFEN bis zum erfolgreichen Upload und anonymen Direktdownload |
+| GitHub-Veröffentlichung | PASS; Release `v1.8.9` ist als neueste stabile Version markiert und enthält genau ein Produkt-OTA-Asset |
+| Öffentlicher Direktdownload | PASS; `/releases/latest/download/firmware-esp32dev.bin`, 1.507.328 Byte; SHA-256 entspricht lokal `5FC0886ECE59A0FB7FB9BD09C587B837CFA0CD89D59CDEB4FEB3D1A9A7555C87` |
 
 Eine geprüfte Sicherung der lokalen und gemeinsamen Konfiguration wurde vor dem Update ausschließlich lokal gespeichert. Die privaten Sicherungsdateien und WLAN-Zugangsdaten werden nicht veröffentlicht. Es gibt auf dem Gerät nur eine laufende Firmwareversion; Firmware und Weboberfläche werden zusammen aktualisiert. Die getrennte LittleFS-Partition bleibt erhalten, wird von dieser Firmware bei gültigem UI-Bündel aber nicht als ältere Webseiten-Version ausgeliefert.
 
