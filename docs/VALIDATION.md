@@ -1,4 +1,15 @@
-# Prüfprotokoll – Produktversion 1.8.7
+# Prüfprotokoll – Produktversion 1.8.8
+
+## Aktueller veröffentlichter Stand
+
+- Neueste stabile Firmware: **1.8.8**, GitHub-Tag `v1.8.8`.
+- Firmware-Quellcommit und Release-Tag: `f546e07a1ae80dcc686872e313647761acd95b01`.
+- Ein Produktbuild (`esp32dev`) und ein vollständiges OTA-Asset: `firmware-esp32dev.bin`.
+- Öffentlicher Direktdownload, Paketgröße und SHA-256: siehe Abschnitt „Veröffentlichung 1.8.8“ weiter unten.
+- SMTP-Endpunkt und Berichtversand: live bestätigt; GMX-Spamablage ist für den einzigen Empfänger akzeptiert. Der ESP-seitige Diagnose-Klickpfad bleibt offen.
+- Reale Geräteprüfungen für Stromausfall-Wiederherstellung, Signalweg-/Verbundausschluss, Motorlauf und Bildschirmgrößen sind nicht pauschal bestanden; siehe jeweilige Zeilen mit `OFFEN`.
+
+Die folgenden Abschnitte 1.8.1 bis 1.8.7 sind Versionshistorie. Ein älterer PASS gilt nur für den dort ausdrücklich genannten Quellstand und belegt nicht automatisch den Zustand von 1.8.8.
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -161,9 +172,9 @@ Das öffentliche Release wurde am 10.10.2026 erstellt. Der Direktdownload ist ge
 
 Der lokale Build und die öffentliche Downloadprüfung wurden am 10.10.2026 ausgeführt. Der Firmware-Quellcommit ist `996f159b94ab92aedfdbec9b533d436d96d1350b`. Wegen nur 800 Byte freiem Platz im festen OTA-Slot muss jede weitere Firmware- oder Oberflächenänderung erneut gegen denselben Paketbauer geprüft werden. Die hier aufgeführten offenen Geräte- und Hostingprüfungen dürfen nicht als bestanden dargestellt werden.
 
-## Veröffentlichung 1.8.8 – Wiederherstellung nach Stromausfall
+## Veröffentlichung 1.8.8 – Fehlerkorrektur im bestehenden Wiederherstellungsablauf
 
-Bei der Codeprüfung wurde ein echter Verlustpfad gefunden: `restore()` löschte die gespeicherte Auswahl vor dem Wiedereinschalten der Relais. Wenn die TX-Sperre beim Boot aktiv war, konnte `execute()` das Schalten ablehnen und der letzte Zustand war trotzdem aus dem Speicher entfernt. Firmware 1.8.8 lässt die dauerhafte Auswahl unangetastet, wenn TX die Wiederherstellung beim Boot verhindert, und versucht sie nach Ende der Sperre erneut. Auch wenn eine Funktion nicht mehr verfügbar ist, bleibt die gespeicherte Information erhalten, bis der Betreiber den Zustand ausdrücklich ändert.
+Die Wiederherstellung des zuletzt gespeicherten Schaltzustands nach einem Neustart war bereits in älteren Firmwareversionen vorhanden. 1.8.8 führt diese Funktion nicht neu ein. Die Codeprüfung fand einen Sonderfall in diesem bestehenden Ablauf: War die TX-Sperre beim Start aktiv, löschte die Firmware die gespeicherte Auswahl, bevor das durch die Sperre blockierte Einschalten der Relais erfolgreich sein konnte. 1.8.8 behebt genau diesen Verlustpfad: Die Auswahl bleibt gespeichert und die Wiederherstellung wird nach Ende der TX-Sperre erneut versucht. Auch bei anderen fehlgeschlagenen Wiederherstellungen bleibt die gespeicherte Auswahl erhalten.
 
 | Prüfung | Ergebnis |
 |---|---|
@@ -173,10 +184,13 @@ Bei der Codeprüfung wurde ein echter Verlustpfad gefunden: `restore()` löschte
 | SHA-256 `firmware-esp32dev.bin` | `786396a295bd8e63bb4524748e18fb31d2472cf9132ec5eee191858f84defec1` |
 | Neustart mit aktiver TX-Sperre und spätere Wiederherstellung | OFFEN; noch nicht am ESP geprüft |
 | GitHub-Release `v1.8.8` | PASS; öffentlich, stabil, neueste Version; genau ein Binär-Asset `firmware-esp32dev.bin`, 1.507.328 Byte |
+| Release-Text auf GitHub | PASS; am 10.10.2026 präzisiert: Die allgemeine Zustandswiederherstellung bestand bereits vorher; 1.8.8 korrigiert nur den Sonderfall mit aktiver TX-Sperre. Firmwaredatei und Prüfsumme blieben unverändert. Routine- und Detailprüfungen stehen im Prüfprotokoll, nicht als angeblich neue Funktion im Updatehinweis. |
 | GitHub-Tag und `main` | PASS; Tag `v1.8.8` und `main` zeigen beide auf Quellcommit `f546e07a1ae80dcc686872e313647761acd95b01` |
 | Öffentlicher Direktdownload `/releases/latest/download/firmware-esp32dev.bin` | PASS; HTTP leitet auf `/releases/download/v1.8.8/firmware-esp32dev.bin` weiter und liefert 1.507.328 Byte mit passendem SHA-256 `786396a295bd8e63bb4524748e18fb31d2472cf9132ec5eee191858f84defec1` |
-| Mail-Endpunkt auf do1anb.de | OFFEN; Livecheck am 10.10.2026 liefert HTTP 503 und `{"ready":false}`. Der PHP-Endpunkt antwortet, aber die SMTP-Prüfung ist nicht bereit. Direkter Abruf von `mail-config.php` liefert HTTP 403; die Konfiguration ist damit nicht lesbar. |
-| Berichtformular im echten Browser und SMTP-Zustellung | OFFEN; Endpunkt muss installiert und der bewusste Testversand durchgeführt werden. |
+| Mail-Endpunkt auf do1anb.de | PASS; Live-Health HTTP 200 mit `{"ready":true}`; direkter Abruf von `mail-config.php` bleibt leer HTTP 403. Ein zuerst bereitgestelltes privates Paket enthielt ein falsches SMTP-Passwort und wurde ersetzt. |
+| SMTP-Berichtversand und Empfang | PASS mit Einschränkung; zwei Testberichte wurden angenommen und empfangen. GMX sortierte sie in Spam ein. Im zweiten Nachrichtenkopf bestanden SPF, DKIM, DMARC und IP-Reverse-Prüfung; der Betreiber akzeptiert die Spam-Einstufung für seinen alleinigen Empfänger. |
+| DMARC-DNS | PASS; seit dem 10.10.2026 ist `_dmarc.do1anb.de` mit `v=DMARC1; p=none;` öffentlich sichtbar. |
+| Berichtformular direkt aus der Firmware-Weboberfläche | OFFEN; vollständiger Klickpfad über ein reales ESP-Gerät ist noch nicht geprüft. |
 | Sonstige echte ESP-/Displayprüfungen | OFFEN; siehe oben |
 
 Der Paketbauer hat die vollständige Firmware und Weboberfläche erneut in den festen OTA-Slot gepackt. Es bleiben 717 Byte Reserve, deshalb sind weitere Funktionen nur nach erneutem vollständigem Paketbuild zulässig. Die öffentliche Release- und Direktdownloadprüfung erfolgte am 10.10.2026.

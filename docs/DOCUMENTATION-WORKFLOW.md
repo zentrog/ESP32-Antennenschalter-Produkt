@@ -1,50 +1,114 @@
-# Entwicklungs-, Dokumentations- und Veröffentlichungsablauf
+# Verbindliche Arbeits-, Dokumentations- und Veröffentlichungsregeln
 
-## Maßgebliche Bestandteile
+Diese Regeln gelten für Firmware, Weboberfläche, Server-Endpunkt, GitHub-Release und lokale Produktkopie. Eine Änderung gilt erst als abgeschlossen, wenn der Code, die passende Dokumentation und die tatsächlich ausgeführten Prüfungen denselben Stand beschreiben.
 
-- Der Quellcode, der tatsächlich gebaut und geprüft wurde, ist die Referenz für Firmwareänderungen.
-- GitHub ist der versionierte und später veröffentlichte Quellstand.
-- Hardwareergebnisse gelten nur für die dabei gebaute Version. Versionsnummer und Commit müssen zum Prüfprotokoll passen.
+## Verbindliche Quellen und Reihenfolge
 
-## Bei jeder Änderung
+1. **Arbeitsquelle:** der ausdrücklich benannte Git-Arbeitsstand. Vor Änderungen Branch, Commit und Arbeitsbaum prüfen; vorhandene Änderungen anderer Arbeiten erhalten.
+2. **Veröffentlichte Quelle:** `main`, Release-Tag und Release-Asset. Nie aus einem nicht geprüften oder abweichenden Arbeitsstand veröffentlichen.
+3. **Gerätewahrheit:** nur aktuelle Messung oder Readback vom konkreten ESP. Ein Quellcode, Build, Screenshot, früheres Protokoll oder Erfolg eines anderen Geräts beweist keinen aktuellen Gerätezustand.
+4. **Prüfprotokoll:** `docs/VALIDATION.md` ist der vollständige Nachweis mit Datum, Version und Commit. Neueste Erkenntnisse stehen im aktuellen Abschnitt; ältere Abschnitte bleiben als Historie gekennzeichnet und werden nicht stillschweigend als aktueller Stand ausgegeben.
+5. **Produktstatus:** `README.md` beschreibt nur den derzeit veröffentlichten Stand. Geplante oder noch nicht getestete Funktionen müssen ausdrücklich als geplant beziehungsweise offen gekennzeichnet sein.
 
-1. Schreibe auf, was geändert wurde und welche Gerätefunktionen betroffen sind.
-2. Halte README, Anwenderanleitung, Projektstatus und passende technische Dokumente auf derselben Versionsnummer.
-3. Bei Änderungen an Firmware, Oberfläche, Build-Einstellungen oder Partitionen Manifest und Prüfprotokoll aktualisieren.
-4. Baue die betroffenen PlatformIO-Umgebungen und notiere tatsächliches Ergebnis und Speicherverbrauch.
-5. Für die einzige ESP32-DevKit-Veröffentlichung baue `node tools/build-ota-package.mjs esp32dev`. Die erzeugte OTA-Datei muss Firmware und alle geänderten Webdateien enthalten; eine separate UI-Datei genügt nicht. Der Paketbauer verweigert den Release, wenn sich `style.css` ändert, ohne dass das OTA-Paketformat dafür erweitert wurde.
-6. Kennzeichne nicht ausgeführte Prüfungen als offen. Ein Build beweist keine Funktion am Gerät.
-7. Vor einem öffentlichen Upload alle freizugebenden Dateien und Release-Dateien prüfen. Keine private Alt-Historie oder Sicherungsverzeichnisse übernehmen.
-8. Für einen Produktrelease genau ein stabiles GitHub-Release aus dem geprüften `main`-Stand erstellen und ausschließlich `release-assets/firmware-esp32dev.bin` anhängen. Die Datei muss Firmware und alle geänderten Webdateien enthalten.
-9. Nach der Veröffentlichung über die öffentliche Release-API prüfen: neuester Tag, stabiler Status, genau ein Asset, erwartete Dateigröße. Danach `/releases/latest/download/firmware-esp32dev.bin` anonym abrufen und SHA-256 mit dem lokalen Paket vergleichen.
-10. Release- und Downloadprüfung mit Datum und Firmware-Quellcommit in `docs/VALIDATION.md` eintragen. OTA am echten Gerät und Ansichten auf echten Bildschirmgrößen bleiben eigene offene Prüfungen, bis sie ausgeführt wurden.
-11. Wenn der Release eine externe E-Mail-Funktion enthält, den konkreten HTTPS-Endpunkt und Mailversand vor der Aktivierung Ende zu Ende prüfen. Nicht erreichbare externe Dienste müssen von der Oberfläche erkannt werden; ein funktionierender lokaler Download-Fallback bleibt erforderlich.
+Wenn zwei Quellen einander widersprechen, ist die Arbeit **nicht freigabefähig**. Erst Ursache und tatsächlichen Stand klären, dann alle betroffenen Stellen gemeinsam berichtigen. Nicht einfach den bequemsten Eintrag übernehmen.
 
-## Mindestangaben im Prüfprotokoll
+## Dokumentationspflicht bei jeder Änderung
 
-- Produktversion und Commit SHA
-- ESP32-Platine und PlatformIO-Umgebung
-- PlatformIO-, Plattform- und Frameworkversion
-- ausgeführte Aktion mit PASS, FAIL oder OFFEN
-- RAM- und Flashverbrauch des Builds
-- bei Hardwareprüfungen: Gerätezahl, Rollen, Vorher-/Nachhervergleich und bekannte Grenzen
-- keine Kennwörter, persönlichen Rufzeichen, Adressen, privaten IPs oder Konfigurationsdateien
+Vor dem Bearbeiten eine kurze Änderungsübersicht anlegen: Ziel, betroffene Dateien und Funktionen, Risiken für gespeicherte Konfiguration sowie geplante Prüfungen. Nach der Änderung muss der Eintrag mindestens Folgendes enthalten:
 
-## Begriffe
+- Datum, Produktversion und betroffener Quellcommit (oder klar „noch nicht veröffentlicht“)
+- jede geänderte Datei beziehungsweise Komponente und den konkreten Zweck der Änderung
+- Auswirkungen und ausdrücklich **nicht** veränderte Bereiche, besonders WLAN, Geräte-/Relaiskonfiguration, Layout, OTA und LittleFS
+- ausgeführte Prüfungen mit genauer Methode und Ergebnis `PASS`, `FAIL` oder `OFFEN`
+- bekannte Einschränkungen, Fehlversuche und erforderliche nächste Schritte
+- bei Builds: Umgebung, Werkzeugversionen sowie tatsächliche RAM-/Flashwerte und Paketgröße
+- bei Veröffentlichungen: Tag, Release-URL, Assetname, Bytezahl und SHA-256
+- bei Geräteeingriffen: Gerätekennung in datenschutzgerechter Form, Rolle, Version vorher/nachher, Sicherungsstatus, tatsächlich verglichene Konfigurationsbereiche und Ergebnis
+- bei externen Diensten: geprüfter Endpunkt, Zeit, HTTP-/SMTP-Ergebnis, Datenschutzgrenzen und noch nicht geprüfte Fehlerfälle
 
-- **STATIC CHECK:** Der untersuchte Quelltext oder das Manifest wurde geprüft.
-- **BUILD PASS:** Die angegebene PlatformIO-Umgebung wurde ohne Fehler gebaut.
-- **SIMULATION PASS:** Das dokumentierte Szenario lief in einer Simulation erfolgreich.
-- **REAL-HARDWARE PASS:** Die dokumentierte Prüfung wurde am ESP ausgeführt und per Readback bestätigt.
+„Erledigt“, „funktioniert“ oder „getestet“ ohne diese konkreten Angaben ist kein ausreichender Eintrag. Nicht ausgeführte Prüfungen bleiben `OFFEN`; Vermutungen werden als Vermutung markiert. Fehler und fehlgeschlagene Versuche werden nicht aus der Historie entfernt, sondern mit der späteren Korrektur verknüpft.
 
-## Leere Produktinstallation
+## Dokumente, die gemeinsam aktuell gehalten werden
 
-Eine neue Installation und ein Factory-Reset dürfen keine Testzugänge, persönlichen Identitäten oder Beispielgeräte erhalten. WLAN-Zugangsdaten gibt der Anwender selbst am Gerät ein. Ein normales Firmware-OTA darf vorhandene Geräteeinstellungen nicht zurücksetzen.
+| Änderung betrifft | Pflichtdokumentation |
+|---|---|
+| Bedienung oder sichtbare Funktion | `README.md`, `ANLEITUNG.md`, `docs/VALIDATION.md`; bei Schnittstellen zusätzlich `docs/API.md` |
+| Architektur, Speicher, Rollen oder Verbund | `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/VALIDATION.md` und betroffene Anwenderanleitung |
+| Konfiguration, Erstinstallation, Reset oder Wiederherstellung | `README.md`, `ANLEITUNG.md`, `docs/FRESH-INSTALL.md`, `docs/VALIDATION.md` |
+| Update, OTA, Sicherung, Partition oder Release | `README.md`, `ANLEITUNG.md`, `docs/ARCHITECTURE.md`, `docs/VALIDATION.md`, Paketmanifest und Releasehinweise |
+| Diagnoseformular, Maildienst oder Datenschutz | `docs/REPORT-ENDPOINT.md`, `server/report-endpoint/README-UPLOAD.md`, `docs/LEGAL-NOTICES.md`, `README.md` und Prüfprotokoll |
+| Lizenz, Copyright oder Drittanbieter | `LICENSE`, `THIRD-PARTY-NOTICES.md`, `docs/LEGAL-NOTICES.md`, `README.md` |
+| geplante Windows-App | `docs/WINDOWS-APP-PLAN.md`; Planung niemals als implementiert darstellen |
+| beliebige Änderung | dieses Prüfprotokoll; weitere Dokumente aus der Tabelle, wenn sie betroffen sind |
 
-## GitHub-Release und Updateprüfung
+Nicht betroffene Dokumente müssen nicht künstlich geändert werden. Die Änderungsübersicht muss aber zeigen, dass die Tabelle geprüft wurde und warum andere Bereiche unberührt bleiben.
 
-Die Weboberfläche liest die neueste stabile Veröffentlichung aus der GitHub-Release-Schnittstelle. Sie meldet nur eine verfügbare Version; die Installation bleibt eine bewusste Benutzeraktion. Vor einem Release Firmwaredatei und Versionskennung gemeinsam prüfen. Private oder unbestätigte Dateien nie als Release hochladen.
+## Pflicht-Gates vor dem Zusammenführen
 
-## Öffentliche Veröffentlichung
+1. **Ausgangslage:** Arbeitsbaum, Branch, Commit und vorhandene Nutzeränderungen erfassen. Keine ungesicherten Nutzeränderungen überschreiben.
+2. **Umfang:** betroffene Funktionen und Abhängigkeiten im Quellcode verfolgen; Konfigurationsmigration, OTA-Verhalten, Einzelgerät/Verbund und Sicherheitsgrenzen prüfen, soweit betroffen.
+3. **Änderung:** nur den nötigen Umfang ändern. Keine Zugangsdaten, privaten Konfigurationen oder unaufgeforderten Geräteänderungen einbauen.
+4. **Dokumentation:** alle einschlägigen Dokumente aus der Tabelle aktualisieren; Versionsnummern, Dateinamen, Aussagen und Status übergreifend abgleichen.
+5. **Prüfung:** für jede Änderung die geeigneten Prüfungen durchführen. Keine neue Prüfung als bestanden eintragen, die nicht tatsächlich gelaufen ist. Build allein ist kein Funktions-, Geräte- oder Sicherheitsnachweis.
+6. **Konsistenz:** Diff und Manifest prüfen, auf widersprüchliche Versionsstände, veraltete „aktuell“-Aussagen, TODOs, fehlende Dateien und private Daten achten. `git diff --check` muss sauber sein.
+7. **Freigabeentscheidung:** alle Release-Blocker ausräumen oder die Veröffentlichung ausdrücklich stoppen. Offene, aber nicht releasekritische Geräteprüfungen sichtbar als offen dokumentieren; nie als PASS tarnen.
 
-Ein privates Repository mit personenbezogenen Daten in alten Commits kann nicht dadurch bereinigt werden, dass nur der neueste Dateistand geändert wird. Falls frühere Daten in erreichbaren Branches oder Tags liegen, einen neuen sauberen Veröffentlichungsstand ohne diese Historie verwenden und die alte Ablage privat lassen. Die Sichtbarkeit erst nach erfolgreicher Prüfung ändern.
+## Build- und OTA-Regeln
+
+- Produktbuild ist ausschließlich `esp32dev`. Keine Jungfrau-/Parallelvariante als zweite Produktversion veröffentlichen.
+- Nach einer Firmware- oder Webänderung die betroffene PlatformIO-Umgebung bauen und tatsächliche Werte dokumentieren.
+- Für das einzige vollständige OTA-Asset `node tools/build-ota-package.mjs esp32dev` verwenden. Es muss Firmware und sämtliche geänderten Webdateien enthalten. Einzelne UI-Dateien sind kein vollständiges Update.
+- Paketformat, Slotgröße und Reserve prüfen. Paketbauer-Warnungen oder zu kleine Reserve sind vor Veröffentlichung zu behandeln; niemals Paketinhalt stillschweigend weglassen.
+- Normales OTA darf LittleFS und die gespeicherte Geräte-/WLAN-Konfiguration nicht überschreiben. Erstinstallation und Factory-Reset sind getrennte Vorgänge und müssen als löschend beschrieben werden.
+- Vor einer realen Geräteaktualisierung zuerst den expliziten Auftrag, die richtige Geräteidentität und die vorhandene Sicherung prüfen. Nach dem Update Version, Rolle, Verbund, Konfiguration und Erreichbarkeit per Readback kontrollieren. Niemals die lokale Konfiguration durch eine jungfräuliche Vorlage ersetzen.
+
+## Sicherung und Synchronisierung der lokalen Produktkopie
+
+- Vor dem Kopieren in `E:\ESP32-Projekt-Antennenschalter\AntennaController` die zu überschreibenden Dateien mit Zeitstempel außerhalb des Repositories sichern. Nutzerdateien, Sicherungen, ignorierte Builddateien und lokale Zugangsdaten bleiben erhalten.
+- Nur die im Produktmanifest aufgeführten Projektdateien übertragen. Danach Quelle und Ziel dateiweise per SHA-256 vergleichen und fehlende, zusätzliche oder abweichende Dateien ausdrücklich auflisten.
+- Manifest nach jeder Änderung an erfassten Dateien neu erzeugen und gegen beide Kopien prüfen. Eine erfolgreiche Kopie ist erst nach dem Vergleich bestätigt.
+- Projektstatus und Übergabehinweise müssen denselben geprüften Commit und dieselben offenen Aufgaben nennen. Veraltete Projektstatusdateien sind vor Übergabe zu berichtigen.
+
+## Veröffentlichung auf GitHub
+
+1. Quelländerungen und Dokumentation auf demselben geprüften Stand vollständig committen und in `main` übernehmen.
+2. Versionsnummer in Firmware, Cachekennungen, README, Prüfprotokoll, Paket und Release abgleichen.
+3. Release-Tag muss auf den dokumentierten Quellcommit zeigen; `main` und Tag dürfen nicht versehentlich auseinanderlaufen.
+4. Genau ein stabiles Produkt-Release und genau ein Asset `firmware-esp32dev.bin` veröffentlichen. Frühere Releases sind historische Versionen, keine zweite aktuelle Firmwarelinie.
+5. Öffentlich verfügbare Dateien, Binärdatei und erreichbare Historie auf Kennwörter, WLAN-Daten, private Anlagenkonfigurationen, private IPs und nicht freigegebene personenbezogene Daten prüfen. Projektkontakt und ausdrücklich freigegebene Urheberangaben sind zulässig.
+6. Nach Upload öffentliche Release-API, neueste stabile Version, Tag, genau ein Asset, Bytezahl und SHA-256 prüfen. Den anonymen Direktdownload `.../releases/latest/download/firmware-esp32dev.bin` vollständig laden und dessen SHA-256 mit dem lokalen Paket vergleichen.
+7. Erst nach erfolgreicher Prüfung Veröffentlichung als `PASS` dokumentieren. Ein Upload oder sichtbarer GitHub-Eintrag allein genügt nicht.
+
+### Kurze Versionshinweise
+
+- Versionshinweise für Anwender bleiben kurz und nennen nur Änderungen, die bei der Entscheidung für ein Update wirklich wichtig sind.
+- Wenn keine neue, relevante Funktion hinzugekommen ist, genügt eine knappe Formulierung wie **„Fehlerbehebungen und Stabilitätsverbesserungen.“** Keine künstlich aufgeblähten Listen und keine Routinearbeiten als neue Produktfunktion darstellen.
+- Eine wichtige Fehlerkorrektur darf in einem kurzen Satz genannt werden. Dabei ausdrücklich sagen, dass die bestehende Funktion korrigiert wurde, wenn sie schon vorher vorhanden war. Nicht den Eindruck erwecken, die Funktion sei neu.
+- Technische Ursachen, Randfälle, Testmethoden, Prüfsummen und offene Punkte gehören ins Prüfprotokoll, nicht in den kurzen Updatehinweis.
+- Releasehinweise nach der Veröffentlichung nicht veralten lassen: bei später bestätigten Änderungen am Dienststatus die Beschreibung korrigieren, ohne dafür eine neue Firmwareversion vorzutäuschen.
+
+## Prüfstatus – Bedeutung und Grenzen
+
+- **STATIC PASS:** definierter Quelltext-/Dokumentenbereich wurde gelesen und geprüft.
+- **BUILD PASS:** genau die dokumentierte Buildumgebung wurde erfolgreich gebaut.
+- **PACKAGE PASS:** vollständiges OTA-Paket wurde erzeugt und strukturell sowie per Hash geprüft.
+- **SERVICE PASS:** der konkret benannte Live-Dienst wurde mit den dokumentierten Anfragen geprüft.
+- **REAL-HARDWARE PASS:** Szenario wurde am benannten realen Gerät ausgeführt und Zustand anschließend unabhängig zurückgelesen.
+- **FAIL:** Prüfung lief und scheiterte; Fehler und Folgen stehen im Protokoll.
+- **OFFEN:** nicht ausgeführt, nicht eindeutig oder nicht ausreichend belegt.
+
+Ein bestandener niedrigerer Prüfstatus ersetzt keinen höheren: Quelltextprüfung ist kein Build, Build ist kein Paket-, Dienst- oder Hardwaretest. Screenshots und Bedieneraussagen können Hinweise liefern, aber einen unabhängigen Readback nicht ersetzen.
+
+## Harte Veröffentlichungsstopps
+
+Nicht veröffentlichen bei: ungeklärten Dokument-/Quellwidersprüchen, falscher oder uneinheitlicher Version, fehlerhaftem Manifest, fehlendem OTA-Bestandteil, Hash-/Größenabweichung, privaten Zugangsdaten, unbeabsichtigten Konfigurationsdaten, nicht erklärten Änderungen an gespeicherten Daten, fehlender Sicherungs-/Rückfallbeschreibung oder einem nicht funktionierenden versprochenen Download. Fehlende reale Geräteprüfung muss deutlich genannt werden und darf nur dann offenbleiben, wenn die konkrete Veröffentlichung dadurch nicht als ungeprüfte Gerätefunktion ausgegeben wird.
+
+## Datensparsamkeit
+
+Öffentliche Unterlagen und GitHub dürfen keine WLAN-Zugangsdaten, SMTP-Geheimnisse, privaten Konfigurationsdateien, privaten Gerätekennungen oder unnötigen Standortdaten enthalten. Der ausdrücklich freigegebene Projektkontakt ist zulässig. Private Sicherungen und Zugangsdaten bleiben außerhalb des Repositories.
+
+Eine neue Installation enthält keine persönlichen Geräte- oder WLAN-Daten. Normales Firmware-OTA bewahrt vorhandene Geräteeinstellungen. Anwender müssen verständlich gewarnt werden, bevor eine Aktion Daten löscht.
+
+## Öffentliche Repository-Historie
+
+Das Entfernen einer Datei aus dem neuesten Stand löscht sie nicht aus älteren Git-Commits. Vor dem Öffentlichschalten erreichbare Branches, Tags und Releases prüfen. Wenn private Daten in der erreichbaren Historie liegen, Veröffentlichungsstand bereinigen oder die alte Ablage privat lassen; nur den aktuellen Dateiinhalt zu säubern reicht nicht.

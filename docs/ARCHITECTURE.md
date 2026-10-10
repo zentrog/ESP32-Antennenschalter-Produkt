@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.8 / API 6. Bei Stromwiederkehr bleiben gespeicherte Schaltzustände erhalten, falls die TX-Sperre ihre Wiederherstellung beim Booten vorübergehend blockiert. Die API-Routen des ESP bleiben unverändert; die Diagnoseansicht ergänzt den externen HTTPS-Meldeweg.
+Arbeitsstand: Firmware 1.8.8 / API 6. Die bereits zuvor vorhandene Wiederherstellung gespeicherter Schaltzustände wurde um eine Fehlerkorrektur für den Sonderfall „TX-Sperre beim Start aktiv“ ergänzt. Die API-Routen des ESP bleiben unverändert; die Diagnoseansicht nutzt den externen HTTPS-Meldeweg.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
