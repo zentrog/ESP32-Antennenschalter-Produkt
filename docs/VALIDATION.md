@@ -195,6 +195,24 @@ Die Wiederherstellung des zuletzt gespeicherten Schaltzustands nach einem Neusta
 
 Der Paketbauer hat die vollständige Firmware und Weboberfläche erneut in den festen OTA-Slot gepackt. Es bleiben 717 Byte Reserve, deshalb sind weitere Funktionen nur nach erneutem vollständigem Paketbuild zulässig. Die öffentliche Release- und Direktdownloadprüfung erfolgte am 10.10.2026.
 
+## Flashplatz-Analyse v1.8.8 – statische Bestandsaufnahme vom 10.10.2026
+
+Es wurde kein neuer Build gestartet und kein Firmwarecode verändert. Untersucht wurden das vorhandene `firmware.bin`, der Linker-Map-/ELF-Stand des v1.8.8-Pakets, die Partitionstabelle und die Buildflags.
+
+| Bestandteil | Größe / Stand |
+|---|---:|
+| Firmware-Image | 1.457.920 Byte |
+| fester OTA-App-Slot (`0x170000`) | 1.507.328 Byte |
+| zusätzlich gebündelte, minifizierte und Brotli-komprimierte Webdateien | 48.655 Byte |
+| Paket-Endmarkierung | 36 Byte |
+| freie Reserve im vollständigen OTA-Paket | **717 Byte** |
+
+Die Kompilierung nutzt bereits `-Os`, getrennte Funktions-/Datensektionen und Linker-Garbage-Collection. Die Linkerflags setzen jedoch ausdrücklich `-fno-lto`; Link-Time-Optimierung ist daher der aussichtsreichste erste A/B-Versuch, ohne Funktionen zu entfernen. Vor einer Übernahme müssen unverändertes und LTO-Build mit identischer Toolchain verglichen, das vollständige OTA-Paket geprüft und die betroffenen Abläufe regressionsgeprüft werden. Eine Ersparnis ist nicht zugesichert.
+
+Die Map zeigt außerdem größere Bereiche für HTTP-/Konfigurationslogik und C-Bibliotheksformatierung. Sechs projektinterne `snprintf`-Aufrufe erzeugen festbreite Hex-/MAC-Kennungen; deren Ersatz durch kleine spezialisierte Formatter könnte die allgemeine Formatierungsbibliothek verkleinern, sofern keine Framework- oder Bibliotheksaufrufe dieselben Routinen weiterhin benötigen. Das muss über einen A/B-Linker-Map-Vergleich nachgewiesen werden. Die vorhandene Webminifizierung und Brotli-Qualität 11 sind bereits aktiv; hier ist kein ungenutzter Minifizierungsschritt ersichtlich.
+
+**Reihenfolge für weitere Arbeit:** zuerst LTO isoliert messen; danach die wenigen Hex-Formatter isoliert prüfen. Keine Funktion und kein Bedienkomfort wird für Platzgewinn entfernt. Eine Änderung der Partitionstabelle wäre kein risikoloser Optimierungsschritt: Sie kann eine vollständige Neuinstallation und Migration des LittleFS mit allen lokalen Einstellungen erfordern und bleibt deshalb vorerst außen vor.
+
 ## Schutzregeln für den manuellen Updateversuch
 
 - Vor dem OTA die Sicherungsdatei auf den Computer herunterladen und speichern. Sie enthält WLAN-Kennwörter und muss privat bleiben.

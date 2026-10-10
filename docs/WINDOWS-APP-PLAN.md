@@ -209,6 +209,7 @@ Der ESP bestätigt nach Import die tatsächlich gespeicherten Daten durch Readba
 7. **Einrichtung, Diagnose und Fehlerberichte:** Konfigurationsassistent, USB-/Handy-Provisionierung, Einzel-/Verbunddiagnose, gemeinsames anonymisiertes Fehlerbericht-Format, Vorschau und optionale Desktop-Verknüpfung ergänzen.
 8. **Verbund- und Rettungsprüfungen:** fehlender Slave, wechselnde IP, falsches Backup, ältere Version, fehlgeschlagener Download, Abbruch beim Schreiben und Wiederherstellung nach Factory-Install abdecken.
 9. **Dokumentieren und veröffentlichen:** signiertes App-Paket, passende Firmware, Prüfprotokoll, einfache Anleitung, Lizenz-/Drittherstellerhinweise und Release-Notizen synchron aus einem geprüften Commit veröffentlichen.
+10. **Firmware-Link nach App-Abschluss:** Erst wenn die Windows-App fertiggestellt und als offizieller GitHub-Download verfügbar ist, in der Firmware-Weboberfläche einen kurzen Hinweis und eine Download-Schaltfläche zur App ergänzen. Bis dahin bleibt diese Verknüpfung ausdrücklich geplant und wird nicht vorzeitig in die Firmware eingebaut. Danach Firmware, Dokumentation und Release gemeinsam aktualisieren; die Firmware muss weiterhin ohne App nutzbar und herunterladbar bleiben.
 
 Kein Punkt wird als abgeschlossen markiert, bevor konkrete Ergebnisse und getestete Umgebungen dokumentiert sind. Simulator-/Build-Ergebnis, USB-Hardwaretest, Netzwerk-Update und reale Verbundwiederherstellung werden getrennt ausgewiesen.
 
