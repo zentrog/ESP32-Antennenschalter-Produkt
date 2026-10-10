@@ -7,7 +7,7 @@
 - Build: PASS mit PlatformIO Core 6.2.0 / Espressif32 6.12.0; RAM 52.232 / 327.680 Byte; Firmwareabbild 1.362.528 Byte.
 - OTA-Paket: PASS; vollständiges Einzeldatei-Image 1.507.328 Byte, OTA-Slot 1.507.328 Byte, Reserve 8.792 Byte. UI Brotli 62.187 Byte + gzip 73.745 Byte. JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich: PASS (Paketbauer). SHA-256 `450BD75B0FDCF2F7EEF6BE7F06DE7DEBEAB74DD57A66F2990AB6B8FB2F1A0CD6`.
 - Reale Geräte-/Monitorprüfung nach Installation: OFFEN. Der lokale Build belegt das vollständige Paket, aber keinen Sichttest auf dem vom Betreiber gezeigten Monitor. Extrem flache oder hochkant gehaltene Bildschirme bleiben geometrisch begrenzt: bei fester 12×6-Anordnung und ohne Scrollen muss die gesamte Fläche dort entsprechend kleiner dargestellt werden.
-- GitHub-Veröffentlichung: ausstehend.
+- GitHub-Veröffentlichung: PASS; neuestes stabiles Release [v1.8.21](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.21), Tag `40d4de3`. Genau eine Datei `firmware-esp32dev.bin`, 1.507.328 Byte. Anonymer Direktdownload `/releases/latest/download/firmware-esp32dev.bin` ist bytegenau mit dem lokalen Paket identisch; SHA-256 `450BD75B0FDCF2F7EEF6BE7F06DE7DEBEAB74DD57A66F2990AB6B8FB2F1A0CD6`. Veröffentlichung und Vergleich am 10.10.2026.
 
 ## Firmware 1.8.20 · MQTT entfernt und OTA-Platz geschaffen
 
