@@ -485,3 +485,11 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - Slave-Umfang: Master und Slave werden in v1.8.24 nicht automatisch gemeinsam aktualisiert. Der Endpunkt sichert und aktualisiert nur das angesprochene Gerät. Eine spätere Verbundaktualisierung braucht eine separate Sicherung jedes Controllers und kontrollierte Einzelupdates mit Erreichbarkeits-/Versionsreadback und definiertem Abbruch bei Teilfehlern.
 - E2E-Prüfung von v1.8.24 über den ESP-Download-Endpunkt, Neustart, Versions-/Identitäts-/Konfigurationsreadback und Übereinstimmung des heruntergeladenen Releasepakets: OFFEN bis Hardwaredurchlauf abgeschlossen.
 - Öffentliche Veröffentlichung v1.8.24: OFFEN bis E2E-Hardwaredurchlauf bestanden.
+
+## Firmware 1.8.24 – Nachtrag Ein-Klick-OTA auf Testgerät
+
+- v1.8.24 wurde gebaut und veröffentlicht. GitHub `latest` meldete genau ein Asset `firmware-esp32dev.bin`; anonymer Direktdownload 1.507.328 Byte, SHA-256 `ED52EB1FE408F2F7E634DE14C35C431280BF9904BA84196CC4C412A67AE164CB`, identisch mit lokalem Paket.
+- Nichtproduktiver ESP, manuelle Vorinstallation: PASS; von 1.8.21 auf 1.8.24 aktualisiert. Readback bestätigt dieselbe ID ESP32-28FDE2842178, Adresse `192.168.0.154`, Master-Rolle und Konfiguration. Vorher-/Nachher-Sicherungen sind für lokale Einstellungen, gemeinsame Einstellungen und WLANs JSON-identisch.
+- GitHub-Abruf vom ESP: Der Aufruf wurde gestartet und der ESP kam mit v1.8.24 nach einem Neustart zurück. Die aufrufende Windows-Anfrage erreichte jedoch innerhalb von 90 Sekunden keine HTTP-Antwort. Da vor und nach dem Flash dieselbe Versionsnummer aktiv war, reicht dieser Lauf allein nicht als eindeutiger Flashnachweis; Status `TEILWEISE`.
+- Korrektur in v1.8.25: Wenn die lokale Verbindung beim erwarteten ESP-Neustart abreißt, bleibt die Updateoberfläche aktiv und prüft bis zu 90 Sekunden Controller-ID, Firmwareversion und Neustart, bevor sie Erfolg meldet. Die Update-Seite prüft außerdem, ob wirklich eine neuere stabile Version existiert.
+- Verifikation des Versionswechsels 1.8.24 → 1.8.25 über den echten GitHub-Abruf, inklusive Antwort-/Neustartbestätigung und identischer Konfigurations-/WLAN-Sicherung: OFFEN bis Test-ESP-Lauf abgeschlossen.
