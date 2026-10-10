@@ -35,6 +35,7 @@ bool RelayEngine::isFunctionActive(const String&id) const {
 }
 RelayConfig* RelayEngine::relay(const String&id){for(auto&r:cfg_->relays)if(r.enabled&&r.id==id)return &r;return nullptr;}
 FunctionConfig* RelayEngine::function(const String&id){for(auto&f:cfg_->functions)if(f.enabled&&f.id==id)return &f;return nullptr;}
+void RelayEngine::updateLegacyAntennaId(){state_.activeAntennaId="";for(const auto&selection:state_.activeSelections){auto*f=function(selection.functionId);if(f&&f->type==FunctionType::Antenna){state_.activeAntennaId=f->id;return;}}}
 void RelayEngine::setRelay(RelayConfig&r,bool on){digitalWrite(r.gpio,(r.activeLow?!on:on)?HIGH:LOW);}
 void RelayEngine::applyStormOutputs(){for(const auto&d:cfg_->devices){if(!d.enabled||d.stormRelayId.isEmpty())continue;RelayConfig*r=relay(d.stormRelayId);if(r)setRelay(*r,d.stormRelayOn);}}
 void RelayEngine::safeInit(){
@@ -113,8 +114,26 @@ bool RelayEngine::execute(const String&id,String&err){
     delay(100);setRelay(*r,true);
     bool found=false;for(auto&a:state_.activeSelections)if(a.group==f->group){a.functionId=f->id;found=true;break;}
     if(!found)state_.activeSelections.push_back({f->group,f->id});
-    state_.activeAntennaId=state_.activeSelections.empty()?"":state_.activeSelections[0].functionId;
+    updateLegacyAntennaId();
     store_->saveSelection(f->group,f->id);return true;
+  }
+
+  if(f->type==FunctionType::Toggle){
+    if(state_.motorRunning){err=RL(cfg_,"Stromversorgung während Motorlauf gesperrt","Power switching is blocked while a motor is running");return false;}
+    if(f->group.isEmpty()){err=RL(cfg_,"Ein/Aus-Funktion hat keine eigene Zustandsgruppe","Toggle function has no state group");return false;}
+    auto it=state_.activeSelections.begin();
+    for(;it!=state_.activeSelections.end();++it)if(it->group==f->group)break;
+    if(it!=state_.activeSelections.end()){
+      setRelay(*r,false);
+      state_.activeSelections.erase(it);
+      store_->saveSelection(f->group,"");
+    }else{
+      setRelay(*r,true);
+      state_.activeSelections.push_back({f->group,f->id});
+      store_->saveSelection(f->group,f->id);
+    }
+    updateLegacyAntennaId();
+    return true;
   }
 
   if(state_.motorRunning){err=RL(cfg_,"Es läuft bereits eine Zeitaktion","A timed action is already running");return false;}
@@ -151,8 +170,8 @@ bool RelayEngine::clearGroup(const String&group,String&err){
   if(group.isEmpty()){err=RL(cfg_,"Schaltgruppe fehlt","Switching group is missing");return false;}
   if(state_.motorRunning){err=RL(cfg_,"Schaltgruppe kann während einer Zeitaktion nicht gelöst werden","Switching group cannot be released while a timed action is running");return false;}
   if(txActive()){err=RL(cfg_,"Schalten während TX durch Interlock gesperrt","Switching is blocked by the TX interlock");return false;}
-  for(auto&x:cfg_->functions)if(x.enabled&&x.type==FunctionType::Antenna&&x.group==group){auto*r=relay(x.relayId);if(r)setRelay(*r,false);}
-  std::vector<ActiveSelection> kept;for(const auto&a:state_.activeSelections)if(a.group!=group)kept.push_back(a);state_.activeSelections=kept;state_.activeAntennaId=state_.activeSelections.empty()?"":state_.activeSelections[0].functionId;store_->saveSelection(group,"");return true;
+  for(auto&x:cfg_->functions)if(x.enabled&&(x.type==FunctionType::Antenna||x.type==FunctionType::Toggle)&&x.group==group){auto*r=relay(x.relayId);if(r)setRelay(*r,false);}
+  std::vector<ActiveSelection> kept;for(const auto&a:state_.activeSelections)if(a.group!=group)kept.push_back(a);state_.activeSelections=kept;updateLegacyAntennaId();store_->saveSelection(group,"");return true;
 }
 void RelayEngine::loop(){
   if(restorePending_&&!state_.stormMode&&!state_.motorRunning&&!txActive())restore(true);

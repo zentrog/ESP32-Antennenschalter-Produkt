@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <vector>
 
-enum class FunctionType : uint8_t { Antenna, Timed, Storm };
+enum class FunctionType : uint8_t { Antenna, Timed, Storm, Toggle };
 enum class PinClass : uint8_t { Recommended, Caution, Forbidden, InputOnly, Power, Ground, Control, NC };
 
 

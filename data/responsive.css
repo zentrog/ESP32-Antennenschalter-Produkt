@@ -44,6 +44,7 @@ body.control-mode .logical-layout-grid .logical-radio-select{font-size:clamp(8px
  body.control-mode .logical-device{min-width:0;padding:2px;overflow:hidden}
  body.control-mode .logical-device .logical-radio-select,
  body.control-mode .logical-device .logical-antenna-main{font-size:clamp(8px,2.6vw,12px);line-height:1;white-space:normal;overflow-wrap:anywhere}
+ body.control-mode .logical-device .power-toggle-button{min-height:clamp(14px,3vh,25px);padding:1px;font-size:clamp(7px,2.1vw,10px);line-height:1;white-space:normal;overflow-wrap:anywhere}
  body.control-mode .logical-device.category-antenna:has(.logical-actions){display:grid;grid-template-columns:minmax(0,1fr) 38px;grid-template-rows:minmax(0,1fr);align-items:stretch;gap:3px}
  body.control-mode .logical-device.category-antenna:has(.logical-actions) .logical-antenna-main{grid-column:1;grid-row:1}
  body.control-mode .logical-device.category-antenna:has(.logical-actions) .logical-actions{grid-column:2;grid-row:1;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:2px;margin:0}

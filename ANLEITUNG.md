@@ -105,7 +105,8 @@ Unter **Diagnose** steht das Formular **Fehler oder Wunsch melden** direkt am An
 
 - **GPIO:** Nummer eines ESP-Pins, der zum Beispiel ein Relais steuert.
 - **Relais:** Elektrischer Schalter auf der Relaiskarte.
-- **Funktion:** Benannte Schalthandlung, zum Beispiel „Antenne 1“.
+- **Funktion:** Benannte Schalthandlung, zum Beispiel „Antenne 1“ oder ein unabhängiger Stromtaster für ein Funkgerät.
+- **Kategorie Strom:** Eigenständiges Anlagenteil mit Ein/Aus-Taster. Ohne zugeordnetes Relais bleibt der Taster gesperrt; Relais und GPIO können später ergänzt werden.
 - **Anlagenteil:** Echtes Gerät wie Funkgerät, PA oder Antenne.
 - **Signalweg:** Erlaubte Reihenfolge vom Funkgerät bis zur Antenne.
 - **Master/Slave:** Der Master koordiniert den Verbund. Jeder Slave steuert seine eigenen lokalen Ausgänge.

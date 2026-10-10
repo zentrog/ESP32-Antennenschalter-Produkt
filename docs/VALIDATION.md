@@ -1,4 +1,20 @@
-# Prüfprotokoll – Firmware 1.8.13
+# Prüfprotokoll – Firmware-Releases
+
+## Firmware 1.8.14 · Stromtaster
+
+- Funktion: Kategorie **Strom** für eigenständige Geräteschalter; pro Stromgerät kann ein eigener EIN/AUS-Taster angelegt, benannt und später einem Relais/GPIO zugeordnet werden. Der Taster ist unabhängig von Signalwegen. Ohne zugeordnetes Relais bleibt er sichtbar, aber gesperrt.
+- Zustandslogik: Ein/Aus-Funktionen erhalten eine eigene persistente Gruppe und verwenden den bereits vorhandenen NVS-Speicher für aktive Auswahlen. Ein Neustart stellt einen gespeicherten EIN-Zustand erst dann wieder her, wenn die konfigurierte Relaiszuordnung verfügbar ist. Stromtaster dürfen keine Antennengruppe teilen.
+- Build: PASS mit PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 3.20017.241212+sha.dcc1105b, Xtensa-GCC 8.4.0+2021r2-patch5 und esptool 4.9.0. RAM 52.384 / 327.680 Byte; Firmware 1.364.976 Byte. Vollständiges OTA-Paket `firmware-esp32dev.bin`: 1.507.328 Byte, UI Brotli 62.462 Byte + gzip 74.063 Byte, Restreserve 5.751 Byte. Paket-SHA-256 `515822A52344D4EF8D1F5DBE280CABC2E2EEF94B1A16DA03EAA5BD70A0EB03FA`.
+- OTA: PASS, Testgerät 1.8.13 → 1.8.14 über die Weboberfläche. Sicherungsdownload vor dem Upload, OTA-Antwort HTTP 200. Danach gleiche Gerätekennung, IP und Master-Rolle; Firmware 1.8.14 / API 7 online.
+- Konfigurationserhalt: Vorher-/Nachher-Sicherung verglichen. Unverändert blieben alle nicht angefassten lokalen Felder, gemeinsame Konfigurationsfelder und der vollständige WLAN-Zustand. Die 16 bestehenden Signalwege blieben erhalten. Die vorhandenen 8 Geräte wurden um 4 Stromgeräte ergänzt; die gemeinsame Anordnung wuchs von 8 auf 12 Rasterelemente.
+- Gerätekonfiguration: Vier Geräte **Strom Funkgerät 1–4** und vier individuelle `toggle`-Funktionen angelegt. Ein frischer Sicherungsexport enthält 12 Geräte, 4 Stromtaster, 16 Signalwege und 12 Layoutelemente. Die Steuerseite bestätigt alle vier Taster als sichtbar und mit „GPIO fehlt“ gesperrt. Das Gerät besitzt derzeit keine Relais/GPIO-Zuordnungen; echte Relaisbetätigung und Stromwiederherstellung mit angeschlossener Hardware sind daher noch nicht geprüft.
+- Sicherungsschutz-Prüfung: Der erste Readback-Export enthielt die neue Anordnung noch nicht. Die vollständige gemeinsame Konfiguration wurde erneut gespeichert; danach stimmten Live-API und ein frisch erstellter Sicherungsexport mit 12 Layout-Elementen und allen 16 Signalwegen überein. Der finale Export wurde außerhalb des Repositories auf dem Desktop abgelegt.
+- Release-Hinweis für Anwender: „Funktion: Eigenständige Stromtaster für Geräte.“
+- GitHub-Release v1.8.14 und öffentlicher Direktdownload: `OFFEN`; noch nicht veröffentlicht. Keine Release-Prüfung als bestanden gewertet.
+
+## Frühere Release-Prüfprotokolle
+
+### Firmware 1.8.13
 
 - Ursache der unvollständigen Sicherungswiederherstellung: Der UI-Import sendete die gespeicherten lokalen und gemeinsamen JSON-Objekte, aber `apiConfigPut()` übernahm aus dem lokalen Federation-Objekt nur `enabled`. System-ID, Systemname, UDP-Port, Rolle, permanenter Master, Admission-Modus und Priorität blieben vom frisch gestarteten Zustand erhalten.
 - Korrektur: Der vollständige Federation-Block wird jetzt eingelesen und gespeichert; Änderungen an beliebigem Federation-Feld lösen `FederationService::configChanged()` aus. Feldwerte werden nicht öffentlich protokolliert. Die Sicherungsdatei wird nicht automatisch importiert.

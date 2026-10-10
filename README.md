@@ -2,7 +2,7 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktuelle Produktversion: Firmware 1.8.13. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest). Das stabile Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`.
+Arbeitsstand im Projekt: Firmware 1.8.14. Das neueste GitHub-Release ist derzeit 1.8.13; Firmware 1.8.14 ist noch nicht veröffentlicht. Das stabile Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`.
 
 Unter **Diagnose** gibt es ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der komplette Versandweg vom ESP-Formular bis zum E-Mail-Empfang wurde am 10.10.2026 mit Firmware 1.8.10 bestätigt. Der Bericht wird erst nach ausdrücklicher Bestätigung versendet und enthält keine Gerätekonfiguration. Fehlerfälle und der lokale Download-Fallback bleiben gesondert zu prüfen; Details stehen unter [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
 

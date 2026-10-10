@@ -180,10 +180,14 @@ bool Storage::validate(const LocalConfig& c,String& err) const {
     if(!f.enabled)continue;
     if(f.id.isEmpty()){err=L(c,"Funktions-ID fehlt","Function ID is missing");return false;}
     if(!functionIds.insert(f.id).second){err=L(c,"Doppelte Funktions-ID ","Duplicate function ID ")+f.id;return false;}
-    if(f.type!=FunctionType::Storm && relayIds.find(f.relayId)==relayIds.end()){err=L(c,"Funktion ","Function ")+f.label+L(c," verweist auf unbekanntes Relais"," refers to an unknown relay");return false;}
+    if(f.type!=FunctionType::Storm && !(f.type==FunctionType::Toggle&&f.relayId.isEmpty()) && relayIds.find(f.relayId)==relayIds.end()){err=L(c,"Funktion ","Function ")+f.label+L(c," verweist auf unbekanntes Relais"," refers to an unknown relay");return false;}
     if(f.type==FunctionType::Antenna && f.group.isEmpty()){err=L(c,"Antennenfunktion ","Antenna function ")+f.label+L(c," benötigt eine Schaltgruppe"," requires a switching group");return false;}
+    if(f.type==FunctionType::Toggle && f.group.isEmpty()){err=L(c,"Ein/Aus-Funktion ","Toggle function ")+f.label+L(c," benötigt eine eigene Zustandsgruppe"," requires its own state group");return false;}
     if(f.type==FunctionType::Timed && (f.durationMs<100 || f.durationMs>100000)){err=L(c,"Zeitaktion ","Timed action ")+f.label+L(c," muss 0,1..100 s sein"," must be 0.1..100 s");return false;}
   }
+  std::set<String> toggleGroups,antennaGroups;
+  for(const auto&f:c.functions)if(f.enabled){if(f.type==FunctionType::Antenna)antennaGroups.insert(f.group);if(f.type==FunctionType::Toggle){if(!toggleGroups.insert(f.group).second){err=L(c,"Ein/Aus-Funktionen benötigen jeweils eine eigene Zustandsgruppe: ","Toggle functions each require their own state group: ")+f.group;return false;}}}
+  for(const auto&group:toggleGroups)if(antennaGroups.find(group)!=antennaGroups.end()){err=L(c,"Ein/Aus-Gruppe darf nicht mit einer Antennengruppe geteilt werden: ","Toggle group must not be shared with an antenna group: ")+group;return false;}
   for(auto &f:c.functions){
     if(!f.enabled || f.requiresFunctionId.isEmpty())continue;
     if(functionIds.find(f.requiresFunctionId)==functionIds.end()){err=L(c,"Abhängigkeit von ","Dependency of ")+f.label+L(c," ist ungültig"," is invalid");return false;}
@@ -215,7 +219,7 @@ bool Storage::writeLocalFile(const char* path,const LocalConfig& c,String& err){
   auto fe=d["features"].to<JsonObject>();fe["externalApi"]=c.features.externalApi;fe["ota"]=c.features.ota;
   uiTo(d["ui"].to<JsonObject>(),c.ui);
   auto rs=d["relays"].to<JsonArray>();for(auto&r:c.relays){auto o=rs.add<JsonObject>();o["id"]=r.id;o["name"]=r.name;o["gpio"]=r.gpio;o["activeLow"]=r.activeLow;o["enabled"]=r.enabled;}
-  auto fs=d["functions"].to<JsonArray>();for(auto&x:c.functions){auto o=fs.add<JsonObject>();o["id"]=x.id;o["label"]=x.label;o["type"]=x.type==FunctionType::Timed?"timed":(x.type==FunctionType::Storm?"storm":"antenna");o["relayId"]=x.relayId;o["enabled"]=x.enabled;o["visible"]=x.visible;o["durationMs"]=x.durationMs;o["requiresFunctionId"]=x.requiresFunctionId;o["group"]=x.group;o["stateToken"]=x.stateToken;}
+  auto fs=d["functions"].to<JsonArray>();for(auto&x:c.functions){auto o=fs.add<JsonObject>();o["id"]=x.id;o["label"]=x.label;o["type"]=x.type==FunctionType::Timed?"timed":(x.type==FunctionType::Storm?"storm":(x.type==FunctionType::Toggle?"toggle":"antenna"));o["relayId"]=x.relayId;o["enabled"]=x.enabled;o["visible"]=x.visible;o["durationMs"]=x.durationMs;o["requiresFunctionId"]=x.requiresFunctionId;o["group"]=x.group;o["stateToken"]=x.stateToken;}
   auto ds=d["devices"].to<JsonArray>();for(const auto&x:c.devices)deviceTo(ds.add<JsonObject>(),x);
   File file=LittleFS.open(path,"w");if(!file){err="Datei kann nicht geschrieben werden";return false;}size_t z=serializeJson(d,file);file.flush();file.close();if(!z){err="JSON schreiben fehlgeschlagen";return false;}return true;
 }
@@ -234,7 +238,7 @@ bool Storage::readLocalFile(const char* path,LocalConfig& c,String& err){
   JsonObject tx=d["txInterlock"].as<JsonObject>();x.txInterlock.enabled=tx["enabled"]|false;x.txInterlock.gpio=tx["gpio"]|34;x.txInterlock.activeHigh=tx["activeHigh"]|true;
   JsonObject fe=d["features"].as<JsonObject>();x.features.externalApi=fe["externalApi"]|true;x.features.ota=fe["ota"]|true;uiFrom(d["ui"],x.ui);
   for(JsonObject q:d["relays"].as<JsonArray>()){RelayConfig z;z.id=String((const char*)(q["id"]|""));z.name=repairStoredText(String((const char*)(q["name"]|"")));z.gpio=q["gpio"]|-1;z.activeLow=q["activeLow"]|true;z.enabled=q["enabled"]|false;x.relays.push_back(z);}
-  for(JsonObject q:d["functions"].as<JsonArray>()){FunctionConfig z;z.id=String((const char*)(q["id"]|""));z.label=repairStoredText(String((const char*)(q["label"]|"")));String ty=String((const char*)(q["type"]|"antenna"));z.type=ty=="timed"?FunctionType::Timed:(ty=="storm"?FunctionType::Storm:FunctionType::Antenna);z.relayId=String((const char*)(q["relayId"]|""));z.enabled=q["enabled"]|true;z.visible=q["visible"]|true;z.durationMs=q["durationMs"]|7500;z.requiresFunctionId=String((const char*)(q["requiresFunctionId"]|""));z.group=String((const char*)(q["group"]|"ANT"));z.stateToken=String((const char*)(q["stateToken"]|""));x.functions.push_back(z);}
+  for(JsonObject q:d["functions"].as<JsonArray>()){FunctionConfig z;z.id=String((const char*)(q["id"]|""));z.label=repairStoredText(String((const char*)(q["label"]|"")));String ty=String((const char*)(q["type"]|"antenna"));z.type=ty=="timed"?FunctionType::Timed:(ty=="storm"?FunctionType::Storm:(ty=="toggle"?FunctionType::Toggle:FunctionType::Antenna));z.relayId=String((const char*)(q["relayId"]|""));z.enabled=q["enabled"]|true;z.visible=q["visible"]|true;z.durationMs=q["durationMs"]|7500;z.requiresFunctionId=String((const char*)(q["requiresFunctionId"]|""));z.group=String((const char*)(q["group"]|"ANT"));z.stateToken=String((const char*)(q["stateToken"]|""));x.functions.push_back(z);}
   for(JsonObjectConst q:d["devices"].as<JsonArrayConst>()){LogicalDeviceConfig z;deviceFrom(q,z);x.devices.push_back(z);}
   if(!validate(x,err))return false;c=x;return true;
 }

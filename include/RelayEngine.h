@@ -31,7 +31,7 @@ class RelayEngine {
   static RelayEngine* instance_;
   static void motorTimerThunk(void* arg);
 
-  RelayConfig* relay(const String& id); FunctionConfig* function(const String& id);
+  RelayConfig* relay(const String& id); FunctionConfig* function(const String& id); void updateLegacyAntennaId();
   void setRelay(RelayConfig& r,bool on);
   void applyStormOutputs();
 };
