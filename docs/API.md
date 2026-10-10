@@ -1,8 +1,8 @@
-# HTTP/JSON-API – Firmware 1.8.5
+# HTTP/JSON-API – Firmware 1.8.6
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
-GET `/`, `/app.js` und `/responsive.css` liefern bei einem gültigen OTA-Oberflächenpaket die Brotli-komprimierten Dateien aus der laufenden Programmpartition. Ohne gültiges Paket greift die Firmware auf LittleFS zurück. `/style.css` wird weiterhin aus LittleFS geliefert. Firmware 1.8.5 ändert die hier aufgeführten API-Routen nicht.
+GET `/`, `/app.js` und `/responsive.css` liefern bei einem gültigen OTA-Oberflächenpaket die Brotli-komprimierten Dateien aus der laufenden Programmpartition. Ohne gültiges Paket greift die Firmware auf LittleFS zurück. `/style.css` wird weiterhin aus LittleFS geliefert. Firmware 1.8.6 ändert die hier aufgeführten API-Routen nicht.
 
 ## Steuerung und Status
 GET /api/snapshot, /api/combined, /api/time, /api/peers

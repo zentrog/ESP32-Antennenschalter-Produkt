@@ -532,14 +532,46 @@ void WebUi::apiRouteActivate(){
  for(size_t i=0;i<exclusiveKeys.size()&&error.isEmpty();++i){for(const auto&other:s_->routes){if(other.id==route->id||other.enabled==false||!containsKey(other.deviceKeys,exclusiveKeys[i]))continue;if(routeActiveNow(other)){error=(c_->language=="en"?"Exclusive system device is already used by active signal path: ":"Exklusives Anlagenteil wird bereits von einem aktiven Signalweg verwendet: ")+exclusiveNames[i];break;}}}
  if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
 
- // Mehrere Signalwege dürfen gleichzeitig aktiv sein. Gesperrt wird nur, wenn
- // ein bereits aktiver Weg dieselbe reale Schaltgruppe in einer anderen Stellung
- // benötigt. Gleiche Stellung darf von mehreren Wegen gemeinsam benutzt werden.
+ // Vor dem Einschalten eines Signalwegs müssen alle anderen Wege vollständig AUS sein.
+ // Die Oberfläche schaltet den bisherigen Weg zuerst ab; diese Prüfung schützt auch
+ // direkte API-Aufrufe und verhindert parallele Verbindungen aus verschiedenen Gruppen.
  auto collectRouteReqs=[&](const RouteConfig&rr,std::vector<Req>&out)->bool{
   out.clear();for(const auto&key:rr.deviceKeys){String cid,did;if(!splitKey(key,cid,did))return false;
    if(cid==c_->controllerId){const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev)return false;for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(f&&f->type==FunctionType::Antenna){Req q{cid,f->id,f->group.isEmpty()?String("ANT"):f->group};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);}}}
    else{String body;if(!quietRemoteBody(cid,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;JsonObjectConst dev;for(JsonObjectConst d:rd["devices"].as<JsonArrayConst>())if(String((const char*)(d["id"]|""))==did){dev=d;break;}if(dev.isNull())return false;for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid&&String((const char*)(fn["type"]|""))=="antenna"){Req q{cid,fid,String((const char*)(fn["group"]|"ANT"))};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);break;}}}
   }return true;};
+ for(const auto&other:s_->routes){
+  if(!error.isEmpty())break;
+  if(other.id==route->id||other.enabled==false)continue;
+  std::vector<Req>otherReqs;
+  if(!collectRouteReqs(other,otherReqs)){
+   error=c_->language=="en"?"Cannot verify that every other signal path is off; check controller connectivity":"Es kann nicht sicher geprüft werden, ob alle anderen Signalwege AUS sind. Bitte Steuergeräteverbindung prüfen";
+   break;
+  }
+  for(const auto&otherReq:otherReqs){
+   bool active=false;
+   if(otherReq.controllerId==c_->controllerId)active=rel_->isFunctionActive(otherReq.functionId);
+   else{
+    String body;
+    if(!quietRemoteBody(otherReq.controllerId,body)){
+     error=c_->language=="en"?"Cannot verify that every other signal path is off; check controller connectivity":"Es kann nicht sicher geprüft werden, ob alle anderen Signalwege AUS sind. Bitte Steuergeräteverbindung prüfen";
+     break;
+    }
+    JsonDocument rd;
+    if(deserializeJson(rd,body)){
+     error=c_->language=="en"?"Cannot verify the state of another signal path":"Der Zustand eines anderen Signalwegs kann nicht sicher geprüft werden";
+     break;
+    }
+    const char*activeId=rd["activeByGroup"][otherReq.group.c_str()];
+    active=activeId&&String(activeId)==otherReq.functionId;
+   }
+   if(active){
+    error=c_->language=="en"?"Another signal path is active. Only one radio-to-antenna connection may be active at a time":"Ein anderer Signalweg ist aktiv. Es darf immer nur eine Verbindung von einem Funkgerät zu einer Antenne aktiv sein";
+    break;
+   }
+  }
+ }
+ if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
  for(const auto&other:s_->routes){if(!error.isEmpty())break;if(other.id==route->id||other.enabled==false||!routeActiveNow(other))continue;std::vector<Req>ors;if(!collectRouteReqs(other,ors))continue;for(const auto&nr:reqs){for(const auto&ar:ors){if(nr.controllerId==ar.controllerId&&nr.group==ar.group&&nr.functionId!=ar.functionId){error=(c_->language=="en"?"Switching group is already occupied by active signal path ":"Schaltgruppe ist bereits durch aktiven Signalweg belegt: ")+(other.label.isEmpty()?other.id:other.label)+" · "+nr.group;break;}}if(!error.isEmpty())break;}}
  if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
 

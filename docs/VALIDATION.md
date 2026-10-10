@@ -1,4 +1,4 @@
-# Prüfprotokoll – Produktversion 1.8.5
+# Prüfprotokoll – Produktversion 1.8.6
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -109,6 +109,25 @@ Gerätenamen, Rufzeichen, Postleitzahlen, WLAN-Namen und Kennwörter sowie lokal
 | Positionsgleichheit und Scrollfreiheit auf echten Handy-, Laptop- und 4K-Ansichten | OFFEN; noch keine Sichtprüfung auf diesen Geräten |
 
 Der Release wurde am 09.10.2026 erstellt. Die erfolgreiche öffentliche Direktdownloadprüfung belegt, dass GitHub die erwartete Binärdatei ausliefert; sie ersetzt keinen OTA-Lauf am ESP.
+
+## Änderungen in 1.8.6
+
+- Die Bedienseite trennt vor dem Einschalten eines gewählten Signalwegs alle anderen aktiven oder teilweise aktiven Wege. Ein bereits allein aktiver Weg lässt sich durch erneutes Anklicken trennen.
+- Die grünen Markierungen zeigen den bestätigten Relaiszustand auch dann an, wenn eine alte Konfiguration mehrere Wege eingeschaltet hat, damit ein Konflikt sichtbar bleibt und bereinigt werden kann.
+- Die ESP-seitige Route-API erlaubt keine neue Verbindung, solange ein anderer Weg noch Relais eingeschaltet hat. Sie verweigert das Schalten außerdem, wenn ein für andere Wege zuständiges Verbundgerät nicht zuverlässig erreichbar ist und sein Zustand daher nicht sicher geprüft werden kann.
+- Es bleibt bei einer vollständigen ESP32-DevKit-Firmwaredatei. Das normale OTA schreibt nicht in LittleFS.
+
+## Buildstatus 1.8.6
+
+| Prüfung | Ergebnis |
+|---|---|
+| PlatformIO `esp32dev` Firmware | PASS; 1.450.629 / 1.507.328 Byte Flash (96,2 %), 52.960 / 327.680 Byte RAM |
+| Vollständiges OTA-Paket `firmware-esp32dev.bin` | PASS; 1.507.328 Byte, Firmware 1.457.200 Byte, gebündelte Webdateien 48.640 Byte, 1.452 Byte Reserve |
+| ESP32-Imageprüfung | PASS; esptool 4.9.0, Prüfsumme und Validierungshash gültig |
+| SHA-256 `firmware-esp32dev.bin` | `e59837d962d002ef3851e9c28aa7c23f57472c6ea203583de881f9b77f2ec5b4` |
+| GitHub-Release und öffentlicher Direktdownload | OFFEN |
+| Einzelverbindung am echten ESP, Wechsel zwischen unterschiedlichen Gruppen und erneutes Anklicken zum Trennen | OFFEN |
+| Verbund: nicht erreichbarer Controller blockiert einen neuen Weg | OFFEN |
 
 | Prüfung | Ergebnis |
 |---|---|
