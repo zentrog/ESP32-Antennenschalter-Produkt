@@ -139,12 +139,15 @@ Nach erfolgreicher Einrichtung fragt die App, ob sie eine Desktop-Verknüpfung a
 
 ### 3.9 Fehler melden (Firmware und Windows-App)
 
-In der Firmware-Weboberfläche und in der Windows-App gibt es unter **Diagnose** die gut sichtbare Aktion **Fehler melden**. Sie führt in einfachen Fragen durch den Bericht: Was ist passiert? Was wurde erwartet? Bei welchem Schritt trat es auf? Seit wann beziehungsweise nach welcher Änderung?
+In der Firmware-Weboberfläche und in der Windows-App gibt es unter **Diagnose** die gut sichtbare Aktion **Fehler oder Wunsch melden**. Der Nutzer wählt **Fehler**, **Verbesserungsidee/Wunsch** oder **Sonstiges**. Der geführte Fehlerteil fragt: Was ist passiert? Was wurde erwartet? Bei welchem Schritt trat es auf? Seit wann beziehungsweise nach welcher Änderung? Zusätzlich gibt es ein freies Textfeld für selbst erkannte Fehler, Wünsche, Verbesserungsvorschläge und weitere Hinweise.
+
+Name und Rückkontakt sind optionale, getrennte Felder. Der Nutzer kann etwa Namen, Rufzeichen und E-Mail-Adresse angeben, damit eine Rückfrage möglich ist. Diese Angaben werden nicht automatisch aus der ESP-Konfiguration oder dem PayPal-Profil übernommen. Vor dem Teilen zeigt die App ausdrücklich, ob Name, Rückkontakt und Freitext im Bericht enthalten sind; jedes Feld kann einzeln entfernt werden. Ohne Zustimmung bleiben Bericht und Angaben lokal.
 
 - Beide Oberflächen erzeugen ein gemeinsames, versioniertes Diagnosebericht-Format. Die Firmware kann einen Bericht im Browser zum Herunterladen bereitstellen; die App kann Berichte von einem oder mehreren erreichbaren ESPs zusammenstellen.
 - Der Bericht enthält standardmäßig nur für die Fehlersuche nötige technische Angaben: Firmware-/App-/API-Version, ESP-Modell, anonymisierte Gerätezahl/Rollen, Betriebssystem- und USB-Erkennung soweit relevant, Fehlercodes, Ergebnis der Grunddiagnose und einen begrenzten, geheimnisbereinigten Ereignisausschnitt.
-- Standardmäßig ausgeschlossen sind WLAN-Kennwörter, WLAN-Namen, Rufzeichen, PLZ, private IP-Adressen, MAC-Adressen, vollständige Anlagen-/GPIO-Konfigurationen, Backups und freie Notizen mit privaten Angaben. Notizen werden nur aufgenommen, wenn der Nutzer sie sieht und ausdrücklich bestätigt.
-- Vor dem Teilen zeigt die App/Firmware eine Vorschau und weist auf mögliche private Angaben hin. Es gibt keine automatische Telemetrie und keinen stillen Upload. Der Nutzer kann den Bericht lokal speichern, kopieren oder bewusst über einen angebotenen Kontaktweg weitergeben.
+- Standardmäßig ausgeschlossen sind WLAN-Kennwörter, WLAN-Namen, Rufzeichen, PLZ, private IP-Adressen, MAC-Adressen, vollständige Anlagen-/GPIO-Konfigurationen und Backups. Freitext, Name und Rückkontakt werden nur nach eigener Eingabe des Nutzers aufgenommen.
+- Vor dem Teilen zeigt die App/Firmware eine vollständige Vorschau und weist darauf hin, dass selbst eingegebener Text private Daten oder Zugangsdaten enthalten kann. Name, Kontakt und Beschreibung lassen sich vor dem Erstellen einzeln entfernen oder ändern. Eine automatische Erkennung möglicher Geheimnisse darf nur warnen und ersetzt nicht die Nutzerprüfung.
+- Es gibt keine automatische Telemetrie und keinen stillen Upload. Der Nutzer kann den Bericht lokal speichern, kopieren oder bewusst über einen angebotenen Kontaktweg weitergeben. Vor dem Öffnen von E-Mail oder GitHub wird klar angezeigt, welche Inhalte die externe Anwendung erhält.
 - Als Versandweg kann die App eine vorbereitete E-Mail an den Projektkontakt oder eine GitHub-Issue-Seite öffnen. Das Absenden beziehungsweise Veröffentlichen erfolgt erst nach Prüfung und eigener Aktion des Nutzers. Für Nutzer ohne E-Mail/GitHub bleibt der lokale Download möglich.
 - Ein Bericht hat Größen- und Zeitgrenzen, Versionsfeld, Erstellungsdatum, Zufallsfallnummer und eine verständliche Kurzfassung. Keine unbegrenzten seriellen Logs oder kompletten Flash-/Konfigurationsdumps anhängen.
 - Kann die Software eine Ursache nicht feststellen oder Hardware nicht sehen, muss der Bericht genau das sagen. Kein automatisch formulierter Bericht darf aus einem Softwarehinweis eine bestätigte defekte Hardware ableiten.
@@ -214,6 +217,7 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Signatur/Hash, Version, Modell und Flashlayout jedes Pakets geprüft werden;
 - Strom-/USB-Abbruch einen dokumentierten und praktisch geprüften Rettungsweg besitzt;
 - Firmware-Weboberfläche und App erzeugen denselben versionierten Bericht, der standardmäßig keine WLAN-, Identitäts-, Standort- oder Anlagengeheimnisse enthält;
+- eigene Fehlerbeschreibung, Wünsche/Verbesserungsideen sowie Name und Rückkontakt können freiwillig eingegeben, einzeln entfernt und vor dem Teilen vollständig geprüft werden;
 - Berichtvorschau, lokale Speicherung und bewusstes Teilen funktionieren; kein Bericht wird automatisch versandt;
 - Diagnosen keine unerwarteten Relais-/Motoraktionen auslösen;
 - Datenschutz, Lizenz, Copyright, Drittanbieterhinweise und verständliche Anleitung vollständig sind;
