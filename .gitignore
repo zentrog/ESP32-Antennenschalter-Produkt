@@ -10,4 +10,7 @@ _wifi-backup*/
 *.s3-backup
 *.local
 *.bin
+do1anb-mail-endpoint-upload.zip
+private-*.php
+*.private.php
 *.elf

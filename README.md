@@ -4,6 +4,8 @@ Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein
 
 Aktuelle veröffentlichte Produktversion: Firmware 1.8.6. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest).
 
+Der Arbeitsstand für die nächste Version ergänzt unter **Diagnose** ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der echte E-Mail-Versand darf erst nach Bereitstellung und erfolgreichem Hostingtest des HTTPS-Mail-Endpunkts aktiviert werden; siehe [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
+
 Die gespeicherte Anordnung der Anlagenteile bleibt auf Handy, Laptop und großem Monitor an denselben Rasterpositionen. Die Ansicht verkleinert Raster und Beschriftungen an die verfügbare Fläche; sie ordnet die Geräte nicht automatisch um.
 
 Die Release-Datei `firmware-esp32dev.bin` enthält die vollständige Firmware und Weboberfläche für ein manuelles OTA-Update. Die getrennte LittleFS-Partition mit WLAN und Gerätekonfiguration wird dabei nicht überschrieben.
@@ -46,6 +48,9 @@ Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die
 - [HTTP-API](docs/API.md)
 - [Prüfprotokoll](docs/VALIDATION.md)
 - [Dokumentationsablauf](docs/DOCUMENTATION-WORKFLOW.md)
+- [Fehler- und Wunschmeldungen](docs/REPORT-ENDPOINT.md)
+- [Nutzung und Sicherheitshinweise](docs/LEGAL-NOTICES.md)
+- [Drittanbieter-Lizenzen](THIRD-PARTY-NOTICES.md)
 - [Geplante Windows-App: Funktionsumfang und Umsetzung](docs/WINDOWS-APP-PLAN.md) (geplant, noch nicht implementiert)
 
 Die Windows-App ist optional und noch nicht implementiert. Firmware bleibt separat herunterladbar, manuell installierbar und eigenständig gepflegt. Die App wird später einen zusätzlichen geführten Weg bieten.
@@ -55,6 +60,14 @@ Die Windows-App ist optional und noch nicht implementiert. Firmware bleibt separ
 © 2026 Andreas Bodyn (DO1ANB) · Projektkontakt: [andreas.bodyn@gmx.de](mailto:andreas.bodyn@gmx.de)
 
 Freiwillige Unterstützung: [PayPal.Me](https://paypal.me/andreasbodyn). Das Projekt bleibt frei verfügbar; Unterstützung ist freiwillig und begründet keinen Anspruch auf Support.
+
+## Lizenz
+
+Dieses Projekt steht unter der GNU General Public License, Version 3 oder (nach deiner Wahl) jeder späteren Version. Siehe [LICENSE](LICENSE). Bibliotheken und Werkzeuge Dritter behalten ihre jeweils eigenen Lizenzen.
+
+GPL erlaubt auch kommerzielle Nutzung und Weitergabe, wenn die Lizenzbedingungen eingehalten werden. Für eine andere Lizenzierung oder bezahlte Unterstützung kannst du den Projektkontakt ansprechen. Details zu eingebundenen Bibliotheken und den technischen Grenzen stehen in [Drittanbieter-Hinweisen](THIRD-PARTY-NOTICES.md) und [Nutzungshinweisen](docs/LEGAL-NOTICES.md).
+
+Die Firmware enthält keine KI-Funktion und übermittelt keine Anlagenkonfiguration an einen KI-Dienst. Die freiwillige Fehler-/Wunschmeldung übermittelt ausschließlich die vom Nutzer geprüften Formularangaben und die vorher angezeigte Firmware-Version an den Projekt-Mailserver.
 
 ## Datenschutz
 

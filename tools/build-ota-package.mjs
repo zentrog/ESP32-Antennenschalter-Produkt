@@ -32,7 +32,7 @@ for (const [name, expectedHash] of unchangedUiFiles) {
   if (actualHash !== expectedHash) throw new Error(`data/${name} changed but is not in the OTA bundle. Extend the bundle before releasing.`);
 }
 const npxCli = join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js');
-const terser = spawnSync(process.execPath, [npxCli, '--yes', 'terser@5.44.1', resolve(root, 'data', 'app.js'), '--compress', '--mangle', '--ecma', '2020', '--output', appJs], { cwd: root, stdio: 'inherit', shell: false });
+const terser = spawnSync(process.execPath, [npxCli, '--yes', 'terser@5.44.1', resolve(root, 'data', 'app.js'), '--compress', '--mangle', '--toplevel', '--ecma', '2020', '--output', appJs], { cwd: root, stdio: 'inherit', shell: false });
 if (terser.status !== 0) throw new Error('Pinned Terser minification failed');
 const syntax = spawnSync(process.execPath, ['--check', appJs], { cwd: root, stdio: 'inherit', shell: false });
 if (syntax.status !== 0) throw new Error('Minified browser application failed its JavaScript syntax check');

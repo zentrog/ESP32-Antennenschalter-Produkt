@@ -59,3 +59,19 @@ body.control-mode .logical-layout-grid .logical-radio-select{font-size:clamp(8px
  body.control-mode .ticker-row{min-height:22px;padding:1px 3px}
  body.control-mode footer{font-size:.52rem}
 }
+.footer-support{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border:1px solid rgba(92,190,161,.55);border-radius:999px;background:rgba(25,92,77,.2);color:#b6f0d8;text-decoration:none;font-weight:700;white-space:nowrap}
+.footer-support:hover,.footer-support:focus-visible{background:#185b4c;color:#fff;border-color:#8de4c4}
+.footer-support:focus-visible{outline:2px solid #9ee8ff;outline-offset:2px}
+.footer-legal{color:#b9c8d6;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.footer-legal:hover,.footer-legal:focus-visible{color:#fff}
+.footer-legal:focus-visible{outline:2px solid #9ee8ff;outline-offset:2px}
+body.control-mode #footerRights,body.control-mode #footerLicense{font-size:clamp(.62rem,.68vw,.78rem);color:#c4d1de}
+.report-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.report-form>label{display:grid;gap:4px;color:#b8c9d8;font-size:.9rem}
+.report-form input:not([type=checkbox]),.report-form select,.report-form textarea{width:100%;min-width:0;border:1px solid #3a4b5b;border-radius:6px;padding:8px;background:#101820;color:#eef5fb;font:inherit}
+.report-form textarea{resize:vertical;min-height:3.5em}
+.report-form .report-consent{grid-column:1/-1;display:flex;align-items:flex-start;gap:8px}
+.report-form .report-consent input{margin-top:4px}
+.report-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.report-form>p{grid-column:1/-1}
+@media(max-width:600px){.report-form{grid-template-columns:minmax(0,1fr)}}

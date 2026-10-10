@@ -1,0 +1,11 @@
+<?php
+// Copy outside the public web directory and set ANTCTRL_REPORT_CONFIG to it.
+// Keep permissions restricted. Never commit a populated copy of this file.
+return [
+    'host' => 'SMTP_HOSTNAME',
+    'port' => 465,
+    'username' => 'SMTP_USERNAME',
+    'password' => 'SET_THIS_ON_THE_SERVER_ONLY',
+    'from' => 'SMTP_SENDER_ADDRESS',
+    'secret' => 'REPLACE_WITH_A_RANDOM_SECRET_AT_LEAST_32_BYTES',
+];

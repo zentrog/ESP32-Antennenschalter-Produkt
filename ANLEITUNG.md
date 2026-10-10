@@ -91,6 +91,8 @@ Wenn der ESP sein Dateisystem nicht einhängen kann, formatiert die Firmware es 
 - **Nach dem Einschalten ist ein Ausgang aktiv:** Trenne die Relaisversorgung, bis Pin und Logik sicher geprüft sind.
 - **Ein Update meldet einen Fehler:** Lies die Fehlermeldung ab. Kein Factory-Reset und kein Dateisystem-Upload als Reparaturversuch.
 
+Unter **Diagnose → Fehler oder Wunsch melden** kannst du freiwillig einen Fehler oder Verbesserungsvorschlag mitteilen. Kontrolliere den Text; persönliche Angaben und Rückkontakt sind freiwillig. Es werden keine Anlagenkonfigurationen, WLAN-Daten oder Sicherungen angehängt. Der E-Mail-Versand funktioniert nur, wenn der Betreiber den sicheren HTTPS-Mail-Endpunkt eingerichtet hat. Andernfalls speichere den Bericht lokal und sende ihn später über einen anderen Weg.
+
 ## Wörter kurz erklärt
 
 - **GPIO:** Nummer eines ESP-Pins, der zum Beispiel ein Relais steuert.

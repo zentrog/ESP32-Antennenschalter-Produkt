@@ -18,6 +18,7 @@
 8. Für einen Produktrelease genau ein stabiles GitHub-Release aus dem geprüften `main`-Stand erstellen und ausschließlich `release-assets/firmware-esp32dev.bin` anhängen. Die Datei muss Firmware und alle geänderten Webdateien enthalten.
 9. Nach der Veröffentlichung über die öffentliche Release-API prüfen: neuester Tag, stabiler Status, genau ein Asset, erwartete Dateigröße. Danach `/releases/latest/download/firmware-esp32dev.bin` anonym abrufen und SHA-256 mit dem lokalen Paket vergleichen.
 10. Release- und Downloadprüfung mit Datum und Firmware-Quellcommit in `docs/VALIDATION.md` eintragen. OTA am echten Gerät und Ansichten auf echten Bildschirmgrößen bleiben eigene offene Prüfungen, bis sie ausgeführt wurden.
+11. Wenn der Release eine externe E-Mail-Funktion enthält, den konkreten HTTPS-Endpunkt und Mailversand vor der Aktivierung Ende zu Ende prüfen. Nicht erreichbare externe Dienste müssen von der Oberfläche erkannt werden; ein funktionierender lokaler Download-Fallback bleibt erforderlich.
 
 ## Mindestangaben im Prüfprotokoll
 

@@ -1,6 +1,6 @@
 # Geplantes Vorhaben: Windows-App für ESP32-Antennenschalter
 
-**Status: GEPLANT – nicht implementiert und nicht Bestandteil von Firmware 1.8.6.**
+**Status: GEPLANT – die gemeinsame Meldeanforderung ist teilweise in der Firmware umgesetzt; die Windows-App selbst ist nicht implementiert.**
 
 Dieses Dokument hält Ziel, Funktionsumfang, Sicherheitsregeln, technische Abhängigkeiten und Freigabekriterien für eine native Windows-Anwendung fest. Es ist die dauerhafte Arbeitsgrundlage für spätere Umsetzung. Eine hier beschriebene Funktion gilt erst als vorhanden, wenn sie gebaut, geprüft und in diesem Dokument sowie den übrigen Projektdokumenten als umgesetzt gekennzeichnet wurde.
 
@@ -150,6 +150,7 @@ Name und Rückkontakt sind optionale, getrennte Felder. Der Nutzer kann etwa Nam
 - **HTTPS ist nur der sichere Transport und kein E-Mail-Provider.** Für den Versand wird ein serverseitiger Mail-Endpunkt benötigt: App/Firmware sendet den bestätigten Bericht per HTTPS an diesen Endpunkt; der Endpunkt validiert und begrenzt die Anfrage und reicht die E-Mail anschließend über authentifiziertes SMTP (Submission) oder die API eines E-Mail-Versanddienstes an den Projektkontakt weiter. Erst dieser letzte Dienst stellt die E-Mail zu.
 - Der bevorzugte Ablauf ist eine ausdrücklich vom Nutzer gestartete **„Bericht prüfen und per E-Mail senden“**-Aktion. Dafür braucht der Nutzer kein eingerichtetes E-Mail-Programm. Nach Vorschau und ausdrücklicher Zustimmung übermittelt App/Firmware den gewählten Bericht an den Mail-Endpunkt und zeigt eine Versandbestätigung oder verständliche Fehlermeldung.
 - Als Absender ist ein eigens für den ESP32-Projektversand angelegtes Mailkonto vorgesehen; Zieladresse ist der freigegebene Projektkontakt. Die Zugangsdaten liegen ausschließlich als geschützte Geheimnisse auf dem Mailserver. Sie dürfen niemals in Firmware, App, GitHub-Quelltext, Release-Dateien, Logs oder Diagnoseberichte eingebettet werden. Auch ein nur zum Mailversand angelegtes Konto bleibt ein zu schützendes Zugangsmittel.
+- Der aktuelle Firmware-Arbeitsstand enthält das Formular, den lokalen JSON-Download und die Übergabe an eine HTTPS-Vorschauseite. Details und Hosting-Freigabekriterien stehen in [REPORT-ENDPOINT.md](REPORT-ENDPOINT.md). Solange der do1anb.de-Endpunkt nicht auf echtem Hosting geprüft ist, ist der E-Mail-Versand ein offener Freigabepunkt.
 - Ein HTTPS-Endpunkt ohne konfigurierten SMTP-/API-Versand kann keine E-Mail zustellen. Gibt es keinen erreichbaren und eingerichteten Backend-Mailversand, bleiben nur ein vorhandenes E-Mail-Programm, ein manueller Webmailweg oder das lokale Speichern und spätere Teilen des Berichts.
 - Die Firmware-Weboberfläche bietet denselben Ablauf, soweit sichere HTTPS-Übertragung vom Browser aus möglich ist. Da die ESP-Webseite derzeit lokal über HTTP laufen kann, muss die Umsetzung den Übertragungsweg und die Integrität der angezeigten Einwilligung prüfen. Wenn kein sicherer Versand möglich ist, darf sie nicht still auf unsichere Übertragung ausweichen; sie bietet dann lokalen Download und vorbereitete E-Mail als Alternative.
 - E-Mail-Programm und GitHub bleiben optionale Wege. Ein `mailto:` allein ist kein verlässlicher Hauptweg, weil ein E-Mail-Programm fehlen oder nicht eingerichtet sein kann. Die App darf alternativ eine vorbereitete E-Mail oder GitHub-Issue-Seite öffnen; das Teilen erfolgt erst nach Prüfung und eigener Aktion des Nutzers.
@@ -243,7 +244,7 @@ Eine erste öffentliche Version ist erst freigabefähig, wenn:
 - Welche Wiederherstellung auf ESP-Ersatzhardware mit anderer MAC ist zulässig und wie werden neue Identitäten verteilt?
 - Welche Angaben sind wirklich zwingend, welche optional, und welche Prüfregeln sind pro Anlagenprofil konfigurierbar?
 - Wo wird der HTTPS-Mail-Endpunkt betrieben, lässt der ausgewählte Hosting-Anbieter authentifizierten SMTP-Versand zu, wie werden Zugangsdaten serverseitig gespeichert/rotiert, welche Minimaldaten verarbeitet der Weg, wie wird Missbrauch begrenzt und wie lange bleiben technische Versandprotokolle erhalten?
-- Welche Lizenz gilt für Anwendung, Firmware, Dokumentation und abgeleitete Komponenten; wie werden Drittbeiträge behandelt und wer hält Veröffentlichungsschlüssel? Projektkontakt/gewünschte Copyright-Angabe sind vom Betreiber benannt; die konkrete Lizenz ist noch nicht gewählt.
+- Die vom Betreiber gewählte Projektlizenz ist GNU GPL Version 3 oder später. Vor der App-Veröffentlichung sind Drittanbieter-Lizenzen getrennt zu erfassen; App-eigene Signaturschlüssel sind geschützt zu verwalten.
 
 ## 10. Umsetzungshistorie
 
