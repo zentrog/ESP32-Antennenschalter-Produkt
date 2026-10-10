@@ -9,6 +9,9 @@
 - Live-HTTP: Startseite, JavaScript und beide CSS-Dateien liefern HTTP 200 mit gzip; Dekomprimierte Inhalte stimmen jeweils per SHA-256 exakt mit dem Paketquellstand überein. Der Einzeldatei-Upload wird mit HTTP 409 abgewiesen.
 - `setup.html`, Logo und Favicon bleiben erhalten. Die produktiven ESPs blieben unangetastet.
 - Veröffentlichung: PASS; öffentliche Release-API meldet v1.8.10 als neueste stabile Version und genau ein Produkt-Asset. Anonymer Direktdownload vom `/releases/latest/download/firmware-esp32dev.bin` PASS; 1.507.328 Byte und SHA-256 stimmen mit dem lokalen Paket überein.
+- Diagnoseformular: PASS; der Betreiber hat den Bericht über die echte Firmware 1.8.10 abgesendet und den E-Mail-Eingang im GMX-Postfach bestätigt. Screenshot zeigt Betreff, Absender, Version, Formularfelder und den Hinweis „Keine Konfiguration angehängt.“ Persönliche Testangaben wurden nicht in dieses Protokoll übernommen.
+
+Dokumentationsnachtrag vom 10.10.2026; Firmware-Quellcommit bleibt `5308d89edb4b2337aecfdb2bfb766dad5e5ce9ec`. Nur README, Melde-Endpunkt-/Upload-Dokumentation, dieses Prüfprotokoll und deren Manifest hashes wurden aktualisiert. Keine Firmware, Webdatei, Geräteeinstellung oder ESP wurde geändert. `git diff --check`: PASS.
 
 Ältere Abschnitte sind Versionshistorie. Ein dortiger PASS gilt nur für die ausdrücklich genannte Version. Build- oder HTTP-Readback belegt nicht automatisch den Löschstatus jeder einzelnen LittleFS-Datei.
 
@@ -320,8 +323,13 @@ Prüfe vor dem Upload Quelltext, Dokumente, Binärdateien, Anhänge und erreichb
 | Konfigurationserhalt | PASS; vollständiger JSON-Vergleich der lokalen Einstellungen, gemeinsamen Einstellungen und WLAN-Daten vor/nach OTA ist identisch. Nachher: 8 Geräte, ein gespeichertes WLAN. |
 | vier HTTP-Hauptdateien | PASS; `/`, `/app.js`, `/responsive.css` und `/style.css` antworten HTTP 200 mit gzip. Dekomprimierte Inhalte stimmen exakt mit Quellhashes überein: HTML `3613AFC111BDF25EEFB9BE1F2419E0887D3DEF67C9A3BBBEE1D4FDC24B48D559`, JavaScript `E53F8553F7BC430705DB480FEDC146AAF990DF9DFC918E67E423451B4CAC0D5F`, responsive CSS `B287AB9E48B360AEB1FF344584662599F45094455A1C9738561CBC271C2830C3`, Basis-CSS `3CE062D7621FB246E174CCC273C0D517D0EA8DC45301C0ECB8DA1D2EE6DE1A78`. |
 | UI-Einzeldatei-Upload | PASS; gezielter Uploadversuch mit `style.css` lieferte HTTP 409 mit der erwarteten Ablehnung; keine Datei wurde aktiviert. |
+| Diagnoseformular und E-Mail-Eingang | PASS; echter Versand aus Firmware 1.8.10 am 10.10.2026, Eingang durch Betreiber bestätigt. Die empfangene Mail nennt die Formularangaben und Version 1.8.10 und bestätigt, dass keine Konfiguration angehängt war. Persönliche Testfelder sind nicht dokumentiert. |
 | produktive ESPs | OFFEN / nicht angefasst. |
 | LittleFS-Dateiliste nach Löschung | OFFEN; die Firmware bietet keinen Dateiliste-Readback. Paket-Auslieferung und Neustart wurden live geprüft, die physische Abwesenheit jedes Pfads kann nicht separat per API bestätigt werden. |
 | GitHub-Veröffentlichung und Direktdownload | PASS; v1.8.10 ist öffentlich neueste stabile Version, genau ein Produkt-Asset; anonymer Direktdownload 1.507.328 Byte, SHA-256 entspricht dem lokalen Paket. |
+
+### Nachtrag: Formularversand Ende zu Ende bestätigt
+
+Am 10.10.2026 hat der Betreiber die Fehler-/Wunschmeldung direkt in der ESP-Weboberfläche ausgefüllt, den Inhalt in der HTTPS-Vorschau bestätigt und abgesendet. Der Betreiber meldete den Eingang im GMX-Postfach; der Screenshot zeigt die empfangene Nachricht vom konfigurierten Absender, die Firmware-Version 1.8.10 und den expliziten Satz, dass keine Konfiguration angehängt wurde. Damit ist die zuvor offene Prüfung „Bericht absenden“ für den erfolgreichen Normalfall `PASS`. Der Screenshot und die privaten Formularwerte werden nicht öffentlich abgelegt. Fehlerszenarien, Limits und der Download-Fallback bleiben `OFFEN`.
 
 Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und bleiben lokal außerhalb der Veröffentlichung.

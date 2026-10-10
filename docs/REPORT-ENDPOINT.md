@@ -1,6 +1,6 @@
 # Fehler- und Wunschmeldungen
 
-Die Firmware 1.8.9 enthält am Anfang des Reiters **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse noch Backups an. Das öffentliche Rufzeichen wird nicht automatisch angehängt. Freitext kann persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
+Die Firmware 1.8.10 enthält am Anfang des Reiters **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse noch Backups an. Das öffentliche Rufzeichen wird nicht automatisch angehängt. Freitext kann persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
 
 ## Versandablauf
 
@@ -27,11 +27,19 @@ Benötigt werden PHP 7.4+ mit OpenSSL, HTTPS und ausgehendes SMTP-SSL/TLS auf Po
 - Das zuerst vorbereitete private ZIP enthielt ein falsches SMTP-Passwort und wurde durch ein korrigiertes Paket ersetzt. Der Fehler ist behoben; Zugangsdaten sind nicht betroffen.
 - Die Live-Formularstrecke des Endpunkts und die sichtbare Diagnoseansicht am Test-ESP sind geprüft. Es wurde keine Nachricht über das ESP-Formular versendet. Fehlerfälle, Größen-/Rate-Limits und der JSON-Download-Fallback bleiben offen.
 
+### Ende-zu-Ende-Test über die Firmware am 10.10.2026
+
+- Der Betreiber hat das Formular auf einem ESP mit Firmware 1.8.10 ausgefüllt, die Vorschau geprüft, den Versand bestätigt und den Eingang der E-Mail im GMX-Postfach gemeldet. Der Screenshot zeigt den Betreff `[Antennensteuerung] Neuer Bericht`, den Absender `ESP32-1@do1anb.de` und die Firmware-Version 1.8.10.
+- Die E-Mail enthält die ausgefüllten Formularfelder (Art, Betreff, Beschreibung, Schritte, erwartetes Verhalten, Zeitraum/Änderung sowie freiwilliger Name und Rückkontakt). Die Nachricht weist ausdrücklich darauf hin: **„Keine Konfiguration angehängt.“**
+- Ergebnis: kompletter Versandweg ESP-Formular → Vorschau/Bestätigung → HTTPS-Meldeendpunkt → SMTP → Empfänger erfolgreich; für diesen echten Firmware-Bericht `PASS`.
+- Der Testtext, Name und die Rückrufnummer aus der persönlichen Testnachricht werden nicht in die öffentliche Dokumentation übernommen.
+- Fehlerfälle des Mailservers, Rate-/Größenlimits und der lokale JSON-Fallback wurden mit diesem Test nicht geprüft und bleiben offen.
+
 ### Änderungen für Firmware 1.8.9
 
 - Das Diagnoseformular steht jetzt direkt am Anfang des Diagnose-Reiters.
 - Der Footer zeigt Rufzeichen, Name und Projekt-E-Mail.
 - Firmware und Weboberfläche sind gemeinsam in der vollständigen OTA-Datei enthalten. Auf Firmware 1.8.9 wird keine getrennte LittleFS-Weboberfläche als Fallback ausgeliefert. Gzip wird bevorzugt, Brotli nur bei passender Anfrage; beides wurde im Browser auf dem Test-ESP geprüft. Bei nicht unterstützter Komprimierung antwortet das Gerät mit HTTP 406, statt eine möglicherweise ältere Seite zu zeigen.
-- Das Diagnoseformular wurde auf dem Test-ESP sichtbar geöffnet und geprüft. Es wurde kein Bericht versendet. Firmware 1.8.9 samt vollständiger Oberfläche ist als neueste stabile Version veröffentlicht; die genaue Paket- und Direktdownloadprüfung steht im Prüfprotokoll.
+- Das Diagnoseformular wurde auf dem Test-ESP sichtbar geöffnet und geprüft. Der spätere Ende-zu-Ende-Versand über die Firmware wurde am 10.10.2026 mit Version 1.8.10 erfolgreich abgeschlossen; siehe Abschnitt oben und Prüfprotokoll.
 
 Die SMTP-Bereitschaft ist damit bestätigt. Die Spam-Einstufung durch GMX ist eine empfangerspezifische Bewertung und kein Beleg für einen Versand- oder Authentifizierungsfehler; sie garantiert umgekehrt keine Inbox-Zustellung bei anderen Empfängern.

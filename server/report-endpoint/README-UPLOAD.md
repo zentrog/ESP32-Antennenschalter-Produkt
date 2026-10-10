@@ -11,6 +11,6 @@ Dieses Verzeichnis enthält den öffentlichen PHP-Endpunkt für Fehler- und Wuns
 
 ## Live-Prüfung
 
-Am 10.10.2026 lieferte der Health-Endpunkt HTTP 200 mit `{"ready":true}`. Zwei bestätigte Berichte wurden vom Mailserver angenommen und kamen im GMX-Postfach an. GMX sortierte sie trotz SPF-, DKIM- und DMARC-PASS in Spam ein; der Betreiber akzeptiert dies für den alleinigen Empfänger. Die konkrete Diagnoseansicht auf einem ESP und Fehler-/Fallbackfälle sind noch gesondert zu prüfen.
+Am 10.10.2026 lieferte der Health-Endpunkt HTTP 200 mit `{"ready":true}`. Zwei zuvor bestätigte Testberichte wurden vom Mailserver angenommen und kamen im GMX-Postfach an; GMX sortierte sie trotz SPF-, DKIM- und DMARC-PASS in Spam ein. Zusätzlich wurde am 10.10.2026 der vollständige Versand aus dem Diagnoseformular eines ESP mit Firmware 1.8.10 getestet: Vorschau geprüft, Versand ausdrücklich bestätigt und Eingang im GMX-Postfach vom Betreiber gemeldet. Die empfangene Nachricht nennt die Firmware-Version und bestätigt, dass keine Konfiguration angehängt wurde. Der erfolgreiche Normalfall ist damit `PASS`; Fehler-/Fallbackfälle sowie Rate- und Größenlimits sind noch offen. Der Betreiber akzeptiert die Spam-Einstufung für den alleinigen Empfänger.
 
 Wenn PHP/SMTP nicht verfügbar ist, nicht auf unverschlüsseltes HTTP ausweichen.
