@@ -1,5 +1,15 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.17 · Steuerfläche bei flachen Browserfenstern
+
+- Ziel: Bei geringer verfügbarer Fensterhöhe werden Schrift, Gerätekarten, Bedienelemente, Wetter, Newsticker und Seitenrahmen gemeinsam verkleinert. Die gespeicherte 12×6-Anordnung und Signalwege bleiben unverändert.
+- Ursache: Die 20-Pixel-Standardschrift wurde teilweise bereits an die Viewportgröße angepasst, aber feste Mindesthöhen von 30 bis 44 Pixeln für Karten/Schaltflächen und Rasterzellen verhinderten das Zusammenpassen in kurzen Browserfenstern.
+- Änderung: `data/responsive.css` ergänzt eine Höhenanpassung bis 500 Pixel. Innerhalb dieser Ansicht entfallen starre Karten-/Schaltflächen-Mindesthöhen; die Schriftgröße wird anhand der Fensterbreite und -höhe begrenzt. `data/index.html` verwendet Cachemarker 1.8.17; `include/Version.h` setzt 1.8.17.
+- Paketbau: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.448 / 327.680 Byte; Firmwareabbild 1.367.392 Byte. Vollständiges OTA-Paket 1.507.328 Byte, darin UI Brotli 63.487 Byte + gzip 75.184 Byte; verbleibender OTA-Speicher 1.189 Byte. Paket-SHA-256 `9E8295AA1A79CD8E94B26848CD26F467C4BFD0E62200E80518F10F0DE56963D8`.
+- JavaScript-Syntax sowie Komprimierungs-/Dekomprimierungsvergleich der UI-Dateien: PASS (Paketbauer).
+- Visuelle Gegenprüfung im problematischen Browserfenster des Freundes (ca. 1244×360 CSS-Pixel): OFFEN; vom Betreiber nach Veröffentlichung vorgesehen. Der Build allein bestätigt keine lesbare Darstellung auf diesem konkreten Gerät.
+- GitHub-Veröffentlichung: OFFEN.
+
 ## Firmware 1.8.16 · Stromkartenfarben
 
 - Ziel: Stromkarten zeigen keinen sichtbaren EIN/AUS-Text. Der bestätigte Status wird allein durch die Farbe der Statusfläche vermittelt; die gesamte Karte bleibt anklickbar. In **Konfigurieren → Oberfläche** sind nun eigene Farben für inaktive und aktive Stromtaster verfügbar. Gesperrte Taster verwenden weiterhin die Farbe „Gesperrt“.

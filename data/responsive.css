@@ -67,6 +67,38 @@ body.control-mode .logical-layout-grid .logical-radio-select{font-size:clamp(8px
 .footer-legal:hover,.footer-legal:focus-visible{color:#fff}
 .footer-legal:focus-visible{outline:2px solid #9ee8ff;outline-offset:2px}
 body.control-mode #footerRights,body.control-mode #footerLicense{font-size:clamp(.62rem,.68vw,.78rem);color:#c4d1de}
+/* Kompakte, flache Browserfenster: Text und Bedienelemente muessen in ihre
+   tatsaechlich verfuegbare Rasterzelle passen, statt an 30/44px-Minima zu clippen. */
+@media(max-height:500px){
+ body.control-mode header{padding:2px 6px}
+ body.control-mode .brand-logo{width:20px;height:20px}
+ body.control-mode .brand h1{font-size:clamp(.62rem,1.2vw,.82rem);margin:0}
+ body.control-mode nav{padding:1px 5px;gap:3px}
+ body.control-mode nav button{padding:2px 6px;font-size:clamp(.55rem,1vw,.68rem)}
+ body.control-mode main{padding:2px 5px}
+ body.control-mode #control.view.active{gap:2px}
+ body.control-mode .control-head{min-height:0}
+ body.control-mode .control-head button{padding:2px 5px;font-size:clamp(.55rem,1vw,.68rem)}
+ body.control-mode .controller-badge{padding:1px 4px;font-size:clamp(.5rem,.9vw,.62rem)}
+ body.control-mode .button-canvas.logical-mode{padding:2px!important;gap:2px}
+ body.control-mode .logical-mode .live-route-toolbar{padding:2px 4px;gap:3px}
+ body.control-mode .route-selection-state{min-height:0;padding:2px 4px;font-size:clamp(.55rem,1vw,.68rem)}
+ body.control-mode .logical-layout-grid .logical-device{font-size:clamp(8px,min(var(--logical-font,20px),2vw,2.8vh),20px);padding:1px;gap:0;border-width:1px;border-radius:5px}
+ body.control-mode .logical-device .logical-radio-select,
+ body.control-mode .logical-device .logical-antenna-main{min-height:0;height:auto;padding:1px 2px;font-size:inherit;line-height:1;white-space:normal;overflow-wrap:anywhere}
+ body.control-mode .logical-device .device-route-badges{gap:0;margin-top:0}
+ body.control-mode .logical-device .device-route-badges span{padding:0 2px;font-size:.5em;line-height:1}
+ body.control-mode .logical-device .logical-actions{gap:1px;margin-top:0}
+ body.control-mode .logical-device .logical-action{min-height:0!important;padding:0 1px!important;font-size:.58em!important;line-height:1}
+ body.control-mode .logical-device .power-toggle-button{min-height:0;padding:0;font-size:.58em;line-height:1}
+ body.control-mode .weather-head,body.control-mode .weather-current,body.control-mode .weather-today{padding-top:1px;padding-bottom:1px}
+ body.control-mode .weather-icon{font-size:1rem}
+ body.control-mode .weather-metrics{gap:2px}
+ body.control-mode .weather-metrics span{padding:1px 3px}
+ body.control-mode .news{padding:2px 4px}
+ body.control-mode .ticker-row{min-height:18px;padding:0 2px;gap:3px}
+ body.control-mode footer{padding:1px 3px;gap:2px 5px;font-size:clamp(.48rem,.7vw,.58rem)}
+}
 .report-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .report-form>label{display:grid;gap:4px;color:#b8c9d8;font-size:.9rem}
 .report-form input:not([type=checkbox]),.report-form select,.report-form textarea{width:100%;min-width:0;border:1px solid #3a4b5b;border-radius:6px;padding:8px;background:#101820;color:#eef5fb;font:inherit}
