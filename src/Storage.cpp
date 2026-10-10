@@ -72,13 +72,24 @@ void Storage::defaults(LocalConfig& c, SharedConfig& s) {
   c.identity.deviceName="Antennencontroller";
   c.identity.description="";
   c.identity.hostName="antenna-"+c.controllerId.substring(c.controllerId.length()-6);
-  c.news.enabled=false;
+  c.news.enabled=true;
   c.news.refreshMinutes=30;
+  c.news.maxItems=5;
   c.lightning.enabled=true;
   c.lightning.warningKm=50;
   c.lightning.dangerKm=25;
   c.lightning.boxKm=70;
-  c.news.feeds.clear();
+  // Public starter feeds are product defaults, not private station data.
+  // Keep the standard source list on virgin installs and after a factory reset.
+  c.news.feeds={
+    NewsFeed("nors","Nord-Ostsee-Rundspruch","de","https://nord-ostsee-rundspruch.de/feed/podcast/",false),
+    NewsFeed("nors-main","Nord-Ostsee-Rundspruch Beiträge","de","https://nord-ostsee-rundspruch.de/feed/",false),
+    NewsFeed("darc","DARC Aktuelles","de","https://www.darc.de/aktuelles/rss.xml",false),
+    NewsFeed("ntv","n-tv Topmeldungen","de","https://www.n-tv.de/rss",true),
+    NewsFeed("arrl","ARRL News","en","https://www.arrl.org/arrl.rss",false),
+    NewsFeed("amsat","AMSAT News","en","https://www.amsat.org/feed/",false),
+    NewsFeed("dlrs","Deutschland-Rundspruch","de","https://nord-ostsee-rundspruch.de/category/deutschland-rundspruch/feed/",false),
+  };
   c.federation.enabled=true;
   c.federation.systemId="";
   c.federation.systemName="";
@@ -121,11 +132,12 @@ static void routeFrom(JsonObjectConst q,RouteConfig& r){r.id=String((const char*
 
 static void uiTo(JsonObject o,const UiDefaults& v){
   o["buttonWidth"]=v.buttonWidth;o["buttonHeight"]=v.buttonHeight;o["defaultCols"]=v.defaultCols;o["defaultRows"]=v.defaultRows;o["fontPx"]=v.fontPx;
-  o["normalColor"]=v.normalColor;o["activeColor"]=v.activeColor;o["lockedColor"]=v.lockedColor;o["rememberedColor"]=v.rememberedColor;o["runningColor"]=v.runningColor;
+  o["normalColor"]=v.normalColor;o["activeColor"]=v.activeColor;o["powerInactiveColor"]=v.powerInactiveColor;o["powerActiveColor"]=v.powerActiveColor;o["lockedColor"]=v.lockedColor;o["rememberedColor"]=v.rememberedColor;o["runningColor"]=v.runningColor;
 }
 static void uiFrom(JsonVariantConst q,UiDefaults& v){
   v.buttonWidth=q["buttonWidth"]|170;v.buttonHeight=q["buttonHeight"]|72;v.defaultCols=constrain((int)(q["defaultCols"]|3),1,12);v.defaultRows=constrain((int)(q["defaultRows"]|1),1,6);v.fontPx=q["fontPx"]|20;
   v.normalColor=String((const char*)(q["normalColor"]|"#275c91"));v.activeColor=String((const char*)(q["activeColor"]|"#259b55"));
+  v.powerInactiveColor=String((const char*)(q["powerInactiveColor"]|"#275c91"));v.powerActiveColor=String((const char*)(q["powerActiveColor"]|"#259b55"));
   v.lockedColor=String((const char*)(q["lockedColor"]|"#555b65"));v.rememberedColor=String((const char*)(q["rememberedColor"]|"#b83232"));
   v.runningColor=String((const char*)(q["runningColor"]|"#d67d00"));
 }

@@ -7,6 +7,7 @@ Der einzige PlatformIO-Build esp32dev startet mit einer leeren Produktkonfigurat
 - Kein gespeichertes WLAN; das Gerät zeigt sein Einrichtungs-WLAN.
 - Rufzeichen, Postleitzahl, Beschreibung und Standort sind leer.
 - Es sind keine Relais, Schaltfunktionen, logischen Geräte, Routen oder Layout-Beispiele angelegt.
+- Die sieben öffentlichen NewsTicker-Standardquellen sind vorhanden; nur n-tv ist standardmäßig aktiviert. Sie enthalten keine privaten Anlagendaten.
 - Die Verbundrolle ist unassigned; eine Systemkennung oder ein Systemname ist nicht vorgegeben.
 - Der Anwender trägt WLAN, Platine, Relais und Anlagenteile selbst ein.
 

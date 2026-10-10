@@ -112,6 +112,8 @@ struct UiDefaults {
   int fontPx = 20;
   String normalColor = "#275c91";
   String activeColor = "#259b55";
+  String powerInactiveColor = "#275c91";
+  String powerActiveColor = "#259b55";
   String lockedColor = "#555b65";
   String rememberedColor = "#b83232";
   String runningColor = "#d67d00";

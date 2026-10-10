@@ -57,7 +57,11 @@ WLAN-Zugangsdaten werden im ESP gespeichert, nicht in der öffentlichen GitHub-V
 
 Bei einer drehbaren Yagi erscheinen **Horizontal** und **Vertikal** nur bei der dafür vorgesehenen Antenne. Während der Motor läuft, darf nicht gesendet werden.
 
-## 7. Mehrere ESPs verbinden
+## 7. NewsTicker einstellen
+
+Eine neue Installation bringt sieben öffentliche NewsTicker-Quellen mit. Nur **n-tv Topmeldungen** ist anfangs eingeschaltet; alle anderen sind vorhanden, aber ausgeschaltet. Unter **Konfigurieren → NewsTicker** kannst du weitere Quellen einzeln einschalten oder entfernen. Persönliche Geräte-, Rufzeichen- oder WLAN-Daten sind nicht in den Quellen gespeichert.
+
+## 8. Mehrere ESPs verbinden
 
 1. Verbinde alle ESPs mit demselben lokalen Netzwerk.
 2. Richte zuerst den Master ein und schalte ihn ein.
@@ -65,7 +69,7 @@ Bei einer drehbaren Yagi erscheinen **Horizontal** und **Vertikal** nur bei der 
 4. Prüfe auf der Startseite, dass jeder Slave als erreichbar angezeigt wird.
 5. Jeder ESP behält seine eigenen GPIO- und Relais-Einstellungen. Prüfe den Verbund ohne Sender und ohne Motorfahrt.
 
-## 8. Neustart und Updates
+## 9. Neustart und Updates
 
 Die Bedienseite behält auf Handy, Laptop und Monitor die gespeicherten Positionen der Anlagenteile bei. Bei kleinerem Fenster werden Raster und Schrift proportional verkleinert; die Karten werden nicht automatisch in eine andere Anordnung verschoben.
 
@@ -91,7 +95,7 @@ Eine Datei für das Dateisystem ist nur für einen neuen ESP oder eine ausdrück
 
 Wenn der ESP sein Dateisystem nicht einhängen kann, formatiert die Firmware es nicht automatisch. Die vorhandene Konfiguration bleibt dadurch vor einem automatischen Löschversuch geschützt. Bei einem Startfehler: kein Reset und kein Dateisystem-Upload auf dem eingerichteten Gerät; zuerst die Ursache prüfen.
 
-## 9. Wenn etwas nicht klappt
+## 10. Wenn etwas nicht klappt
 
 - **Das Einrichtungs-WLAN kommt wieder:** Der Routerzugang wurde nicht erreicht. Öffne http://192.168.4.1 und prüfe WLAN-Name und Kennwort.
 - **Die Webseite lädt nicht:** Ermittle die IP-Adresse im Router. PC/Handy und ESP müssen im selben Netzwerk sein.
@@ -107,6 +111,7 @@ Unter **Diagnose** steht das Formular **Fehler oder Wunsch melden** direkt am An
 - **Relais:** Elektrischer Schalter auf der Relaiskarte.
 - **Funktion:** Benannte Schalthandlung, zum Beispiel „Antenne 1“ oder ein unabhängiger Stromtaster für ein Funkgerät.
 - **Kategorie Strom:** Eigenständiges Anlagenteil mit Ein/Aus-Taster. Ohne zugeordnetes Relais bleibt der Taster gesperrt; Relais und GPIO können später ergänzt werden.
+- **Stromtaster bedienen:** Die gesamte Stromkarte ist der Schalter. Es gibt keinen zusätzlichen EIN/AUS-Text; die farbige Fläche zeigt den zuletzt bestätigten Zustand. Unter **Konfigurieren → Oberfläche** kannst du die Farben **Stromtaste inaktiv** und **Stromtaste aktiv** getrennt einstellen. Wenn der Taster gesperrt ist, zeigt er weiterhin die Farbe **Gesperrt**.
 - **Anlagenteil:** Echtes Gerät wie Funkgerät, PA oder Antenne.
 - **Signalweg:** Erlaubte Reihenfolge vom Funkgerät bis zur Antenne.
 - **Master/Slave:** Der Master koordiniert den Verbund. Jeder Slave steuert seine eigenen lokalen Ausgänge.

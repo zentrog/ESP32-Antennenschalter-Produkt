@@ -2,11 +2,15 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Arbeitsstand und neuestes stabiles GitHub-Release: Firmware 1.8.14. Das Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`. [Direktdownload der neuesten Firmware](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin).
+Arbeitsstand: Firmware 1.8.16. Neueste stabile GitHub-Version bleibt bis zur Veröffentlichung 1.8.14. Ein stabiles Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`. [Direktdownload der neuesten Firmware](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin).
 
 Unter **Diagnose** gibt es ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der komplette Versandweg vom ESP-Formular bis zum E-Mail-Empfang wurde am 10.10.2026 mit Firmware 1.8.10 bestätigt. Der Bericht wird erst nach ausdrücklicher Bestätigung versendet und enthält keine Gerätekonfiguration. Fehlerfälle und der lokale Download-Fallback bleiben gesondert zu prüfen; Details stehen unter [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
 
 Die gespeicherte Anordnung der Anlagenteile bleibt auf Handy, Laptop und großem Monitor an denselben Rasterpositionen. Die Ansicht verkleinert Raster und Beschriftungen an die verfügbare Fläche; sie ordnet die Geräte nicht automatisch um.
+
+Eine Neuinstallation enthält sieben öffentliche NewsTicker-Quellen. Standardmäßig ist nur **n-tv Topmeldungen** eingeschaltet; die anderen Quellen können in **Konfigurieren → NewsTicker** einzeln aktiviert werden.
+
+Stromtaster zeigen ihren bestätigten Zustand über die Farbe der Statusfläche. Die Farben für aktive und inaktive Stromtaster lassen sich getrennt unter **Konfigurieren → Oberfläche** einstellen.
 
 Die Release-Datei `firmware-esp32dev.bin` enthält Firmware und die vier Hauptdateien der Weboberfläche in einem CRC32-geprüften Paket. Nach erfolgreicher Paketprüfung entfernt der ESP deren veraltete Kopien aus LittleFS und liefert die Dateien nur noch aus dem Firmwarepaket aus. Einzeln hochgeladene UI-Dateien werden dann abgewiesen. WLAN, Gerätekonfiguration, Sicherungen, Einrichtungsseite, Logo und Favicon bleiben erhalten.
 

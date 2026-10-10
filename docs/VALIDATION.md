@@ -1,5 +1,31 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.16 · Stromkartenfarben
+
+- Ziel: Stromkarten zeigen keinen sichtbaren EIN/AUS-Text. Der bestätigte Status wird allein durch die Farbe der Statusfläche vermittelt; die gesamte Karte bleibt anklickbar. In **Konfigurieren → Oberfläche** sind nun eigene Farben für inaktive und aktive Stromtaster verfügbar. Gesperrte Taster verwenden weiterhin die Farbe „Gesperrt“.
+- Geänderte Bereiche: `include/Model.h`, `src/Storage.cpp`, `src/WebUi.cpp` speichern/laden die beiden zusätzlichen gemeinsamen Oberflächenfarben; `data/app.js` zeigt den farbigen Status ohne EIN/AUS-Schrift, ergänzt die barrierefreie Statusbeschreibung und die zwei Farbwähler; `data/index.html` erhält neue Cachemarker; `include/Version.h` setzt 1.8.16.
+- Keine Änderungen an WLAN, Geräten, Relaiszuordnungen, Signalwegen, Layout, Newsquellen, GPIO-Schaltlogik oder OTA-Sicherungsverhalten.
+- Quellstand basiert auf Commit `3a0588553170d362442f1f1d3f2505e7ee68c67d`; Änderungen sind noch nicht committet und noch nicht auf GitHub veröffentlicht.
+- Build: `PASS` mit Link-Time-Optimierung (`-flto`), PlatformIO Core 6.2.0 / Espressif32 6.12.0 / Arduino-ESP32 3.20017.241212+sha.dcc1105b / Xtensa-GCC 8.4.0+2021r2-patch5 / esptool 4.9.0. RAM 52.448 / 327.680 Byte; Firmwareabbild 1.367.392 Byte. Komplettes OTA-Paket: 1.507.328 Byte, UI Brotli 63.057 Byte + gzip 74.709 Byte; Reserve 2.094 Byte. SHA-256 `A68856BEEACD62D8C9608E7BE48E5A1EA5C467471706DAA4633C37FAC4E88624`.
+- OTA-Test am ausdrücklich vorgesehenen Testgerät: `PASS`, Firmware 1.8.15 → 1.8.16, HTTP 200 und erfolgreicher Neustart. Der Browser zeigt danach v1.8.16. Die Bedienseite rendert vier Stromkarten ohne sichtbares EIN/AUS; der ganze Eintrag ist als Schaltfläche ausgezeichnet und sein barrierefreier Name nennt den bestätigten Zustand.
+- Konfigurationserhalt: `PASS`. Vor und nach dem OTA erstellte vollständige Sicherungen wurden in `local`, `shared` und `wifiState` verglichen; alle drei Bereiche sind unverändert. Die neuen Standardfarben werden im gemeinsamen API-Readback als `#275c91` (inaktiv) und `#259b55` (aktiv) bereitgestellt. Vorher-/Nachher-Sicherungen bleiben nur lokal im gitignorierten `backups/config`-Ordner.
+- Livebeobachtung nach dem Neustart: Wetter wurde angezeigt und n-tv lieferte eine Meldung. Das ist eine Momentaufnahme und kein Nachweis für dauerhafte Feedverfügbarkeit oder eine Fehlerursache.
+- Der Betreiber hat bestätigt, dass die Farbauswahl funktioniert. Einen Neustarttest mit selbst gewählten Farben haben wir nicht separat ausgeführt.
+- Die Partitionstabelle weist zwei gleich große OTA-Programmplätze von je `0x170000` (1.507.328 Byte) aus. OTA überschreibt stets den inaktiven Platz und behält den bisherigen als Rückfallversion. Die Plätze addieren sich nicht zur maximalen Imagegröße. LTO ist bereits aktiv; das aktuelle vollständige Image passt, die Reserve beträgt aber nur 2.094 Byte. Eine Vergrößerung der Plätze erfordert eine riskante Änderung der Partitionstabelle zulasten des 1-MiB-LittleFS-Bereichs und ist kein sicheres OTA-Upgrade.
+- Veröffentlichung und öffentlicher Direktdownload bleiben bis zum Abschluss des Releasevorgangs `OFFEN`.
+- Anwenderhinweis: „Fehlerbehebungen und Stabilitätsverbesserungen. Stromtaster: Statusfarben einstellbar.“
+
+## Firmware 1.8.15 · NewsTicker-Standardquellen und Stromkarten
+
+- Ziel: eine jungfräuliche Produktinstallation soll die sieben öffentlichen NewsTicker-Quellen enthalten, ohne private Stationsdaten, WLAN-Daten oder Beispielgeräte. Nur n-tv ist ab Werk aktiviert; die übrigen sechs Quellen sind vorhanden und ausgeschaltet. Stromkarten sollen den Namen nicht ein zweites Mal im Ein/Aus-Element zeigen; die ganze Karte schaltet und der Status steht zentriert unten.
+- Fehlerursache: die Erstinstallations-/Factory-Reset-Routine leerte `news.feeds`, schaltete den NewsTicker aus und markierte zugleich die einmaligen Datenmigrationen als erledigt. Die Migrationen konnten die Standardquellen danach nicht mehr ergänzen. Auf dem Live-Testgerät waren vor der Korrektur 0 Quellen gespeichert. Die vorliegenden alten Sicherungen hatten ebenfalls bereits 0 Quellen; sie enthielten keine ältere Feedliste zur Wiederherstellung.
+- Live-Konfiguration repariert: vor Änderung vollständige ESP-Sicherung und lokale API-Kopie abgelegt (ignorierte Dateien unter `backups/config`, Controller-ID ESP32-28FDE2842178). Danach sieben Standardquellen eingetragen; Rücklesung zeigt alle sieben und ausschließlich n-tv aktiviert. Geänderte News-Einstellung wurde gespeichert, Revision 10. Abruf-Ergebnis der n-tv-Quelle: `OFFEN`, solange der ESP keinen erfolgreichen Quellenabruf meldet.
+- Quelländerungen: `src/Storage.cpp` liefert die sieben öffentlichen Standardquellen in jungfräulichen und zurückgesetzten Konfigurationen; `data/app.js`/`data/style.css` vereinfachen und vergrößern die Bedienfläche der Stromkarten. Kein WLAN, Rufzeichen, PLZ, Relais, Gerät, Signalweg oder Anlagenlayout wird durch diese Änderungen vorbelegt.
+- Anwenderhinweis: „Fehlerbehebungen und Stabilitätsverbesserungen. Standard-Newsquellen sind wieder vorhanden; nur n-tv ist eingeschaltet.“
+- Build: `PASS`, PlatformIO Core 6.2.0 / Espressif32 6.12.0 / Arduino-ESP32 3.20017.241212+sha.dcc1105b / Xtensa-GCC 8.4.0+2021r2-patch5 / esptool 4.9.0. RAM 52.384 / 327.680 Byte; Programmabbild 1.367.696 Byte. OTA-Paket: 1.507.328 Byte, Brotli 62.870 Byte + gzip 74.539 Byte, Restreserve 2.147 Byte; SHA-256 `8E4DFEC0DBCA83C18C2174B664B1ED31771BADCA9333026DBC9C1F97707DF602`.
+- Paketgröße ist knapp: Das vollständige Image passt, aber es bleiben nur 2.147 Byte Reserve im OTA-Slot. Vor einer künftigen Erweiterung ist weiterer Flash-Platz freizumachen oder der Paketumfang zu optimieren.
+- Browserbedienung der Stromkarte, OTA auf ESP, GitHub-Veröffentlichung und anonymer Direktdownload: `OFFEN` bis die jeweiligen Schritte tatsächlich erfolgreich geprüft wurden.
+
 ## Firmware 1.8.14 · Stromtaster
 
 - Funktion: Kategorie **Strom** für eigenständige Geräteschalter; pro Stromgerät kann ein eigener EIN/AUS-Taster angelegt, benannt und später einem Relais/GPIO zugeordnet werden. Der Taster ist unabhängig von Signalwegen. Ohne zugeordnetes Relais bleibt er sichtbar, aber gesperrt.
@@ -10,7 +36,7 @@
 - Gerätekonfiguration: Vier Geräte **Strom Funkgerät 1–4** und vier individuelle `toggle`-Funktionen angelegt. Ein frischer Sicherungsexport enthält 12 Geräte, 4 Stromtaster, 16 Signalwege und 12 Layoutelemente. Die Steuerseite bestätigt alle vier Taster als sichtbar und mit „GPIO fehlt“ gesperrt. Das Gerät besitzt derzeit keine Relais/GPIO-Zuordnungen; echte Relaisbetätigung und Stromwiederherstellung mit angeschlossener Hardware sind daher noch nicht geprüft.
 - Sicherungsschutz-Prüfung: Der erste Readback-Export enthielt die neue Anordnung noch nicht. Die vollständige gemeinsame Konfiguration wurde erneut gespeichert; danach stimmten Live-API und ein frisch erstellter Sicherungsexport mit 12 Layout-Elementen und allen 16 Signalwegen überein. Der finale Export wurde außerhalb des Repositories auf dem Desktop abgelegt.
 - Release-Hinweis für Anwender: „Funktion: Eigenständige Stromtaster für Geräte.“
-- GitHub-Release v1.8.14 und öffentlicher Direktdownload: `OFFEN`; noch nicht veröffentlicht. Keine Release-Prüfung als bestanden gewertet.
+- GitHub-Release v1.8.14 und öffentlicher Direktdownload: `PASS`, siehe späteren vollständigen Release-Nachweis in diesem Protokoll.
 
 ## Frühere Release-Prüfprotokolle
 

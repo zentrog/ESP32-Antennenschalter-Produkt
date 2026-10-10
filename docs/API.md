@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Arbeitsstand Firmware 1.8.14 / API 7
+# HTTP/JSON-API – Arbeitsstand Firmware 1.8.15 / API 7
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -36,6 +36,8 @@ Fehlen bei einem Peer-Snapshot dessen Funktionen oder Geräte, markiert die Brow
 Die Bedienoberfläche verwendet die in `/api/shared` gespeicherten Signalwege als Freigabeliste: ein Funkgerät wird gewählt, danach eine zulässige Endantenne. Der zugehörige Eintrag wird über `/api/route/activate` vollständig über beteiligte Steuergeräte geschaltet; `/api/route/deactivate` trennt ihn.
 
 Statische aktive Funktionsgruppen und unabhängige Ein/Aus-Schaltfunktionen werden auf jedem ESP lokal gespeichert und beim Start auch auf zugeordneten Master-/Follower-Geräten wieder eingeschaltet. Ein Ein/Aus-Taster verwendet `type=toggle`, eine eigene Gruppe und ein optional noch nicht zugeordnetes Relais. Ohne Relaiszuordnung bleibt der Taster gesperrt. `/api/snapshot` und `/ext/status` liefern den bestätigten Laufzeitzustand. Eine bei Reset/Stromausfall unterbrochene H/V-Zeitaktion wird nicht wieder gestartet; ihre Rotorposition gilt als unbekannt.
+
+Die gemeinsame Oberflächenkonfiguration `ui` enthält `powerInactiveColor` und `powerActiveColor` für die Statusflächen von Anlagenteilen der Kategorie `supply` (Strom). Fehlen die Felder in einer älteren Konfiguration, gelten `#275c91` (inaktiv) und `#259b55` (aktiv). Die allgemeine Farbe `lockedColor` hat Vorrang, wenn ein Stromtaster gesperrt ist.
 
 
 `GET /api/board` kennzeichnet Strapping-Pins als `caution`. Die Relaiskonfiguration akzeptiert sie nach ausdrücklicher UI-Bestätigung; GPIO12/15/5/2 und im 38-Pin-Profil GPIO0 bleiben als bewusst riskante Ausgänge sichtbar. UART0-, Flash- und reine Eingangspins werden weiterhin durch die Backendvalidierung abgelehnt.
