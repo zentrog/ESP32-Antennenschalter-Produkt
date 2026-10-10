@@ -796,7 +796,15 @@ void WebUi::otaInstallLatestWorker(){
   if(!h.begin(tls,"https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin")){setOtaJobState(OTA_JOB_FAILED,"GitHub-Download konnte nicht vorbereitet werden");return;}
   int code=h.GET();int32_t expected=h.getSize();if(code!=200||expected<512U*1024U||expected>3U*1024U*1024U){h.end();String msg="GitHub-Firmwaredownload fehlgeschlagen (HTTP "+String(code)+")";setOtaJobState(OTA_JOB_FAILED,msg.c_str());return;}
   if(!Update.begin((size_t)expected)){h.end();setOtaJobState(OTA_JOB_FAILED,"Firmware passt nicht in die OTA-Partition");return;}
-  size_t written=Update.writeStream(*h.getStreamPtr());h.end();
+  WiFiClient* stream=h.getStreamPtr();uint8_t buffer[1024];size_t written=0;uint32_t lastDataAt=millis();
+  while(written<(size_t)expected){
+    int available=stream->available();
+    if(available<=0){if(!h.connected()||millis()-lastDataAt>60000U)break;vTaskDelay(pdMS_TO_TICKS(1));continue;}
+    size_t requested=(size_t)available;if(requested>sizeof(buffer))requested=sizeof(buffer);int received=stream->readBytes(buffer,requested);
+    if(received<=0){vTaskDelay(pdMS_TO_TICKS(1));continue;}
+    size_t accepted=Update.write(buffer,(size_t)received);if(accepted!=(size_t)received)break;written+=accepted;lastDataAt=millis();vTaskDelay(pdMS_TO_TICKS(1));
+  }
+  h.end();
   if(written!=(size_t)expected){Update.abort();setOtaJobState(OTA_JOB_FAILED,"Download unvollständig");return;}
   if(!Update.end(true)){Update.abort();setOtaJobState(OTA_JOB_FAILED,"Firmware-Prüfung fehlgeschlagen");return;}
   setOtaJobState(OTA_JOB_SUCCESS);delay(1200);ESP.restart();

@@ -494,7 +494,7 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - Korrektur in v1.8.25: Wenn die lokale Verbindung beim erwarteten ESP-Neustart abreißt, bleibt die Updateoberfläche aktiv und prüft bis zu 90 Sekunden Controller-ID, Firmwareversion und Neustart, bevor sie Erfolg meldet. Die Update-Seite prüft außerdem, ob wirklich eine neuere stabile Version existiert.
 - Verifikation des Versionswechsels 1.8.24 → 1.8.25 über den echten GitHub-Abruf, inklusive Antwort-/Neustartbestätigung und identischer Konfigurations-/WLAN-Sicherung: OFFEN bis Test-ESP-Lauf abgeschlossen.
 
-## Firmware 1.8.25–1.8.27 – Hintergrund-OTA gegen Watchdog-Neustart
+## Firmware 1.8.25–1.8.28 – Hintergrund-OTA gegen Watchdog-Neustart
 
 - Reproduzierter Hardwarefehler nach v1.8.25: Der Ein-Klick-Aufruf von v1.8.24 startete einen Watchdog-Neustart (`TG1WDT_SYS_RESET`); der ESP kam mit v1.8.24 zurück. Das Update war somit NICHT erfolgreich.
 - Ursache: Der GitHub-Download und Flash liefen synchron im Webserver-Request. Während dieses langen Aufrufs konnte der ESP-Webtask den Watchdog nicht zuverlässig bedienen.
@@ -503,6 +503,8 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - v1.8.26 Testgerät: USB-Flash von v1.8.24 auf v1.8.26 erfolgreich. Controller-ID ESP32-28FDE2842178, Rufzeichen DL4DN, PLZ 48249, IP .154. Lokale Konfiguration (Revision 13), gemeinsame Konfiguration (16 Signalwege) und WLAN-Sicherung waren nach dem Flash identisch zur Sicherung davor.
 - v1.8.26 OTA-Starttest: Der ESP führte einen Neustart aus, jedoch lief der HTTP-Aufruf am Client in ein Timeout und `/api/update/status` war nach dem Neustart erwartungsgemäß wieder `idle`. Damit ist die Übermittlung der Startantwort nicht bestätigt; die Version darf nicht als vollständig hardwareverifiziert gelten.
 - v1.8.27 ergänzt 1,5 Sekunden Wartezeit im Hintergrundtask, damit der Webserver die HTTP-202-Startantwort senden kann, ehe Download und Flash beginnen.
-- Buildstatus v1.8.27: PASS; PlatformIO RAM 52.768 / 327.680 Byte, Firmware 1.367.376 Byte, UI Brotli 63.236 Byte + gzip 74.885 Byte, vollständiges Paket 1.507.328 Byte, OTA-Reserve 1.755 Byte. JavaScript-Syntax und `git diff --check` PASS. SHA-256 `7ACAD6F966787594DCBEDAB5FFEBAA0B56A42F289AB112364D091F2699FC3EA0`.
-- OTA-Hardwarewechsel v1.8.26 → v1.8.27: OFFEN bis Verifikation abgeschlossen.
+- v1.8.27-Test: Serielle Ausgabe bestätigte weiterhin `TG1WDT_SYS_RESET`; die Installationsantwort kam nicht an und der ESP startete v1.8.26 erneut. Damit war die Wartezeit allein nicht ausreichend.
+- v1.8.28 ersetzt `Update.writeStream()` durch blockweisen Download mit kooperativem Yield zwischen Schreibvorgängen, damit der ESP während des Flashens seine Hintergrundaufgaben bedienen kann.
+- Buildstatus v1.8.28: PASS; PlatformIO RAM 52.768 / 327.680 Byte, Firmware 1.367.424 Byte, UI Brotli 63.236 Byte + gzip 74.885 Byte, vollständiges Paket 1.507.328 Byte, OTA-Reserve 1.707 Byte. JavaScript-Syntax und `git diff --check` PASS. SHA-256 `42B5146EAA13E6DD94FC7738E1B0F301043EBE00F3D1432A7D88F50B21FFF65B`.
+- OTA-Hardwarewechsel v1.8.26 → v1.8.28: OFFEN bis Verifikation abgeschlossen.
 - Verbund-Update: weiterhin nur Einzelgerät. Ein Master-Button, der Slaves mit sichert/aktualisiert, ist nicht implementiert.
