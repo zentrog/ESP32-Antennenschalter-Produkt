@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Arbeitsstand Firmware 1.8.8
+# HTTP/JSON-API – Arbeitsstand Firmware 1.8.13
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -18,7 +18,7 @@ POST /api/system/admission, /api/system/adopt, /api/system/make-master
 POST /api/federation/adopt, /api/federation/make-master, /api/federation/stop
 POST /api/federation/group/off, /api/federation/test-relay, /api/federation/restart, /api/federation/factory-reset, /api/federation/pull-shared
 POST /api/provisioning/authorize
-GET/PUT /api/controller/config
+GET/PUT /api/controller/config (PUT übernimmt im vollständigen Konfigurationsobjekt auch alle Federation-Metadaten)
 POST /api/controller/test-relay, /api/controller/restart, /api/controller/factory-reset
 
 ## WLAN / Update / externe API

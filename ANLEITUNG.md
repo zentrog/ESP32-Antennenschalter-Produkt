@@ -80,7 +80,7 @@ Vor dem Update muss eine Sicherungsdatei auf deinem Computer gespeichert und bes
 1. Verbinde Handy oder PC mit dem Einrichtungs-WLAN `AntennaController-XXXXXX` des ESP. Wenn das Gerät meldet, dass dieses WLAN kein Internet hat, bleib trotzdem verbunden.
 2. Öffne `http://192.168.4.1` und richte zunächst dein normales WLAN ein. Das ist nötig, damit du anschließend die vollständige Konfigurationsverwaltung öffnen kannst.
 3. Öffne danach die Antennensteuerung über ihre Netzwerkadresse. Gehe zu **Konfigurieren → Sicherheit → Sicherung / Wiederherstellung → Konfiguration importieren** und wähle die zuvor gespeicherte `.json`-Datei aus.
-4. Bestätige den Import. Die Sicherungsdatei enthält Gerätekonfiguration, gemeinsame Anlagenkonfiguration und WLAN-Zugangsdaten. Verwende für jedes Gerät im Verbund die Sicherung, die zu dessen Controller-ID gehört.
+4. Bestätige den Import. Die Sicherungsdatei enthält Gerätekonfiguration einschließlich Verbundzuordnung, gemeinsame Anlagenkonfiguration und WLAN-Zugangsdaten. Verwende für die Wiederherstellung mindestens Firmware 1.8.13, damit auch die interne Verbundkennung übernommen wird. Verwende für jedes Gerät im Verbund die Sicherung, die zu dessen Controller-ID gehört.
 
 
 Die vollständige OTA-Datei wird mit `node tools/build-ota-package.mjs esp32dev` gebaut. Node.js, npm, PlatformIO und die festgelegte Terser-Version werden benötigt. Der Paketbau prüft die komprimierten Webdateien, ihre Prüfsumme und den verfügbaren Programmspeicherplatz.
