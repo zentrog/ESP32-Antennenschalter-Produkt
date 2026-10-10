@@ -37,13 +37,13 @@ static String safeBackupPart(String value){
 #pragma pack(push,1)
 struct UiBundleFooter {
   char magic[8];
-  uint32_t indexBrOffset,indexBrSize,appBrOffset,appBrSize,cssBrOffset,cssBrSize;
-  uint32_t indexGzipOffset,indexGzipSize,appGzipOffset,appGzipSize,cssGzipOffset,cssGzipSize;
+  uint32_t indexBrOffset,indexBrSize,appBrOffset,appBrSize,responsiveCssBrOffset,responsiveCssBrSize,styleCssBrOffset,styleCssBrSize;
+  uint32_t indexGzipOffset,indexGzipSize,appGzipOffset,appGzipSize,responsiveCssGzipOffset,responsiveCssGzipSize,styleCssGzipOffset,styleCssGzipSize;
   uint32_t payloadCrc32;
 };
 #pragma pack(pop)
-static_assert(sizeof(UiBundleFooter)==60,"OTA UI bundle footer layout must match the package builder");
-static const char UI_BUNDLE_MAGIC[8]={'A','N','T','U','I','B','R','2'};
+static_assert(sizeof(UiBundleFooter)==76,"OTA UI bundle footer layout must match the package builder");
+static const char UI_BUNDLE_MAGIC[8]={'A','N','T','U','I','B','R','3'};
 static const esp_partition_t* uiBundlePartition=nullptr;
 static UiBundleFooter uiBundleFooter{};
 static bool uiBundleChecked=false,uiBundleValid=false;
@@ -73,15 +73,17 @@ static bool loadUiBundle(){
   if(memcmp(uiBundleFooter.magic,UI_BUNDLE_MAGIC,sizeof(UI_BUNDLE_MAGIC))!=0)return false;
   uint64_t indexBrEnd=(uint64_t)uiBundleFooter.indexBrOffset+uiBundleFooter.indexBrSize;
   uint64_t appBrEnd=(uint64_t)uiBundleFooter.appBrOffset+uiBundleFooter.appBrSize;
-  uint64_t cssBrEnd=(uint64_t)uiBundleFooter.cssBrOffset+uiBundleFooter.cssBrSize;
+  uint64_t responsiveCssBrEnd=(uint64_t)uiBundleFooter.responsiveCssBrOffset+uiBundleFooter.responsiveCssBrSize;
+  uint64_t styleCssBrEnd=(uint64_t)uiBundleFooter.styleCssBrOffset+uiBundleFooter.styleCssBrSize;
   uint64_t indexGzipEnd=(uint64_t)uiBundleFooter.indexGzipOffset+uiBundleFooter.indexGzipSize;
   uint64_t appGzipEnd=(uint64_t)uiBundleFooter.appGzipOffset+uiBundleFooter.appGzipSize;
-  uint64_t cssGzipEnd=(uint64_t)uiBundleFooter.cssGzipOffset+uiBundleFooter.cssGzipSize;
-  if(uiBundleFooter.indexBrOffset<0x1000||uiBundleFooter.indexBrSize==0||uiBundleFooter.appBrSize==0||uiBundleFooter.cssBrSize==0||
-     uiBundleFooter.indexGzipSize==0||uiBundleFooter.appGzipSize==0||uiBundleFooter.cssGzipSize==0||
-     indexBrEnd!=uiBundleFooter.appBrOffset||appBrEnd!=uiBundleFooter.cssBrOffset||cssBrEnd!=uiBundleFooter.indexGzipOffset||
-     indexGzipEnd!=uiBundleFooter.appGzipOffset||appGzipEnd!=uiBundleFooter.cssGzipOffset||cssGzipEnd>footerAt)return false;
-  uint32_t crc=0;uint8_t buf[512];uint32_t left=(uint32_t)(cssGzipEnd-uiBundleFooter.indexBrOffset),at=uiBundleFooter.indexBrOffset;
+  uint64_t responsiveCssGzipEnd=(uint64_t)uiBundleFooter.responsiveCssGzipOffset+uiBundleFooter.responsiveCssGzipSize;
+  uint64_t styleCssGzipEnd=(uint64_t)uiBundleFooter.styleCssGzipOffset+uiBundleFooter.styleCssGzipSize;
+  if(uiBundleFooter.indexBrOffset<0x1000||uiBundleFooter.indexBrSize==0||uiBundleFooter.appBrSize==0||uiBundleFooter.responsiveCssBrSize==0||uiBundleFooter.styleCssBrSize==0||
+     uiBundleFooter.indexGzipSize==0||uiBundleFooter.appGzipSize==0||uiBundleFooter.responsiveCssGzipSize==0||uiBundleFooter.styleCssGzipSize==0||
+     indexBrEnd!=uiBundleFooter.appBrOffset||appBrEnd!=uiBundleFooter.responsiveCssBrOffset||responsiveCssBrEnd!=uiBundleFooter.styleCssBrOffset||styleCssBrEnd!=uiBundleFooter.indexGzipOffset||
+     indexGzipEnd!=uiBundleFooter.appGzipOffset||appGzipEnd!=uiBundleFooter.responsiveCssGzipOffset||responsiveCssGzipEnd!=uiBundleFooter.styleCssGzipOffset||styleCssGzipEnd>footerAt)return false;
+  uint32_t crc=0;uint8_t buf[512];uint32_t left=(uint32_t)(styleCssGzipEnd-uiBundleFooter.indexBrOffset),at=uiBundleFooter.indexBrOffset;
   while(left){size_t n=left>sizeof(buf)?sizeof(buf):left;if(esp_partition_read(uiBundlePartition,at,buf,n)!=ESP_OK)return false;crc=uiBundleCrc32(crc,buf,n);at+=(uint32_t)n;left-=(uint32_t)n;}
   uiBundleValid=crc==uiBundleFooter.payloadCrc32;return uiBundleValid;
 }
@@ -91,11 +93,13 @@ static bool sendBundledUi(WebServer&server,const char*name,const char*mime){
   if(encoding=="br"){
     if(strcmp(name,"index.html")==0){offset=uiBundleFooter.indexBrOffset;length=uiBundleFooter.indexBrSize;}
     else if(strcmp(name,"app.js")==0){offset=uiBundleFooter.appBrOffset;length=uiBundleFooter.appBrSize;}
-    else{offset=uiBundleFooter.cssBrOffset;length=uiBundleFooter.cssBrSize;}
+    else if(strcmp(name,"responsive.css")==0){offset=uiBundleFooter.responsiveCssBrOffset;length=uiBundleFooter.responsiveCssBrSize;}
+    else{offset=uiBundleFooter.styleCssBrOffset;length=uiBundleFooter.styleCssBrSize;}
   }else if(encoding=="gzip"){
     if(strcmp(name,"index.html")==0){offset=uiBundleFooter.indexGzipOffset;length=uiBundleFooter.indexGzipSize;}
     else if(strcmp(name,"app.js")==0){offset=uiBundleFooter.appGzipOffset;length=uiBundleFooter.appGzipSize;}
-    else{offset=uiBundleFooter.cssGzipOffset;length=uiBundleFooter.cssGzipSize;}
+    else if(strcmp(name,"responsive.css")==0){offset=uiBundleFooter.responsiveCssGzipOffset;length=uiBundleFooter.responsiveCssGzipSize;}
+    else{offset=uiBundleFooter.styleCssGzipOffset;length=uiBundleFooter.styleCssGzipSize;}
   }else return false;
   if(length==0)return false;
   server.sendHeader("Cache-Control",strcmp(name,"index.html")==0?"no-cache, must-revalidate":"public, max-age=31536000, immutable");
@@ -109,6 +113,11 @@ static void sendUiEncodingError(WebServer&server){
 
 static bool littleFsExistsQuiet(const char* path){
   if(!path||!*path)return false;String full="/littlefs"+String(path);struct stat st;return ::stat(full.c_str(),&st)==0;
+}
+static void removeBundledUiFromLittleFs(){
+  if(!loadUiBundle())return;
+  const char* obsolete[]={"/index.html","/app.js","/responsive.css","/style.css"};
+  for(const char* path:obsolete)if(littleFsExistsQuiet(path)&&!LittleFS.remove(path))Serial.printf("Could not remove obsolete UI file %s\n",path);
 }
 static bool removeIfExists(const char* path){
   return !littleFsExistsQuiet(path)||LittleFS.remove(path);
@@ -180,7 +189,7 @@ static String cleanUploadName(String name){name.replace("\\","/");int p=name.las
 static bool allowedUiFile(const String& n){return n=="app.js"||n=="style.css"||n=="index.html"||n=="setup.html"||n=="logo.png"||n=="favicon.ico";}
 static void handleUiUpload(HTTPUpload& u,Storage* store){
   if(u.status==UPLOAD_FILE_START){
-    uiUploadOk=false;uiUploadError="";uiUploadTarget="";if(uiUploadFile)uiUploadFile.close();String backupError;if(!ensureFreshUpdateSafetyBackup(store,backupError)){uiUploadError="Sicherheitskopie fehlgeschlagen. UI-Aktualisierung verweigert: "+backupError;return;}String name=cleanUploadName(u.filename);if(!allowedUiFile(name)){uiUploadError="Nur freigegebene Weboberflächen-Dateien dürfen aktualisiert werden";return;}
+    uiUploadOk=false;uiUploadError="";uiUploadTarget="";if(uiUploadFile)uiUploadFile.close();if(loadUiBundle()){uiUploadError="Die Weboberfläche wird vollständig mit der Firmware aktualisiert. Einzeldateien werden abgewiesen, damit keine alte Oberfläche mit dem aktuellen Paket vermischt wird.";return;}String backupError;if(!ensureFreshUpdateSafetyBackup(store,backupError)){uiUploadError="Sicherheitskopie fehlgeschlagen. UI-Aktualisierung verweigert: "+backupError;return;}String name=cleanUploadName(u.filename);if(!allowedUiFile(name)){uiUploadError="Nur freigegebene Weboberflächen-Dateien dürfen aktualisiert werden";return;}
     size_t freeBytes=LittleFS.totalBytes()>LittleFS.usedBytes()?LittleFS.totalBytes()-LittleFS.usedBytes():0;if(freeBytes<LITTLEFS_SAFETY_RESERVE+64U*1024U){uiUploadError="Zu wenig freier Datenspeicher; 256 KiB Sicherheitsreserve müssen erhalten bleiben";return;}
     uiUploadTarget="/"+name;uiUploadTmp=uiUploadTarget+".upload";uiUploadBackup=uiUploadTarget+".old";removeIfExists(uiUploadTmp);uiUploadFile=LittleFS.open(uiUploadTmp.c_str(),"w");if(!uiUploadFile){uiUploadError="Temporäre UI-Datei kann nicht angelegt werden";return;}uiUploadOk=true;
   }else if(u.status==UPLOAD_FILE_WRITE){
@@ -263,7 +272,7 @@ static bool federationPeerRequestOk(WebServer&server,LocalConfig*c,FederationSer
 }
 
 void WebUi::begin(LocalConfig*c,SharedConfig*s,Storage*st,RelayEngine*r,TimeService*t,MqttService*m,FederationService*f,NewsService*n,WeatherService*weather,WifiManager*w,bool rec){
-  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;mqtt_=m;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;recovery_?setupRoutes():routes();server_.begin();}
+  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;mqtt_=m;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;if(!recovery_)removeBundledUiFromLittleFs();recovery_?setupRoutes():routes();server_.begin();}
 void WebUi::loop(){server_.handleClient();}
 bool WebUi::auth(bool){const SecurityConfig&sec=s_?s_->security:c_->security;if(!sec.adminAuthEnabled)return true;if(server_.authenticate(sec.adminUser.c_str(),sec.adminPassword.c_str()))return true;server_.requestAuthentication();return false;}
 void WebUi::sendJson(JsonDocument&d,int code){String x;serializeJson(d,x);server_.send(code,"application/json; charset=utf-8",x);}
@@ -287,7 +296,7 @@ void WebUi::routes(){
  server_.on("/",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"index.html","text/html; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/index.html","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"UI missing":"Oberfläche fehlt");return;}server_.sendHeader("Cache-Control","no-cache, must-revalidate");server_.streamFile(f,"text/html; charset=utf-8");f.close();});
  server_.on("/responsive.css",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"responsive.css","text/css; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/responsive.css","r");if(!f){server_.send(404,"text/plain; charset=utf-8","responsive.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
  server_.on("/app.js",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"app.js","application/javascript; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/app.js","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"app.js missing":"app.js fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"application/javascript; charset=utf-8");f.close();});
- server_.on("/style.css",HTTP_GET,[this](){File f=LittleFS.open("/style.css","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"style.css missing":"style.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
+ server_.on("/style.css",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"style.css","text/css; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/style.css","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"style.css missing":"style.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
  server_.serveStatic("/logo.png",LittleFS,"/logo.png","max-age=604800");
  server_.serveStatic("/favicon.ico",LittleFS,"/favicon.ico","max-age=604800");
  server_.on("/api/snapshot",HTTP_GET,[this](){apiSnapshot();});

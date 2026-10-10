@@ -1,19 +1,18 @@
-# Prüfprotokoll – Produktversion 1.8.9
+# Prüfprotokoll – Firmware 1.8.10
 
-## Aktueller veröffentlichter Stand
+- Arbeitsstand: Firmware 1.8.10 / API 6; Veröffentlichung und anonymer GitHub-Download für diesen Stand werden erst nach Live-Prüfung als bestanden geführt.
+- Ein Produktbuild (`esp32dev`) und das einzige vollständige OTA-Asset `firmware-esp32dev.bin` wurden lokal gebaut.
+- Build: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.568 Byte; OTA-Datei 1.507.328 Byte; 8.766 Byte Reserve im festen Slot.
+- OTA-Datei SHA-256: `1C09D3202F6C2CA453BC960CB8EC3928C1945E09746B145995AFE6C1F66DB238`.
+- Änderungen: `style.css` liegt nun ebenfalls im CRC32-geprüften Firmwarepaket. Nach erfolgreicher Paketprüfung werden nur vier alte Hauptoberflächenkopien aus LittleFS entfernt; Einzeldatei-UI-Uploads werden bei gültigem Paket abgewiesen.
+- Echtes Testgerät (Controller-ID-Suffix `28FDE2842178`): OTA von 1.8.9 auf 1.8.10 bestanden. Lokale Konfiguration, gemeinsame Konfiguration und WLAN-Zustand stimmen im vollständigen Vorher-/Nachher-JSON-Vergleich exakt überein.
+- Live-HTTP: Startseite, JavaScript und beide CSS-Dateien liefern HTTP 200 mit gzip; Dekomprimierte Inhalte stimmen jeweils per SHA-256 exakt mit dem Paketquellstand überein. Der Einzeldatei-Upload wird mit HTTP 409 abgewiesen.
+- `setup.html`, Logo und Favicon bleiben erhalten. Die produktiven ESPs blieben unangetastet.
+- GitHub-Tag/Asset, anonymer Direktdownload und unabhängiger LittleFS-Dateiliste-Readback: `OFFEN` bis zur jeweiligen Prüfung.
 
-- Neueste stabile Firmware: **1.8.9**, GitHub-Release [v1.8.9](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.9).
-- Ein Produktbuild (`esp32dev`) und ein vollständiges OTA-Asset: `firmware-esp32dev.bin`.
-- Paketgröße: 1.507.328 Byte; SHA-256 `5FC0886ECE59A0FB7FB9BD09C587B837CFA0CD89D59CDEB4FEB3D1A9A7555C87`.
-- Firmware-Quellcommit: `cb16d649a4f2a95ce343ef33bd2b62719c4699d8`; Release-Tag `v1.8.9`.
-- Veröffentlichung: genau ein OTA-Asset; der öffentliche Direktdownload wurde geladen und bytegenau per SHA-256 verifiziert.
-- SMTP-Endpunkt und Berichtversand: live bestätigt; GMX-Spamablage ist für den einzigen Empfänger akzeptiert. Diagnoseformular auf dem ESP sichtbar geprüft; kein Bericht versendet.
-- Reale Geräteprüfungen für Stromausfall-Wiederherstellung, Signalweg-/Verbundausschluss, Motorlauf und Bildschirmgrößen sind nicht pauschal bestanden; siehe jeweilige Zeilen mit `OFFEN`.
+Ältere Abschnitte sind Versionshistorie. Ein dortiger PASS gilt nur für die ausdrücklich genannte Version. Build- oder HTTP-Readback belegt nicht automatisch den Löschstatus jeder einzelnen LittleFS-Datei.
 
-Die folgenden Abschnitte 1.8.1 bis 1.8.8 sind Versionshistorie. Ein älterer PASS gilt nur für den dort ausdrücklich genannten Quellstand und belegt nicht automatisch den Zustand von 1.8.9.
-
-Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
-
+Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von Prüfungen an echten Geräten. Ein erfolgreicher Build allein beweist keine OTA-Funktion.
 ## Änderungen in 1.8.1
 
 - Unvollständige Konfigurationsanfragen werden abgewiesen; vorhandene Relais, Funktionen, Geräte, Anordnung und Signalwege sind gegen versehentlich leere Listen geschützt.
@@ -289,3 +288,40 @@ Eine geprüfte Sicherung der lokalen und gemeinsamen Konfiguration wurde vor dem
 
 Prüfe vor dem Upload Quelltext, Dokumente, Binärdateien, Anhänge und erreichbare Git-Historie auf Zugangsdaten, personenbezogene Angaben, KI-Dienste und Geräte-Konfigurationen. Veröffentlichte Prüfsummen müssen exakt zu den angehängten Release-Dateien gehören.
 
+
+## Firmware 1.8.10 – Keine gemischten Oberflächenstände
+
+Änderung am 10.10.2026:
+
+- Das bisher getrennt aus LittleFS geladene `style.css` wird nun wie Startseite, JavaScript und `responsive.css` als Brotli-/gzip-Variante im vollständigen OTA-Paket gespeichert. Ein neuer Footer-Marker `ANTUIBR3` unterscheidet das Format von älteren Paketen. Die CRC32-Prüfung umfasst alle acht komprimierten Oberflächenrepräsentationen.
+- Beim normalen Start löscht die Firmware nach erfolgreicher Marker-, Bereichs- und CRC-Prüfung ausschließlich `/index.html`, `/app.js`, `/responsive.css` und `/style.css`. Bei fehlendem oder ungültigem Paket wird nichts gelöscht und der LittleFS-Rückfall bleibt verfügbar.
+- Ein Upload einzelner UI-Dateien wird abgewiesen, solange ein gültiges Paket läuft. Die URLs von CSS und JavaScript tragen den Cache-Schlüssel 1.8.10.
+- WLAN, Gerätekonfiguration, Update-Sicherungen, `/setup.html`, Logo und Favicon sind nicht Ziel der Löschung. Der Paketbauer prüft die drei bewusst unveränderten Setup-/Markendateien anhand festgelegter SHA-256-Werte.
+
+### Lokaler Build und Paket
+
+| Prüfung | Ergebnis |
+|---|---|
+| Erster Buildlauf | FAIL; ein neu ergänzter Prüfsummenpfad verwendete zunächst eine nicht deklarierte Ende-Variable. Vor dem OTA korrigiert. |
+| Zweiter Lauf `node tools/build-ota-package.mjs esp32dev` | PASS; PlatformIO `espressif32 6.12.0`, Arduino-ESP32 `3.20017.241212+sha.dcc1105b`, Xtensa-GCC `8.4.0+2021r2-patch5`, esptool `4.9.0`; RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.568 Byte. |
+| Komprimierung | PASS; JavaScript-Syntax geprüft; alle vier Assets in Brotli und gzip komprimiert und zurückdekomprimiert mit bytegleichem Quellvergleich. |
+| OTA-Slot | PASS; Gesamtpaket 1.507.328 Byte, Reserve 8.766 Byte nach Firmware, acht komprimierten Oberflächenrepräsentationen und dem 76-Byte-Footer. |
+| Footer und CRC32 | PASS; Paketbauer prüfte Marker, Feldpositionen, Inhalt und CRC32. SHA-256 Gesamtpaket: `1C09D3202F6C2CA453BC960CB8EC3928C1945E09746B145995AFE6C1F66DB238`. |
+| `git diff --check` und Manifest | PASS; vor Commit ausgeführt und aktualisiert. |
+
+### OTA am nichtproduktiven ESP32
+
+| Prüfung | Ergebnis |
+|---|---|
+| Zielidentität | PASS; vor OTA live bestätigt: ESP32-28FDE2842178, Master, Firmware 1.8.9, Adresse 192.168.0.154. |
+| Sicherung | PASS; unmittelbar vor OTA heruntergeladen, Format `AntennaControllerSafetyBackupV2`, Zielkennung geprüft; lokale Datei unter `backups/config/`, von Git ignoriert. SHA-256 `A5B9FF3B4D130B95734698C2AD84D910FB7D3AC3D607BB30DE6668AFEEDC71D8`. |
+| OTA | PASS; 1.507.328 Byte über die lokale Update-Seite gesendet, HTTP 200 bestätigte den Neustart. |
+| Firmware-Readback | PASS; `/api/snapshot` meldet 1.8.10, API 6, dieselbe Controller-ID, Master-Rolle, Adresse und 8 Geräte. |
+| Konfigurationserhalt | PASS; vollständiger JSON-Vergleich der lokalen Einstellungen, gemeinsamen Einstellungen und WLAN-Daten vor/nach OTA ist identisch. Nachher: 8 Geräte, ein gespeichertes WLAN. |
+| vier HTTP-Hauptdateien | PASS; `/`, `/app.js`, `/responsive.css` und `/style.css` antworten HTTP 200 mit gzip. Dekomprimierte Inhalte stimmen exakt mit Quellhashes überein: HTML `3613AFC111BDF25EEFB9BE1F2419E0887D3DEF67C9A3BBBEE1D4FDC24B48D559`, JavaScript `E53F8553F7BC430705DB480FEDC146AAF990DF9DFC918E67E423451B4CAC0D5F`, responsive CSS `B287AB9E48B360AEB1FF344584662599F45094455A1C9738561CBC271C2830C3`, Basis-CSS `3CE062D7621FB246E174CCC273C0D517D0EA8DC45301C0ECB8DA1D2EE6DE1A78`. |
+| UI-Einzeldatei-Upload | PASS; gezielter Uploadversuch mit `style.css` lieferte HTTP 409 mit der erwarteten Ablehnung; keine Datei wurde aktiviert. |
+| produktive ESPs | OFFEN / nicht angefasst. |
+| LittleFS-Dateiliste nach Löschung | OFFEN; die Firmware bietet keinen Dateiliste-Readback. Paket-Auslieferung und Neustart wurden live geprüft, die physische Abwesenheit jedes Pfads kann nicht separat per API bestätigt werden. |
+| GitHub-Veröffentlichung und Direktdownload | OFFEN; nach Veröffentlichung zu prüfen. |
+
+Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und bleiben lokal außerhalb der Veröffentlichung.

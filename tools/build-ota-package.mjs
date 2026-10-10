@@ -11,7 +11,7 @@ const firmware = resolve(root, '.pio', 'build', env, 'firmware.bin');
 const packagePath = resolve(outDir, `firmware-${env}.bin`);
 const temp = resolve(root, '.pio', 'ota-package');
 const partitionSize = 0x170000;
-const magic = Buffer.from('ANTUIBR2');
+const magic = Buffer.from('ANTUIBR3');
 
 if (env !== 'esp32dev') throw new Error(`Unsupported release environment: ${env}`);
 mkdirSync(outDir, { recursive: true }); mkdirSync(temp, { recursive: true });
@@ -22,7 +22,6 @@ const image = readFileSync(firmware);
 
 const appJs = resolve(temp, 'app.min.js');
 const unchangedUiFiles = new Map([
-  ['style.css', '3ce062d7621fb246e174ccc273c0d517d0ea8dc45301c0ecb8da1d2ee6de1a78'],
   ['setup.html', '5471ebbd5ae429e56bf147512eb421d7780c0add3bfc54c8ce6cb2f76495d0ea'],
   ['logo.png', 'df0aa9b060b41794e52c8d5d1261f31f049bcd16cdf4fb818f0d42934735ab8a'],
   ['favicon.ico', '735c0feb9ce1c1da95623079740d1442a2330c1b49f443629fb30be420f22154'],
@@ -42,21 +41,22 @@ const uiAssets = [
   readFileSync(resolve(root, 'data', 'index.html')),
   readFileSync(appJs),
   readFileSync(resolve(root, 'data', 'responsive.css')),
+  readFileSync(resolve(root, 'data', 'style.css')),
 ];
 const assets = [
   ...uiAssets.map(brotli),
   ...uiAssets.map(data => gzipSync(data, { level: 9, mtime: 0 })),
 ];
 const encodedAssetGroups = [
-  { encoding: 'Brotli', decode: brotliDecompressSync, items: assets.slice(0, 3) },
-  { encoding: 'gzip', decode: gunzipSync, items: assets.slice(3) },
+  { encoding: 'Brotli', decode: brotliDecompressSync, items: assets.slice(0, 4) },
+  { encoding: 'gzip', decode: gunzipSync, items: assets.slice(4) },
 ];
 for (const group of encodedAssetGroups) {
   group.items.forEach((asset, i) => { if (!group.decode(asset).equals(uiAssets[i])) throw new Error(`${group.encoding} asset verification failed: ${i}`); });
 }
-/* The first three entries are preferred Brotli; the second three are browser-compatible gzip. */
+/* The first four entries are preferred Brotli; the second four are browser-compatible gzip. */
 const payloadBytes = assets.reduce((n, a) => n + a.length, 0);
-const footerSize = 60;
+const footerSize = 76;
 if (image.length + payloadBytes + footerSize > partitionSize) {
   throw new Error(`Firmware plus complete UI does not fit: app=${image.length}, UI=${payloadBytes}, footer=${footerSize}, slot=${partitionSize}`);
 }
@@ -80,6 +80,6 @@ footer.writeUInt32LE(crc32(payload), pos);
 
 writeFileSync(packagePath, packageData);
 if (!packageData.subarray(partitionSize - footerSize, partitionSize).subarray(0, 8).equals(magic)) throw new Error('OTA footer verification failed');
-if (crc32(packageData.subarray(entries[0].offset, cursor)) !== footer.readUInt32LE(56)) throw new Error('OTA payload checksum verification failed');
+if (crc32(packageData.subarray(entries[0].offset, cursor)) !== footer.readUInt32LE(72)) throw new Error('OTA payload checksum verification failed');
 console.log(`OTA package: ${packagePath}`);
-console.log(`Firmware ${image.length} B; UI Brotli ${assets.slice(0, 3).reduce((n, a) => n + a.length, 0)} B + gzip ${assets.slice(3).reduce((n, a) => n + a.length, 0)} B; slot ${partitionSize} B; remaining ${partitionSize - image.length - payloadBytes - footerSize} B`);
+console.log(`Firmware ${image.length} B; UI Brotli ${assets.slice(0, 4).reduce((n, a) => n + a.length, 0)} B + gzip ${assets.slice(4).reduce((n, a) => n + a.length, 0)} B; slot ${partitionSize} B; remaining ${partitionSize - image.length - payloadBytes - footerSize} B`);

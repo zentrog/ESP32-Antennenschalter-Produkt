@@ -2,7 +2,7 @@
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
-GET `/`, `/app.js` und `/responsive.css` liefern bei einem gültigen OTA-Oberflächenpaket die Brotli-komprimierten Dateien aus der laufenden Programmpartition. Ohne gültiges Paket greift die Firmware auf LittleFS zurück. `/style.css` wird weiterhin aus LittleFS geliefert. Firmware 1.8.8 ändert keine ESP-API-Route; die optionale Fehler-/Wunschmeldung nutzt den dokumentierten externen HTTPS-Endpunkt.
+GET `/`, `/app.js`, `/responsive.css` und `/style.css` liefern bei einem gültigen OTA-Oberflächenpaket die Brotli- oder gzip-Dateien aus der laufenden Programmpartition. Fehlt das geprüfte Paket, bleibt LittleFS als Rückfall für Erstinstallationen verfügbar. Bei einem gültigen Paket entfernt der normale Start die veralteten LittleFS-Kopien dieser vier Dateien; Konfiguration, WLAN, Sicherungen und `/setup.html` bleiben unberührt. Der Einzeldatei-Upload `/api/ui-upload` wird bei gültigem Paket abgewiesen, damit kein veralteter Oberflächenstand erneut abgelegt wird. Logo und Favicon bleiben LittleFS-Dateien und werden vom Paketbauer auf unveränderte Prüfsummen geprüft. Die optionale Fehler-/Wunschmeldung nutzt den dokumentierten externen HTTPS-Endpunkt.
 
 ## Steuerung und Status
 GET /api/snapshot, /api/combined, /api/time, /api/peers
