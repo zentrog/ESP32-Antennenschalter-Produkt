@@ -46,6 +46,9 @@ Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die
 - [HTTP-API](docs/API.md)
 - [Prüfprotokoll](docs/VALIDATION.md)
 - [Dokumentationsablauf](docs/DOCUMENTATION-WORKFLOW.md)
+- [Geplante Windows-App: Funktionsumfang und Umsetzung](docs/WINDOWS-APP-PLAN.md) (geplant, noch nicht implementiert)
+
+Die Windows-App ist optional und noch nicht implementiert. Firmware bleibt separat herunterladbar, manuell installierbar und eigenständig gepflegt. Die App wird später einen zusätzlichen geführten Weg bieten.
 
 ## Datenschutz
 

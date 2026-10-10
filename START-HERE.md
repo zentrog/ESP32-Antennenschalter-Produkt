@@ -6,4 +6,6 @@
 4. Baue esp32dev und trage echte Ergebnisse in docs/VALIDATION.md ein.
 5. Vor der Veröffentlichung müssen Dateien und erreichbare Git-Historie auf private Daten geprüft sein.
 
+6. Die geplante Windows-App für Einrichtung, Backup, Diagnose, Updates und Wiederherstellung ist in [docs/WINDOWS-APP-PLAN.md](docs/WINDOWS-APP-PLAN.md) beschrieben. Sie ist noch nicht implementiert.
+
 Die leeren Produkt-Defaults gelten für neue Geräte und Factory-Reset. Ein normales OTA-Update setzt gespeicherte Gerätedaten nicht zurück.
