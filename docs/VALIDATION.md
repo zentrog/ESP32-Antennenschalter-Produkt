@@ -161,7 +161,7 @@ Das öffentliche Release wurde am 10.10.2026 erstellt. Der Direktdownload ist ge
 
 Der lokale Build und die öffentliche Downloadprüfung wurden am 10.10.2026 ausgeführt. Der Firmware-Quellcommit ist `996f159b94ab92aedfdbec9b533d436d96d1350b`. Wegen nur 800 Byte freiem Platz im festen OTA-Slot muss jede weitere Firmware- oder Oberflächenänderung erneut gegen denselben Paketbauer geprüft werden. Die hier aufgeführten offenen Geräte- und Hostingprüfungen dürfen nicht als bestanden dargestellt werden.
 
-## Arbeitsstand 1.8.8 – Wiederherstellung nach Stromausfall
+## Veröffentlichung 1.8.8 – Wiederherstellung nach Stromausfall
 
 Bei der Codeprüfung wurde ein echter Verlustpfad gefunden: `restore()` löschte die gespeicherte Auswahl vor dem Wiedereinschalten der Relais. Wenn die TX-Sperre beim Boot aktiv war, konnte `execute()` das Schalten ablehnen und der letzte Zustand war trotzdem aus dem Speicher entfernt. Firmware 1.8.8 lässt die dauerhafte Auswahl unangetastet, wenn TX die Wiederherstellung beim Boot verhindert, und versucht sie nach Ende der Sperre erneut. Auch wenn eine Funktion nicht mehr verfügbar ist, bleibt die gespeicherte Information erhalten, bis der Betreiber den Zustand ausdrücklich ändert.
 
@@ -172,10 +172,14 @@ Bei der Codeprüfung wurde ein echter Verlustpfad gefunden: `restore()` löschte
 | Vollständiges OTA-Paket | PASS; 1.507.328 Byte, Roh-Firmware 1.457.920 Byte, Brotli-Weboberfläche 48.655 Byte, 717 Byte Reserve |
 | SHA-256 `firmware-esp32dev.bin` | `786396a295bd8e63bb4524748e18fb31d2472cf9132ec5eee191858f84defec1` |
 | Neustart mit aktiver TX-Sperre und spätere Wiederherstellung | OFFEN; noch nicht am ESP geprüft |
-| Sonstige echte ESP-/Display-/Hostingprüfungen | OFFEN; siehe oben |
-| GitHub-Release 1.8.8 | OFFEN; der aktuelle öffentliche Stand bleibt v1.8.7 |
+| GitHub-Release `v1.8.8` | PASS; öffentlich, stabil, neueste Version; genau ein Binär-Asset `firmware-esp32dev.bin`, 1.507.328 Byte |
+| GitHub-Tag und `main` | PASS; Tag `v1.8.8` und `main` zeigen beide auf Quellcommit `f546e07a1ae80dcc686872e313647761acd95b01` |
+| Öffentlicher Direktdownload `/releases/latest/download/firmware-esp32dev.bin` | PASS; HTTP leitet auf `/releases/download/v1.8.8/firmware-esp32dev.bin` weiter und liefert 1.507.328 Byte mit passendem SHA-256 `786396a295bd8e63bb4524748e18fb31d2472cf9132ec5eee191858f84defec1` |
+| Mail-Endpunkt auf do1anb.de | OFFEN; Live-Aufruf am 10.10.2026 liefert HTTP 404. Ein personalisiertes Upload-ZIP wurde lokal erstellt; es ist noch nicht auf dem Webspace installiert. |
+| Berichtformular im echten Browser und SMTP-Zustellung | OFFEN; Endpunkt muss installiert und der bewusste Testversand durchgeführt werden. |
+| Sonstige echte ESP-/Displayprüfungen | OFFEN; siehe oben |
 
-Der Paketbauer hat die vollständige Firmware und Weboberfläche erneut in den festen OTA-Slot gepackt. Es bleiben 717 Byte Reserve, deshalb sind weitere Funktionen nur nach erneutem vollständigem Paketbuild zulässig.
+Der Paketbauer hat die vollständige Firmware und Weboberfläche erneut in den festen OTA-Slot gepackt. Es bleiben 717 Byte Reserve, deshalb sind weitere Funktionen nur nach erneutem vollständigem Paketbuild zulässig. Die öffentliche Release- und Direktdownloadprüfung erfolgte am 10.10.2026.
 
 ## Schutzregeln für den manuellen Updateversuch
 

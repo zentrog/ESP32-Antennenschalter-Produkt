@@ -18,6 +18,7 @@ $isHealth = ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['health'
 if ($isHealth) header('Access-Control-Allow-Origin: *');
 
 $configPath = getenv('ANTCTRL_REPORT_CONFIG') ?: __DIR__ . '/mail-config.php';
+define('ANTCTRL_REPORT_CONFIG_INCLUDED', true);
 if (!is_file($configPath) || !is_readable($configPath)) {
     fail(503, 'Der Mailversand ist auf diesem Server noch nicht eingerichtet.');
 }

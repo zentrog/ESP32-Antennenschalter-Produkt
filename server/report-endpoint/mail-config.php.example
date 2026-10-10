@@ -1,4 +1,8 @@
 <?php
+if (!defined('ANTCTRL_REPORT_CONFIG_INCLUDED')) {
+    http_response_code(404);
+    exit;
+}
 // Copy outside the public web directory and set ANTCTRL_REPORT_CONFIG to it.
 // Keep permissions restricted. Never commit a populated copy of this file.
 return [

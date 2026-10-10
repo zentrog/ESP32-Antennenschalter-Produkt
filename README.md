@@ -2,7 +2,7 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktuelle veröffentlichte Produktversion: Firmware 1.8.7. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest).
+Aktuelle veröffentlichte Produktversion: Firmware 1.8.8. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest).
 
 Unter **Diagnose** gibt es ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der E-Mail-Versand wird erst freigeschaltet, wenn der HTTPS-Mail-Endpunkt auf do1anb.de erreichbar ist und die SMTP-Anmeldung geprüft wurde. Bis dahin bleibt der lokale Download verfügbar; siehe [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
 
