@@ -175,7 +175,7 @@ Bei der Codeprüfung wurde ein echter Verlustpfad gefunden: `restore()` löschte
 | GitHub-Release `v1.8.8` | PASS; öffentlich, stabil, neueste Version; genau ein Binär-Asset `firmware-esp32dev.bin`, 1.507.328 Byte |
 | GitHub-Tag und `main` | PASS; Tag `v1.8.8` und `main` zeigen beide auf Quellcommit `f546e07a1ae80dcc686872e313647761acd95b01` |
 | Öffentlicher Direktdownload `/releases/latest/download/firmware-esp32dev.bin` | PASS; HTTP leitet auf `/releases/download/v1.8.8/firmware-esp32dev.bin` weiter und liefert 1.507.328 Byte mit passendem SHA-256 `786396a295bd8e63bb4524748e18fb31d2472cf9132ec5eee191858f84defec1` |
-| Mail-Endpunkt auf do1anb.de | OFFEN; Live-Aufruf am 10.10.2026 liefert HTTP 404. Ein personalisiertes Upload-ZIP wurde lokal erstellt; es ist noch nicht auf dem Webspace installiert. |
+| Mail-Endpunkt auf do1anb.de | OFFEN; Livecheck am 10.10.2026 liefert HTTP 503 und `{"ready":false}`. Der PHP-Endpunkt antwortet, aber die SMTP-Prüfung ist nicht bereit. Direkter Abruf von `mail-config.php` liefert HTTP 403; die Konfiguration ist damit nicht lesbar. |
 | Berichtformular im echten Browser und SMTP-Zustellung | OFFEN; Endpunkt muss installiert und der bewusste Testversand durchgeführt werden. |
 | Sonstige echte ESP-/Displayprüfungen | OFFEN; siehe oben |
 
