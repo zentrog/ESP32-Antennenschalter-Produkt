@@ -8,7 +8,7 @@
 - Paketbau: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.448 / 327.680 Byte; Firmwareabbild 1.367.392 Byte. Vollständiges OTA-Paket 1.507.328 Byte, darin UI Brotli 63.487 Byte + gzip 75.184 Byte; verbleibender OTA-Speicher 1.189 Byte. Paket-SHA-256 `9E8295AA1A79CD8E94B26848CD26F467C4BFD0E62200E80518F10F0DE56963D8`.
 - JavaScript-Syntax sowie Komprimierungs-/Dekomprimierungsvergleich der UI-Dateien: PASS (Paketbauer).
 - Visuelle Gegenprüfung im problematischen Browserfenster des Freundes (ca. 1244×360 CSS-Pixel): OFFEN; vom Betreiber nach Veröffentlichung vorgesehen. Der Build allein bestätigt keine lesbare Darstellung auf diesem konkreten Gerät.
-- GitHub-Veröffentlichung: OFFEN.
+- GitHub-Veröffentlichung: PASS; öffentliches neuestes stabiles Release [v1.8.17](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.17), Tag zeigt auf Code-Commit `3f8c99c36edfad9efe1930d4bb4f5f7cdca117f1`. Genau ein Asset `firmware-esp32dev.bin`, 1.507.328 Byte. Anonymer Direktdownload `/releases/latest/download/firmware-esp32dev.bin` wurde byte- und SHA-256-genau verglichen; Hash `9E8295AA1A79CD8E94B26848CD26F467C4BFD0E62200E80518F10F0DE56963D8`.
 
 ## Firmware 1.8.16 · Stromkartenfarben
 
