@@ -37,14 +37,31 @@ static String safeBackupPart(String value){
 #pragma pack(push,1)
 struct UiBundleFooter {
   char magic[8];
-  uint32_t indexOffset,indexSize,appOffset,appSize,cssOffset,cssSize,payloadCrc32;
+  uint32_t indexBrOffset,indexBrSize,appBrOffset,appBrSize,cssBrOffset,cssBrSize;
+  uint32_t indexGzipOffset,indexGzipSize,appGzipOffset,appGzipSize,cssGzipOffset,cssGzipSize;
+  uint32_t payloadCrc32;
 };
 #pragma pack(pop)
-static_assert(sizeof(UiBundleFooter)==36,"OTA UI bundle footer layout must match the package builder");
-static const char UI_BUNDLE_MAGIC[8]={'A','N','T','U','I','B','R','1'};
+static_assert(sizeof(UiBundleFooter)==60,"OTA UI bundle footer layout must match the package builder");
+static const char UI_BUNDLE_MAGIC[8]={'A','N','T','U','I','B','R','2'};
 static const esp_partition_t* uiBundlePartition=nullptr;
 static UiBundleFooter uiBundleFooter{};
 static bool uiBundleChecked=false,uiBundleValid=false;
+static String acceptedUiEncoding(WebServer&server){
+  String enc=server.header("Accept-Encoding");enc.toLowerCase();int start=0;
+  bool br=false,gzip=false;
+  while(start<(int)enc.length()){
+    int end=enc.indexOf(',',start);if(end<0)end=enc.length();String item=enc.substring(start,end);item.trim();
+    int semi=item.indexOf(';');String coding=semi<0?item:item.substring(0,semi);coding.trim();
+    bool enabled=true;int q=item.indexOf("q=",semi<0?0:semi+1);
+    if(q>=0){int qEnd=item.indexOf(';',q);String quality=item.substring(q+2,qEnd<0?item.length():qEnd);quality.trim();enabled=quality.toFloat()>0.0f;}
+    if(enabled&&coding=="br")br=true;else if(enabled&&coding=="gzip")gzip=true;
+    start=end+1;
+  }
+  // The ESP web UI is currently plain HTTP. Prefer gzip for broad browser compatibility;
+  // a browser that only supports Brotli still receives the Brotli representation.
+  return gzip?String("gzip"):br?String("br"):String();
+}
 static uint32_t uiBundleCrc32(uint32_t crc,const uint8_t*data,size_t n){
   crc=~crc;for(size_t i=0;i<n;++i){crc^=data[i];for(uint8_t b=0;b<8;++b)crc=(crc>>1)^(0xEDB88320U&-(crc&1U));}return ~crc;
 }
@@ -54,20 +71,40 @@ static bool loadUiBundle(){
   uint32_t footerAt=uiBundlePartition->size-sizeof(UiBundleFooter);
   if(esp_partition_read(uiBundlePartition,footerAt,&uiBundleFooter,sizeof(uiBundleFooter))!=ESP_OK)return false;
   if(memcmp(uiBundleFooter.magic,UI_BUNDLE_MAGIC,sizeof(UI_BUNDLE_MAGIC))!=0)return false;
-  uint64_t indexEnd=(uint64_t)uiBundleFooter.indexOffset+uiBundleFooter.indexSize;
-  uint64_t appEnd=(uint64_t)uiBundleFooter.appOffset+uiBundleFooter.appSize;
-  uint64_t cssEnd=(uint64_t)uiBundleFooter.cssOffset+uiBundleFooter.cssSize;
-  if(uiBundleFooter.indexOffset<0x1000||uiBundleFooter.indexSize==0||uiBundleFooter.appSize==0||uiBundleFooter.cssSize==0||
-     indexEnd!=uiBundleFooter.appOffset||appEnd!=uiBundleFooter.cssOffset||cssEnd>footerAt)return false;
-  uint32_t crc=0;uint8_t buf[512];uint32_t left=(uint32_t)(cssEnd-uiBundleFooter.indexOffset),at=uiBundleFooter.indexOffset;
+  uint64_t indexBrEnd=(uint64_t)uiBundleFooter.indexBrOffset+uiBundleFooter.indexBrSize;
+  uint64_t appBrEnd=(uint64_t)uiBundleFooter.appBrOffset+uiBundleFooter.appBrSize;
+  uint64_t cssBrEnd=(uint64_t)uiBundleFooter.cssBrOffset+uiBundleFooter.cssBrSize;
+  uint64_t indexGzipEnd=(uint64_t)uiBundleFooter.indexGzipOffset+uiBundleFooter.indexGzipSize;
+  uint64_t appGzipEnd=(uint64_t)uiBundleFooter.appGzipOffset+uiBundleFooter.appGzipSize;
+  uint64_t cssGzipEnd=(uint64_t)uiBundleFooter.cssGzipOffset+uiBundleFooter.cssGzipSize;
+  if(uiBundleFooter.indexBrOffset<0x1000||uiBundleFooter.indexBrSize==0||uiBundleFooter.appBrSize==0||uiBundleFooter.cssBrSize==0||
+     uiBundleFooter.indexGzipSize==0||uiBundleFooter.appGzipSize==0||uiBundleFooter.cssGzipSize==0||
+     indexBrEnd!=uiBundleFooter.appBrOffset||appBrEnd!=uiBundleFooter.cssBrOffset||cssBrEnd!=uiBundleFooter.indexGzipOffset||
+     indexGzipEnd!=uiBundleFooter.appGzipOffset||appGzipEnd!=uiBundleFooter.cssGzipOffset||cssGzipEnd>footerAt)return false;
+  uint32_t crc=0;uint8_t buf[512];uint32_t left=(uint32_t)(cssGzipEnd-uiBundleFooter.indexBrOffset),at=uiBundleFooter.indexBrOffset;
   while(left){size_t n=left>sizeof(buf)?sizeof(buf):left;if(esp_partition_read(uiBundlePartition,at,buf,n)!=ESP_OK)return false;crc=uiBundleCrc32(crc,buf,n);at+=(uint32_t)n;left-=(uint32_t)n;}
   uiBundleValid=crc==uiBundleFooter.payloadCrc32;return uiBundleValid;
 }
-static bool sendBundledUi(WebServer&server,const char*name,const char*mime,uint32_t offset,uint32_t length){
-  if(!loadUiBundle()||length==0)return false;
+static bool sendBundledUi(WebServer&server,const char*name,const char*mime){
+  server.sendHeader("Vary","Accept-Encoding");
+  String encoding=acceptedUiEncoding(server);uint32_t offset=0,length=0;
+  if(encoding=="br"){
+    if(strcmp(name,"index.html")==0){offset=uiBundleFooter.indexBrOffset;length=uiBundleFooter.indexBrSize;}
+    else if(strcmp(name,"app.js")==0){offset=uiBundleFooter.appBrOffset;length=uiBundleFooter.appBrSize;}
+    else{offset=uiBundleFooter.cssBrOffset;length=uiBundleFooter.cssBrSize;}
+  }else if(encoding=="gzip"){
+    if(strcmp(name,"index.html")==0){offset=uiBundleFooter.indexGzipOffset;length=uiBundleFooter.indexGzipSize;}
+    else if(strcmp(name,"app.js")==0){offset=uiBundleFooter.appGzipOffset;length=uiBundleFooter.appGzipSize;}
+    else{offset=uiBundleFooter.cssGzipOffset;length=uiBundleFooter.cssGzipSize;}
+  }else return false;
+  if(length==0)return false;
   server.sendHeader("Cache-Control",strcmp(name,"index.html")==0?"no-cache, must-revalidate":"public, max-age=31536000, immutable");
-  server.sendHeader("Content-Encoding","br");server.setContentLength(length);server.send(200,mime,"");
+  server.sendHeader("Content-Encoding",encoding);server.setContentLength(length);server.send(200,mime,"");
   uint8_t buf[512];uint32_t sent=0;while(sent<length){size_t n=length-sent>sizeof(buf)?sizeof(buf):length-sent;if(esp_partition_read(uiBundlePartition,offset+sent,buf,n)!=ESP_OK){server.client().stop();return true;}server.sendContent((const char*)buf,n);sent+=(uint32_t)n;}return true;
+}
+static void sendUiEncodingError(WebServer&server){
+  server.sendHeader("Cache-Control","no-store");
+  server.send(406,"text/plain; charset=utf-8","Dieser Browser fordert weder Brotli noch gzip an. Bitte einen aktuellen Browser verwenden und die Seite neu laden.");
 }
 
 static bool littleFsExistsQuiet(const char* path){
@@ -226,7 +263,7 @@ static bool federationPeerRequestOk(WebServer&server,LocalConfig*c,FederationSer
 }
 
 void WebUi::begin(LocalConfig*c,SharedConfig*s,Storage*st,RelayEngine*r,TimeService*t,MqttService*m,FederationService*f,NewsService*n,WeatherService*weather,WifiManager*w,bool rec){
-  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match"};server_.collectHeaders(hdrs,4);c_=c;s_=s;store_=st;rel_=r;time_=t;mqtt_=m;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;recovery_?setupRoutes():routes();server_.begin();}
+  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;mqtt_=m;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;recovery_?setupRoutes():routes();server_.begin();}
 void WebUi::loop(){server_.handleClient();}
 bool WebUi::auth(bool){const SecurityConfig&sec=s_?s_->security:c_->security;if(!sec.adminAuthEnabled)return true;if(server_.authenticate(sec.adminUser.c_str(),sec.adminPassword.c_str()))return true;server_.requestAuthentication();return false;}
 void WebUi::sendJson(JsonDocument&d,int code){String x;serializeJson(d,x);server_.send(code,"application/json; charset=utf-8",x);}
@@ -247,9 +284,9 @@ void WebUi::setupRoutes(){
  server_.onNotFound([this](){server_.sendHeader("Location","http://192.168.4.1/",true);server_.send(302,"text/plain","");});
 }
 void WebUi::routes(){
- server_.on("/",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"index.html","text/html; charset=utf-8",uiBundleFooter.indexOffset,uiBundleFooter.indexSize))return;File f=LittleFS.open("/index.html","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"UI missing":"Oberfläche fehlt");return;}server_.sendHeader("Cache-Control","no-cache, must-revalidate");server_.streamFile(f,"text/html; charset=utf-8");f.close();});
- server_.on("/responsive.css",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"responsive.css","text/css; charset=utf-8",uiBundleFooter.cssOffset,uiBundleFooter.cssSize))return;File f=LittleFS.open("/responsive.css","r");if(!f){server_.send(404,"text/plain; charset=utf-8","responsive.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
- server_.on("/app.js",HTTP_GET,[this](){if(loadUiBundle()&&sendBundledUi(server_,"app.js","application/javascript; charset=utf-8",uiBundleFooter.appOffset,uiBundleFooter.appSize))return;File f=LittleFS.open("/app.js","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"app.js missing":"app.js fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"application/javascript; charset=utf-8");f.close();});
+ server_.on("/",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"index.html","text/html; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/index.html","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"UI missing":"Oberfläche fehlt");return;}server_.sendHeader("Cache-Control","no-cache, must-revalidate");server_.streamFile(f,"text/html; charset=utf-8");f.close();});
+ server_.on("/responsive.css",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"responsive.css","text/css; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/responsive.css","r");if(!f){server_.send(404,"text/plain; charset=utf-8","responsive.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
+ server_.on("/app.js",HTTP_GET,[this](){if(loadUiBundle()){if(!sendBundledUi(server_,"app.js","application/javascript; charset=utf-8"))sendUiEncodingError(server_);return;}File f=LittleFS.open("/app.js","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"app.js missing":"app.js fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"application/javascript; charset=utf-8");f.close();});
  server_.on("/style.css",HTTP_GET,[this](){File f=LittleFS.open("/style.css","r");if(!f){server_.send(500,"text/plain; charset=utf-8",c_->language=="en"?"style.css missing":"style.css fehlt");return;}server_.sendHeader("Cache-Control","public, max-age=31536000, immutable");server_.streamFile(f,"text/css; charset=utf-8");f.close();});
  server_.serveStatic("/logo.png",LittleFS,"/logo.png","max-age=604800");
  server_.serveStatic("/favicon.ico",LittleFS,"/favicon.ico","max-age=604800");

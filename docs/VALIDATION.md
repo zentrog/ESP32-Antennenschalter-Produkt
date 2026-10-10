@@ -1,15 +1,15 @@
-# Prüfprotokoll – Produktversion 1.8.8
+# Prüfprotokoll – Produktversion 1.8.9
 
 ## Aktueller veröffentlichter Stand
 
-- Neueste stabile Firmware: **1.8.8**, GitHub-Tag `v1.8.8`.
-- Firmware-Quellcommit und Release-Tag: `f546e07a1ae80dcc686872e313647761acd95b01`.
+- Neueste stabile Firmware: **1.8.9**, GitHub-Tag `v1.8.9`.
 - Ein Produktbuild (`esp32dev`) und ein vollständiges OTA-Asset: `firmware-esp32dev.bin`.
-- Öffentlicher Direktdownload, Paketgröße und SHA-256: siehe Abschnitt „Veröffentlichung 1.8.8“ weiter unten.
-- SMTP-Endpunkt und Berichtversand: live bestätigt; GMX-Spamablage ist für den einzigen Empfänger akzeptiert. Der ESP-seitige Diagnose-Klickpfad bleibt offen.
+- Paketgröße: 1.507.328 Byte; SHA-256 `5FC0886ECE59A0FB7FB9BD09C587B837CFA0CD89D59CDEB4FEB3D1A9A7555C87`.
+- Veröffentlichung: ein stabiles Release und ein einziges OTA-Asset; öffentlicher Direktdownload nach Upload zu prüfen.
+- SMTP-Endpunkt und Berichtversand: live bestätigt; GMX-Spamablage ist für den einzigen Empfänger akzeptiert. Diagnoseformular auf dem ESP sichtbar geprüft; kein Bericht versendet.
 - Reale Geräteprüfungen für Stromausfall-Wiederherstellung, Signalweg-/Verbundausschluss, Motorlauf und Bildschirmgrößen sind nicht pauschal bestanden; siehe jeweilige Zeilen mit `OFFEN`.
 
-Die folgenden Abschnitte 1.8.1 bis 1.8.7 sind Versionshistorie. Ein älterer PASS gilt nur für den dort ausdrücklich genannten Quellstand und belegt nicht automatisch den Zustand von 1.8.8.
+Die folgenden Abschnitte 1.8.1 bis 1.8.8 sind Versionshistorie. Ein älterer PASS gilt nur für den dort ausdrücklich genannten Quellstand und belegt nicht automatisch den Zustand von 1.8.9.
 
 Dieses Protokoll unterscheidet Quelltext- und Buildprüfungen von noch ausstehenden Prüfungen an echten Geräten. Ein erfolgreicher Build beweist keine OTA-Funktion.
 
@@ -213,10 +213,73 @@ Die Map zeigt außerdem größere Bereiche für HTTP-/Konfigurationslogik und C-
 
 **Reihenfolge für weitere Arbeit:** zuerst LTO isoliert messen; danach die wenigen Hex-Formatter isoliert prüfen. Keine Funktion und kein Bedienkomfort wird für Platzgewinn entfernt. Eine Änderung der Partitionstabelle wäre kein risikoloser Optimierungsschritt: Sie kann eine vollständige Neuinstallation und Migration des LittleFS mit allen lokalen Einstellungen erfordern und bleibt deshalb vorerst außen vor.
 
+## Isolierter LTO-A/B-Vergleich vom 10.10.2026
+
+Beide Builds wurden aus demselben sauberen Quellcommit `d06587e3f77460c5d4987192c6ef38b84a16a5a2` in getrennten temporären Arbeitsbäumen erzeugt. Der LTO-Versuch änderte nur Compiler-/Linkerflags; es wurden keine Produktdateien, Geräte oder gespeicherten Konfigurationen geändert. Der endgültige LTO-Linkeraufruf wurde geprüft: `-flto` ist enthalten und `-fno-lto` nicht. Ein vorheriger Versuch, der nur `-flto` beim Kompilieren setzte, wurde deshalb nicht als LTO-Ergebnis gewertet.
+
+| Messwert | Ohne LTO | Mit LTO | Änderung |
+|---|---:|---:|---:|
+| Firmwaredatei | 1.457.280 Byte | 1.363.376 Byte | **−93.904 Byte (−6,44 %)** |
+| Vom Linker belegter Programmspeicher | 1.450.709 Byte | 1.356.805 Byte | −93.904 Byte |
+| Statischer RAM laut Build | 52.968 Byte | 52.352 Byte | −616 Byte |
+| Brotli-Weboberfläche im OTA-Paket | 48.648 Byte | 48.648 Byte | unverändert |
+| Reserve im vollständigen OTA-Slot | 1.364 Byte | 95.268 Byte | **+93.904 Byte** |
+
+Werkzeugstand: PlatformIO `espressif32 6.12.0`, Arduino-ESP32 `3.20017.241212+sha.dcc1105b`, Xtensa-GCC `8.4.0+2021r2-patch5`, esptool `4.9.0`. Beide vollständigen OTA-Pakete bestanden den Paketbau einschließlich Größen-, Brotli-Dekompressions-, Footer- und CRC-Prüfung (`PACKAGE PASS`); beide Pakete sind jeweils 1.507.328 Byte groß. SHA-256 ohne LTO: `8B74BF22D270E4F609D8E3CC9A4C72C8DCAE01DEF7249587C14A0C3CE0899345`; mit LTO: `0DD6BA7BEE3ABA46F25512905C2DCF980407488DBDF2A1FEBC7699FB7B68D0D5`.
+
+**Bewertung:** Der Platzgewinn ist deutlich und entfernt keine Funktionen. LTO bleibt ein isolierter Kandidat und ist noch nicht in der Produktkonfiguration oder einem Release aktiviert. Der gezielte Start- und Webabruf wurde anschließend auf einem Test-ESP geprüft; vollständige Relais-, Signalweg-, TX-Sperren-, Wiederherstellungs- und Verbundprüfungen bleiben `OFFEN`. Der ältere Wert von 717 Byte Reserve oben bezieht sich auf das damals vorliegende Buildartefakt; für den hier frisch aus Commit `d06587e` gebauten unveränderten Stand beträgt die Reserve ohne LTO 1.364 Byte.
+
+### Test-ESP mit LTO-Abbild am 10.10.2026
+
+| Prüfung | Ergebnis |
+|---|---|
+| Gerät am USB-Port COM13 | PASS; ESP32-D0WD-V3, MAC-Suffix `E2FD28`; die Gerätekennung stimmte mit der Routeranzeige des Testgeräts überein |
+| Sicherung vor dem Schreiben | PASS; vollständiger 4-MB-Flashauszug, 4.194.304 Byte, lokal unter `backups/device-flash/` (ignoriert, nicht veröffentlichen); SHA-256 `4FD77B5D366834D5153CFD6E8AD519A431D51581B79D821EE68CD6CADC33407E` |
+| Flashaufbau vor dem Schreiben | PASS; Partitionstabelle ausgelesen; aktiver Slot `app0` bei `0x10000`, Größe `0x170000`; separater LittleFS-Bereich ab `0x2F0000` |
+| LTO-OTA-Paket | PASS; 1.507.328 Byte; SHA-256 `CB809CAC1FBC8895E1F7E94165B0650AF4C68A7CED3AAB299906271279B94981`; vollständiger Paketbauer-Lauf erfolgreich |
+| Schreiben | PASS; ausschließlich `app0` über USB bei `0x10000` geschrieben und vom esptool vollständig zurückgelesen/verifiziert. Bootloader, Partitionstabelle, OTA-Auswahl, NVS und LittleFS wurden nicht beschrieben. |
+| Neustart und Firmware-Readback | PASS; `/api/snapshot` antwortete HTTP 200 und meldete Firmware `1.8.8`, API-Version 6 und die erwartete Gerätekennung |
+| Konfigurationserhalt | PASS; Geräte-/Netzkonfiguration blieb auf den nicht beschriebenen NVS-/LittleFS-Partitionen erhalten; im Readback waren die vorhandenen Geräte sichtbar. Es wurden keine Relais betätigt. |
+| Weboberfläche | PASS; `/` HTTP 200 in 124 ms, `/app.js` HTTP 200 in 356 ms, `/responsive.css` HTTP 200 in 70 ms; die vom ESP gelieferte minifizierte `app.js` stimmt per SHA-256 exakt mit der LTO-Paketdatei überein. Messung über das lokale WLAN am 10.10.2026 |
+| Gespeicherte Signalwege und Anlagenteile | PASS; Readback zeigt 16 Signalwege und 8 Layout-Elemente, passend zu 4 Funkgeräten × 4 Antennen und je 4 Geräte-/Antennenfeldern |
+| Relais/Signalwege/TX-Sperre/Zustandswiederherstellung/Verbund | OFFEN; bei diesem Lauf nicht ausgelöst oder geprüft |
+
+Die Sicherung enthält private Konfiguration und WLAN-Zugangsdaten und bleibt ausschließlich lokal. Das LTO-Abbild wurde nur auf diesem nichtproduktiven Test-ESP installiert; die Produkt-Buildkonfiguration, GitHub-Releases und die beiden Betriebsgeräte blieben unverändert.
+
+**Buildumgebung repariert:** Der erste Buildversuch scheiterte an einer Windows-Zugriffssperre in `tool-esptoolpy` beim IntelHex-Import. Eine gezielte UAC-Neuinstallation des PlatformIO-Werkzeugs und Rechtekorrektur nur innerhalb dieses Paketordners behob das Problem. Danach ließ sich das Paket als normaler Benutzer erneut vollständig entfernen und sauber installieren; IntelHex-Import und unveränderter `esp32dev`-Build bestanden ohne Administratorrechte. Der fehlgeschlagene erste OTA-Paketaufruf verwendete außerdem einen Node-Pfad ohne mitgeliefertes `npx`; der erneute Aufruf mit dem installierten Node.js bestand.
+
+## Firmware 1.8.9 – Browser-Komprimierung und Projektangaben
+
+Am 10.10.2026 zeigte ein Screenshot der lokalen ESP-Weboberfläche unlesbare Zeichen statt der Webseite. Die HTTP-Antwort enthielt `Content-Encoding: br`, obwohl die Firmware die Anfrage nicht auf Brotli-Unterstützung prüfte. Der unveränderte Antwortkörper war gültiges Brotli und dekomprimierte zu der erwarteten HTML-Seite. Die vorherige Prüfung hatte nur HTTP 200 gewertet und fälschlich als erfolgreiche Seitenauslieferung dokumentiert.
+
+Geändert für 1.8.9:
+
+- Die ESP-Weboberfläche läuft derzeit über HTTP. Firmware und vollständige Weboberfläche sind gemeinsam im OTA-Abbild gebündelt. Bei gültigem Bündel werden keine getrennt gespeicherten LittleFS-Webdateien als Ersatz benutzt. Die Firmware liefert gzip bevorzugt aus und nutzt Brotli, wenn der Browser es anfordert und gzip nicht akzeptiert. Antworten kennzeichnen `Vary: Accept-Encoding`. Wenn kein unterstütztes Format angeboten wird, antwortet der ESP mit HTTP 406 und einer verständlichen Erklärung.
+- Rufzeichen `DO1ANB` wurde im Footer ergänzt; Name, E-Mail, Lizenzlink und freiwilliger PayPal-Link bleiben erhalten.
+- Das vorhandene Fehler-/Wunschformular steht am Anfang des Diagnose-Reiters.
+- Versions- und Asset-Cachekennzeichnung wurde auf 1.8.9 angehoben.
+
+**Prüfstatus:** Build und vollständiger OTA-Paketbau bestanden. PlatformIO `espressif32 6.12.0`, Arduino-ESP32 `3.20017.241212+sha.dcc1105b`, Xtensa-GCC `8.4.0+2021r2-patch5`, esptool `4.9.0`. RAM 52.376 / 327.680 Byte (16,0 %); App-Abbild 1.364.800 Byte; vollständiges OTA-Paket 1.507.328 Byte; verbleibender OTA-Slot-Puffer 35.616 Byte. Paket-SHA-256 `5FC0886ECE59A0FB7FB9BD09C587B837CFA0CD89D59CDEB4FEB3D1A9A7555C87`. Der Paketbauer prüfte JavaScript-Syntax und für alle Webdateien die gzip- und Brotli-Komprimierung samt Dekomprimierungsvergleich.
+
+| Prüfung am nichtproduktiven Test-ESP | Ergebnis |
+|---|---|
+| OTA und Neustart | PASS; `/api/snapshot` meldet Firmware 1.8.9 und API 6 |
+| Browser mit gzip-Anfrage | PASS; HTTP liefert `Content-Encoding: gzip`, entpackte Antwort ist gültiges HTML |
+| Browser mit `Accept-Encoding: br, gzip` | PASS; gzip wird bevorzugt geliefert und korrekt dekodiert |
+| Brotli allein angefordert | OFFEN; Paketvarianten sind beim Build dekomprimiert und verglichen worden |
+| Browser ohne unterstützte Komprimierung | PASS; HTTP 406 statt einer möglicherweise veralteten LittleFS-Seite |
+| Sichtbare Startseite | PASS; Browser zeigt „Antennensteuerung v1.8.9“ und lesbare Oberfläche |
+| Footer und Diagnose | PASS; DO1ANB, Name, E-Mail, Lizenz-/PayPal-Links und Formular „Fehler oder Wunsch melden“ sichtbar |
+| Gerätekonfiguration | PASS; gespeicherte Geräte, Signalwege und Layout wurden nach dem App-OTA ausgelesen; produktive ESPs wurden nicht verändert |
+| Bericht absenden | NICHT AUSGEFÜHRT; der vollständige Klickpfad wurde sichtbar geprüft, aber es wurde keine Nachricht versendet |
+| GitHub-Veröffentlichung | OFFEN bis zum erfolgreichen Upload und anonymen Direktdownload |
+
+Eine geprüfte Sicherung der lokalen und gemeinsamen Konfiguration wurde vor dem Update ausschließlich lokal gespeichert. Die privaten Sicherungsdateien und WLAN-Zugangsdaten werden nicht veröffentlicht. Es gibt auf dem Gerät nur eine laufende Firmwareversion; Firmware und Weboberfläche werden zusammen aktualisiert. Die getrennte LittleFS-Partition bleibt erhalten, wird von dieser Firmware bei gültigem UI-Bündel aber nicht als ältere Webseiten-Version ausgeliefert.
+
 ## Schutzregeln für den manuellen Updateversuch
 
 - Vor dem OTA die Sicherungsdatei auf den Computer herunterladen und speichern. Sie enthält WLAN-Kennwörter und muss privat bleiben.
-- Nur die passende vollständige OTA-Datei hochladen. Die Datei enthält Firmware und Oberfläche; sie aktualisiert nicht LittleFS.
+- Nur die passende vollständige OTA-Datei hochladen. Die Datei enthält Firmware und aktuelle Oberfläche; die separate LittleFS-Partition mit gespeicherten Daten wird nicht überschrieben.
 - Nach dem Neustart Version, Master-/Follower-Rolle, Rufzeichen, PLZ, WLAN, Relais, Funktionen, Geräte, Signalwege, gespeicherte Auswahl und Peer-Status kontrollieren.
 - Die Sicherungsdatei aufbewahren, bis alle Einstellungen nach dem Update geprüft sind.
 

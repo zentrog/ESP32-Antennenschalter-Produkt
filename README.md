@@ -2,13 +2,13 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktuelle veröffentlichte Produktversion: Firmware 1.8.8. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest).
+Aktuelle Produktversion: Firmware 1.8.9. [Release und Direktdownload](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest). Das stabile Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`.
 
 Unter **Diagnose** gibt es ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der HTTPS-Mail-Endpunkt auf do1anb.de und der SMTP-Versand wurden am 10.10.2026 live geprüft. Der Bericht wird erst nach ausdrücklicher Bestätigung versendet; Details und verbleibende Prüfungen stehen unter [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
 
 Die gespeicherte Anordnung der Anlagenteile bleibt auf Handy, Laptop und großem Monitor an denselben Rasterpositionen. Die Ansicht verkleinert Raster und Beschriftungen an die verfügbare Fläche; sie ordnet die Geräte nicht automatisch um.
 
-Die Release-Datei `firmware-esp32dev.bin` enthält die vollständige Firmware und Weboberfläche für ein manuelles OTA-Update. Die getrennte LittleFS-Partition mit WLAN und Gerätekonfiguration wird dabei nicht überschrieben.
+Die Release-Datei `firmware-esp32dev.bin` enthält die vollständige Firmware und Weboberfläche für ein manuelles OTA-Update. Die Oberfläche wird aus diesem gemeinsamen Paket ausgeliefert; eine alte Weboberfläche in der getrennten LittleFS-Partition wird bei einem gültigen UI-Paket nicht verwendet. LittleFS mit WLAN und Gerätekonfiguration wird nicht überschrieben.
 
 ## Für Anwender
 

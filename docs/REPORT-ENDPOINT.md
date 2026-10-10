@@ -1,6 +1,6 @@
 # Fehler- und Wunschmeldungen
 
-Die Firmware 1.8.8 enthält unter **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten noch Rufzeichen, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse oder Backups an. Freitext kann dennoch persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
+Die Firmware 1.8.9 enthält am Anfang des Reiters **Diagnose** ein freiwilliges Formular für Fehler, Verbesserungswünsche und sonstige Hinweise. Betreff und Beschreibung sind Pflichtfelder; Schritte, Erwartung, Zeitpunkt/Änderung, Name und Rückkontakt sind freiwillig. Die Firmware zeigt die mitgesendete Versionsnummer ausdrücklich an. Sie hängt weder WLAN-Daten, Postleitzahl, GPIO-/Anlagenkonfiguration, IP-/MAC-Adresse noch Backups an. Das öffentliche Rufzeichen wird nicht automatisch angehängt. Freitext kann persönliche Angaben enthalten; der Nutzer muss ihn vor dem Versand prüfen.
 
 ## Versandablauf
 
@@ -25,6 +25,13 @@ Benötigt werden PHP 7.4+ mit OpenSSL, HTTPS und ausgehendes SMTP-SSL/TLS auf Po
 - GMX legte beide Testberichte in Spam ab. Im Header des zweiten Berichts bestanden SPF, DKIM, DMARC und IP-Reverse-Prüfung. Der Betreiber akzeptiert die Spam-Einstufung, weil die Berichte nur an ihn selbst gehen.
 - DMARC ist im Überwachungsmodus veröffentlicht: `_dmarc.do1anb.de TXT "v=DMARC1; p=none;"`.
 - Das zuerst vorbereitete private ZIP enthielt ein falsches SMTP-Passwort und wurde durch ein korrigiertes Paket ersetzt. Der Fehler ist behoben; Zugangsdaten sind nicht betroffen.
-- Die Live-Formularstrecke des Endpunkts ist geprüft. Der vollständige Klickpfad aus der Diagnoseansicht eines physischen ESP, die Fehlerfälle, Größen-/Rate-Limits und der JSON-Download-Fallback brauchen noch einen Gerätetest.
+- Die Live-Formularstrecke des Endpunkts und die sichtbare Diagnoseansicht am Test-ESP sind geprüft. Es wurde keine Nachricht über das ESP-Formular versendet. Fehlerfälle, Größen-/Rate-Limits und der JSON-Download-Fallback bleiben offen.
+
+### Änderungen für Firmware 1.8.9
+
+- Das Diagnoseformular steht jetzt direkt am Anfang des Diagnose-Reiters.
+- Der Footer zeigt Rufzeichen, Name und Projekt-E-Mail.
+- Firmware und Weboberfläche sind gemeinsam in der vollständigen OTA-Datei enthalten. Auf Firmware 1.8.9 wird keine getrennte LittleFS-Weboberfläche als Fallback ausgeliefert. Gzip wird bevorzugt, Brotli nur bei passender Anfrage; beides wurde im Browser auf dem Test-ESP geprüft. Bei nicht unterstützter Komprimierung antwortet das Gerät mit HTTP 406, statt eine möglicherweise ältere Seite zu zeigen.
+- Das Diagnoseformular wurde auf dem Test-ESP sichtbar geöffnet und geprüft. Es wurde kein Bericht versendet. Die Build-, OTA- und Browserprüfung sind im Prüfprotokoll festgehalten; die GitHub-Veröffentlichung ist noch offen.
 
 Die SMTP-Bereitschaft ist damit bestätigt. Die Spam-Einstufung durch GMX ist eine empfangerspezifische Bewertung und kein Beleg für einen Versand- oder Authentifizierungsfehler; sie garantiert umgekehrt keine Inbox-Zustellung bei anderen Empfängern.

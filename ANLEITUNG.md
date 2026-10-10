@@ -92,7 +92,7 @@ Wenn der ESP sein Dateisystem nicht einhängen kann, formatiert die Firmware es 
 - **Nach dem Einschalten ist ein Ausgang aktiv:** Trenne die Relaisversorgung, bis Pin und Logik sicher geprüft sind.
 - **Ein Update meldet einen Fehler:** Lies die Fehlermeldung ab. Kein Factory-Reset und kein Dateisystem-Upload als Reparaturversuch.
 
-Unter **Diagnose → Fehler oder Wunsch melden** kannst du freiwillig einen Fehler oder Verbesserungsvorschlag mitteilen. Kontrolliere den Text; persönliche Angaben und Rückkontakt sind freiwillig. Es werden keine Anlagenkonfigurationen, WLAN-Daten oder Sicherungen angehängt. Der E-Mail-Versand funktioniert nur, wenn der Betreiber den sicheren HTTPS-Mail-Endpunkt eingerichtet hat. Andernfalls speichere den Bericht lokal und sende ihn später über einen anderen Weg.
+Unter **Diagnose** steht das Formular **Fehler oder Wunsch melden** direkt am Anfang. Du kannst freiwillig einen Fehler, einen Wunsch oder einen sonstigen Hinweis mitteilen. Kontrolliere den Text; Name und Rückkontakt sind freiwillig. Es werden keine Anlagenkonfigurationen, WLAN-Daten oder Sicherungen angehängt. Der Versand läuft ohne E-Mail-Programm über eine sichere HTTPS-Vorschau; erst nach deiner zweiten Bestätigung wird eine E-Mail verschickt. Wenn der Versand nicht klappt, kannst du den Bericht als Datei herunterladen.
 
 ## Wörter kurz erklärt
 
