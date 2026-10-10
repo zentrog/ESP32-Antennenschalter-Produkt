@@ -1,7 +1,6 @@
-/* Control page uses one fixed logical canvas. The whole canvas is scaled
-   uniformly by fitControlViewport(); media queries must not rearrange it. */
+/* Control page keeps one logical 12x6 layout and scales the complete, content-sized stage. */
 body.control-mode{width:100vw;height:100vh;overflow:hidden}
-body.control-mode #appStage{position:fixed;left:0;top:0;width:1920px;height:1080px;transform-origin:top left;display:flex;flex-direction:column;overflow:hidden}
+body.control-mode #appStage{position:fixed;left:0;top:0;width:1920px;height:auto;min-height:0;transform-origin:top left;display:flex;flex-direction:column;overflow:visible}
 body.control-mode #appStage>header{flex:0 0 auto;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:20px;padding:16px 22px}
 body.control-mode #appStage .brand{flex:0 1 auto;max-width:none;min-width:0;gap:14px}
 body.control-mode #appStage .brand-logo{width:58px;height:58px}
@@ -12,31 +11,31 @@ body.control-mode #appStage .clock #dateLabel,body.control-mode #appStage .clock
 body.control-mode #appStage .clock #dateLine{font-size:2rem}
 body.control-mode #appStage .clock #localTime{font-size:1.3rem}
 body.control-mode #appStage>nav{flex:0 0 auto;flex-direction:row;flex-wrap:nowrap;padding:8px 14px;gap:6px}
-body.control-mode #appStage>main{display:flex;flex:1 1 auto;min-height:0;overflow:hidden;padding:10px 18px}
+body.control-mode #appStage>main{display:block;flex:0 0 auto;min-height:0;overflow:visible;padding:10px 18px}
 body.control-mode #appStage>main>.view{display:none;width:100%;min-width:0}
 body.control-mode #appStage>main>.view.active{display:block}
-body.control-mode #appStage>main>#control.view.active{display:flex;flex-direction:column;height:100%;min-height:0;gap:10px}
+body.control-mode #appStage>main>#control.view.active{display:flex;flex-direction:column;height:auto;min-height:0;overflow:visible;gap:10px}
 body.control-mode #appStage #lightningAlert,body.control-mode #appStage .control-head,body.control-mode #appStage #weatherBox,body.control-mode #appStage #newsBox{flex:0 0 auto}
 body.control-mode #appStage .control-head{flex-wrap:nowrap;min-height:0}
 body.control-mode #appStage #controllers{min-width:0}
-body.control-mode #appStage .button-canvas.logical-mode{display:flex!important;flex:1 1 0;width:100%;height:0!important;min-width:0;min-height:0!important;flex-direction:column;padding:10px;overflow:hidden}
+body.control-mode #appStage .button-canvas.logical-mode{display:flex!important;flex:0 0 auto;width:100%;height:auto!important;min-width:0;min-height:0!important;flex-direction:column;padding:10px;overflow:visible!important}
 body.control-mode #appStage .logical-mode .live-route-toolbar{position:relative;flex:0 0 auto;width:100%;min-width:0;grid-template-columns:minmax(220px,.32fr) minmax(0,1fr);gap:8px;padding:8px}
 body.control-mode #appStage .route-toolbar-title>b{font-size:.9rem}
 body.control-mode #appStage .route-toolbar-title>span{display:block}
 body.control-mode #appStage .route-selection-state{min-height:42px;padding:6px 10px;font-size:.9rem;line-height:1.2}
-body.control-mode #appStage .logical-mode .logical-system-layout{position:relative;flex:1 1 0;width:100%;height:0;min-width:0;min-height:0;overflow:hidden}
-body.control-mode #appStage .logical-layout-grid{position:relative;width:100%;height:100%;min-width:0!important;min-height:0!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;grid-template-rows:repeat(6,minmax(0,1fr))!important;gap:10px}
-body.control-mode #appStage .logical-layout-grid .logical-device{container-type:normal;min-width:0;min-height:0;padding:10px 11px;gap:3px;overflow:hidden;font-size:var(--logical-font,20px)}
+body.control-mode #appStage .logical-mode .logical-system-layout{position:relative;flex:0 0 auto;width:100%;height:auto;min-width:0;min-height:0;overflow:visible}
+body.control-mode #appStage .logical-layout-grid{position:relative;display:grid;width:100%;height:auto!important;min-width:0!important;min-height:0!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;grid-template-rows:repeat(6,minmax(max-content,auto))!important;gap:10px;overflow:visible!important}
+body.control-mode #appStage .logical-layout-grid .logical-device{container-type:normal;min-width:0;min-height:min-content!important;height:auto;padding:10px 11px;gap:3px;overflow:visible!important;font-size:var(--logical-font,20px)}
 body.control-mode #appStage .logical-layout-grid .logical-device>strong,
 body.control-mode #appStage .logical-layout-grid .logical-radio-select,
-body.control-mode #appStage .logical-layout-grid .logical-antenna-main{font-size:var(--logical-font,20px);min-height:44px;height:auto;line-height:1.15;padding:7px 9px;white-space:normal;overflow-wrap:anywhere}
+body.control-mode #appStage .logical-layout-grid .logical-antenna-main{font-size:var(--logical-font,20px);min-height:2.2em;height:auto;line-height:1.15;padding:7px 9px;white-space:normal;overflow-wrap:anywhere}
 body.control-mode #appStage .logical-layout-grid .logical-category{font-size:.55em;line-height:1.1}
 body.control-mode #appStage .logical-layout-grid .logical-owner{display:block;font-size:.58em;line-height:1.1}
 body.control-mode #appStage .logical-layout-grid .logical-group-tag{display:block;font-size:.58em;line-height:1.1}
 body.control-mode #appStage .logical-layout-grid .device-route-badges span{font-size:.5em;line-height:1;padding:2px 6px}
 body.control-mode #appStage .logical-layout-grid .logical-bands{font-size:.48em;line-height:1.1}
 body.control-mode #appStage .logical-layout-grid .logical-action,
-body.control-mode #appStage .logical-layout-grid .power-toggle-button{min-height:30px!important;padding:4px 6px!important;font-size:.58em!important;line-height:1.1;white-space:normal}
+body.control-mode #appStage .logical-layout-grid .power-toggle-button{min-height:1.5em!important;padding:4px 6px!important;font-size:.58em!important;line-height:1.1;white-space:normal}
 body.control-mode #appStage .logical-layout-grid .logical-device.category-antenna:has(.logical-actions){display:flex;grid-template-columns:none;grid-template-rows:none;flex-direction:column;align-items:stretch;gap:3px}
 body.control-mode #appStage .logical-layout-grid .logical-device.category-antenna:has(.logical-actions) .logical-antenna-main,
 body.control-mode #appStage .logical-layout-grid .logical-device.category-antenna:has(.logical-actions) .logical-actions{grid-column:auto;grid-row:auto}

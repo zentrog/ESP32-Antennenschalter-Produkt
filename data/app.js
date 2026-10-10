@@ -340,7 +340,12 @@ function renderControl(){
 function fitControlViewport(){
  if(!document.body.classList.contains("control-mode"))return;
  let stage=$("#appStage");if(!stage)return;
- const width=1920,height=1080,scale=Math.min(window.innerWidth/width,window.innerHeight/height);
+ // Measure the complete, unscaled page. The grid must first be allowed to
+ // grow to its card content; scaling a fixed 1080px box only scales clipping.
+ stage.style.transform="none";stage.style.left="0px";stage.style.top="0px";
+ const width=stage.offsetWidth,height=Math.max(stage.offsetHeight,stage.scrollHeight);
+ if(!width||!height)return;
+ const scale=Math.min(window.innerWidth/width,window.innerHeight/height);
  const left=Math.max(0,(window.innerWidth-width*scale)/2),top=Math.max(0,(window.innerHeight-height*scale)/2);
  stage.style.left=`${left}px`;stage.style.top=`${top}px`;stage.style.transform=`scale(${scale})`;
  document.body.dataset.controlScale=String(scale);

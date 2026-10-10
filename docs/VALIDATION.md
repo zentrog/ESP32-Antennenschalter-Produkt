@@ -1,5 +1,14 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.21 · Inhaltsbewahrende Gesamtanpassung
+
+- Fehlerursache: v1.8.20 skalierte eine starre 1920×1080-Fläche optisch per `transform`. Das Raster und die umgebenden Bereiche wurden gleichzeitig auf die Fensterhöhe gepresst; Karten erhielten dadurch zu wenig Höhe und schnitten ihre Inhalte mit `overflow:hidden` ab. Auflösung des Screenshots: unveränderte 12×6-Anordnung, aber Kartenbeschriftungen und Bedienflächen am Kartenrand abgeschnitten.
+- Fehlerbehebung: Bedienseite, Hauptbereich und Matrix behalten jetzt ihre natürliche Inhaltshöhe. Rasterkarten dürfen ihre Beschriftungen und Bedienelemente vollständig anzeigen. Erst danach wird die komplette Seite proportional in den Browserbereich eingepasst. Die 12×6-Positionen und Signalpfade werden nicht umgeordnet; Kopf-/Fußbereich, Wetter, Ticker, Texte und Karten erhalten denselben Skalierungsfaktor.
+- Build: PASS mit PlatformIO Core 6.2.0 / Espressif32 6.12.0; RAM 52.232 / 327.680 Byte; Firmwareabbild 1.362.528 Byte.
+- OTA-Paket: PASS; vollständiges Einzeldatei-Image 1.507.328 Byte, OTA-Slot 1.507.328 Byte, Reserve 8.792 Byte. UI Brotli 62.187 Byte + gzip 73.745 Byte. JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich: PASS (Paketbauer). SHA-256 `450BD75B0FDCF2F7EEF6BE7F06DE7DEBEAB74DD57A66F2990AB6B8FB2F1A0CD6`.
+- Reale Geräte-/Monitorprüfung nach Installation: OFFEN. Der lokale Build belegt das vollständige Paket, aber keinen Sichttest auf dem vom Betreiber gezeigten Monitor. Extrem flache oder hochkant gehaltene Bildschirme bleiben geometrisch begrenzt: bei fester 12×6-Anordnung und ohne Scrollen muss die gesamte Fläche dort entsprechend kleiner dargestellt werden.
+- GitHub-Veröffentlichung: ausstehend.
+
 ## Firmware 1.8.20 · MQTT entfernt und OTA-Platz geschaffen
 
 - Änderung: MQTT/ioBroker-Anbindung vollständig entfernt: Laufzeitdienst und PubSubClient-Abhängigkeit, Konfigurationsfelder und Oberfläche entfallen. Vorhandene `mqtt`-Einträge in älteren Sicherungen werden beim Einlesen ignoriert und beim nächsten Speichern nicht erneut ausgegeben. HTTP-API, lokale Steuerung und ESP-Verbund bleiben davon unberührt.
