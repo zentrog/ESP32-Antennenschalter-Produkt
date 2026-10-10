@@ -1,17 +1,17 @@
-# Prüfprotokoll – Firmware 1.8.10
+# Prüfprotokoll – Firmware 1.8.11
 
-- Neueste stabile Firmware: **1.8.10**, GitHub-Release [v1.8.10](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.10). API 6.
-- Firmware-Quellcommit und Release-Tag: `5308d89edb4b2337aecfdb2bfb766dad5e5ce9ec` / `v1.8.10`. Genau ein vollständiges Produkt-OTA-Asset `firmware-esp32dev.bin`.
-- Build: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.568 Byte; OTA-Datei 1.507.328 Byte; 8.766 Byte Reserve im festen Slot.
-- OTA-Datei SHA-256: `1C09D3202F6C2CA453BC960CB8EC3928C1945E09746B145995AFE6C1F66DB238`.
-- Änderungen: `style.css` liegt nun ebenfalls im CRC32-geprüften Firmwarepaket. Nach erfolgreicher Paketprüfung werden nur vier alte Hauptoberflächenkopien aus LittleFS entfernt; Einzeldatei-UI-Uploads werden bei gültigem Paket abgewiesen.
-- Echtes Testgerät (Controller-ID-Suffix `28FDE2842178`): OTA von 1.8.9 auf 1.8.10 bestanden. Lokale Konfiguration, gemeinsame Konfiguration und WLAN-Zustand stimmen im vollständigen Vorher-/Nachher-JSON-Vergleich exakt überein.
-- Live-HTTP: Startseite, JavaScript und beide CSS-Dateien liefern HTTP 200 mit gzip; Dekomprimierte Inhalte stimmen jeweils per SHA-256 exakt mit dem Paketquellstand überein. Der Einzeldatei-Upload wird mit HTTP 409 abgewiesen.
-- `setup.html`, Logo und Favicon bleiben erhalten. Die produktiven ESPs blieben unangetastet.
-- Veröffentlichung: PASS; öffentliche Release-API meldet v1.8.10 als neueste stabile Version und genau ein Produkt-Asset. Anonymer Direktdownload vom `/releases/latest/download/firmware-esp32dev.bin` PASS; 1.507.328 Byte und SHA-256 stimmen mit dem lokalen Paket überein.
-- Diagnoseformular: PASS; der Betreiber hat den Bericht über die echte Firmware 1.8.10 abgesendet und den E-Mail-Eingang im GMX-Postfach bestätigt. Screenshot zeigt Betreff, Absender, Version, Formularfelder und den Hinweis „Keine Konfiguration angehängt.“ Persönliche Testangaben wurden nicht in dieses Protokoll übernommen.
+- Arbeits-/Releaseversion: Firmware 1.8.11, API 6; Release noch nicht veröffentlicht. Vorgesehen ist genau ein vollständiges Produkt-OTA-Asset `firmware-esp32dev.bin`.
+- Build: PASS; PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 3.20017.241212+sha.dcc1105b, Xtensa-GCC 8.4.0+2021r2-patch5, esptool 4.9.0. Node.js 24.19.0, npm 11.17.0; minifiziertes JavaScript-Syntaxchecking PASS.
+- Buildspeicher: RAM 52.384 / 327.680 Byte; Firmwareabbild 1.363.040 Byte.
+- Vollständiges OTA-Paket: PASS; 1.507.328 Byte im festen Slot 1.507.328 Byte. Enthält Firmware plus Brotli 61.757 Byte und gzip 73.162 Byte für die vier Hauptoberflächendateien; verbleibende Reserve 9.293 Byte. Paketprüfer hat Footer, CRC32 und komprimierte Inhalte geprüft.
+- OTA-Datei SHA-256: `0A898194B8614BB7A1F1C25B4EED92C3A5192F87736DCDAA619CEB6C7307411F`.
+- Änderung: Auf der manuellen Update-Seite ist die Sicherung jetzt ein normaler same-origin Browserlink mit Dateianhang statt eines erst nach `fetch()` künstlich ausgelösten Klicks. Die Seite öffnet den Download in einem neuen Tab; ausdrückliche Speicherbestätigung und serverseitige Voraussetzung vor Update/Rückkehr bleiben erhalten.
+- Anlass: Der Betreiber meldete, dass der bisherige Button „Konfigurationssicherung herunterladen“ keine sichtbare Reaktion zeigte. Das Verhalten der neuen Seite muss nach dem Flash am echten ESP noch geprüft werden.
+- Test-ESP vor Update: COM13, USB-Seriell CH340, IP `192.168.0.154`, Firmware 1.8.10, Controller-ID-Suffix `842178`, Rolle Master. Produktive ESPs bleiben unangetastet. Flash und Readback für 1.8.11 stehen noch aus.
+- GitHub-Release und anonymer Download: OFFEN; Veröffentlichung erfolgt erst nach Tag/Commit-Abgleich. Die erfolgreiche echte E-Mail-Prüfung aus 1.8.10 ist in der Versionshistorie belegt und wurde hier nicht erneut ausgeführt.
+- Installierte Hilfsprogramme: PlatformIO Core 6.2.0 steht sowohl dem Benutzer als auch dem in der Projekt-Buildkette verwendeten PlatformIO-Environment zur Verfügung; die zuvor gemeldete Core-Versionswarnung ist behoben.
 
-Dokumentationsnachtrag vom 10.10.2026; Firmware-Quellcommit bleibt `5308d89edb4b2337aecfdb2bfb766dad5e5ce9ec`. Nur README, Melde-Endpunkt-/Upload-Dokumentation, dieses Prüfprotokoll und deren Manifest hashes wurden aktualisiert. Keine Firmware, Webdatei, Geräteeinstellung oder ESP wurde geändert. `git diff --check`: PASS.
+Der am 10.10.2026 nachgetragene Meldeformular-Test wurde separat als Dokumentationscommit `79b9d9340fb0bdaeac265a3bf6815cf1454bae85` auf GitHub `main` veröffentlicht; Firmware und Geräte blieben dabei unverändert.
 
 Ältere Abschnitte sind Versionshistorie. Ein dortiger PASS gilt nur für die ausdrücklich genannte Version. Build- oder HTTP-Readback belegt nicht automatisch den Löschstatus jeder einzelnen LittleFS-Datei.
 
