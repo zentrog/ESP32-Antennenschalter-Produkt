@@ -119,15 +119,6 @@ struct UiDefaults {
   String runningColor = "#d67d00";
 };
 
-struct MqttConfig {
-  bool enabled = false;
-  String host;
-  uint16_t port = 1883;
-  String user;
-  String password;
-  String baseTopic = "antenna";
-};
-
 struct NewsFeed {
   String id;
   String name;
@@ -192,7 +183,6 @@ struct LocalConfig {
   CustomBoardConfig customBoard;
   IdentityConfig identity;
   TimeConfig time;
-  MqttConfig mqtt;
   NewsConfig news;
   LightningConfig lightning;
   FederationConfig federation;

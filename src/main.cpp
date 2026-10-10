@@ -13,7 +13,6 @@ SharedConfig sharedCfg;
 Storage storage;
 RelayEngine relays;
 TimeService clockSvc;
-MqttService mqtt;
 FederationService federation;
 NewsService news;
 WeatherService weather;
@@ -81,14 +80,13 @@ void setup(){
 
   if(!wifiManager.setupMode()){
     clockSvc.begin(localCfg.time);
-    mqtt.begin(&localCfg,&relays);
     federation.begin(&localCfg,&sharedCfg,&storage,&relays);
     news.begin(&localCfg);
     weather.begin(&localCfg,&storage);
     centralServicesActive=federation.isCoordinator();
   }
 
-  web.begin(&localCfg,&sharedCfg,&storage,&relays,&clockSvc,&mqtt,&federation,&news,&weather,&wifiManager,wifiManager.setupMode());
+  web.begin(&localCfg,&sharedCfg,&storage,&relays,&clockSvc,&federation,&news,&weather,&wifiManager,wifiManager.setupMode());
 }
 
 void loop(){
@@ -100,8 +98,8 @@ void loop(){
     federation.loop();
     refreshMdnsResponder();
     bool shouldRunCentral=federation.isCoordinator();
-    if(shouldRunCentral!=centralServicesActive){centralServicesActive=shouldRunCentral;mqtt.configChanged();news.configChanged();weather.configChanged();}
-    if(shouldRunCentral){mqtt.loop();news.loop();weather.loop();}
+    if(shouldRunCentral!=centralServicesActive){centralServicesActive=shouldRunCentral;news.configChanged();weather.configChanged();}
+    if(shouldRunCentral){news.loop();weather.loop();}
   }
   delay(2);
 }

@@ -20,20 +20,6 @@ uint32_t TimeService::epoch()const{time_t t=time(nullptr);return t>0?(uint32_t)t
 static String fmt(bool local){time_t t=time(nullptr);tm x{};if(local)localtime_r(&t,&x);else gmtime_r(&t,&x);char b[32];strftime(b,sizeof(b),"%d.%m.%Y %H:%M:%S",&x);return String(b);}
 String TimeService::local()const{return fmt(true);}String TimeService::utc()const{return fmt(false);}
 
-MqttService* MqttService::self_=nullptr;
-void MqttService::begin(LocalConfig*c,RelayEngine*r){c_=c;r_=r;self_=this;mqtt_.setCallback(thunk);mqtt_.setSocketTimeout(2);}
-void MqttService::configChanged(){if(mqtt_.connected())mqtt_.disconnect();lastTry_=0;lastPub_=0;}
-String MqttService::base()const{return c_->mqtt.baseTopic+"/"+c_->controllerId;}
-void MqttService::thunk(char*t,byte*p,unsigned int n){if(self_)self_->onMessage(t,p,n);}
-void MqttService::onMessage(char*t,byte*p,unsigned int n){String topic=t,msg;for(unsigned i=0;i<n;i++)msg+=(char)p[i];if(topic==base()+"/cmd/function"){String e;r_->execute(msg,e);publishState();}}
-void MqttService::publishState(){if(!c_||!c_->mqtt.enabled||!mqtt_.connected())return;auto&s=r_->state();mqtt_.publish((base()+"/status/online").c_str(),"1",true);mqtt_.publish((base()+"/status/antenna").c_str(),s.activeAntennaId.c_str(),true);JsonDocument sd;for(const auto&a:s.activeSelections)sd[a.group]=a.functionId;String sj;serializeJson(sd,sj);mqtt_.publish((base()+"/status/selections").c_str(),sj.c_str(),true);mqtt_.publish((base()+"/status/polarization").c_str(),s.polarization.c_str(),true);mqtt_.publish((base()+"/status/motor").c_str(),s.motorRunning?"1":"0",true);mqtt_.publish((base()+"/status/storm").c_str(),s.stormMode?"1":"0",true);}
-void MqttService::loop(){
-  if(!c_||!c_->mqtt.enabled||c_->mqtt.host.isEmpty()||WiFi.status()!=WL_CONNECTED)return;
-  mqtt_.setServer(c_->mqtt.host.c_str(),c_->mqtt.port);
-  if(!mqtt_.connected()&&millis()-lastTry_>10000){lastTry_=millis();String will=base()+"/status/online";bool ok=c_->mqtt.user.length()?mqtt_.connect(c_->controllerId.c_str(),c_->mqtt.user.c_str(),c_->mqtt.password.c_str(),will.c_str(),0,true,"0"):mqtt_.connect(c_->controllerId.c_str(),will.c_str(),0,true,"0");if(ok){mqtt_.subscribe((base()+"/cmd/function").c_str());publishState();}}
-  if(mqtt_.connected()){mqtt_.loop();if(millis()-lastPub_>5000){lastPub_=millis();publishState();}}
-}
-
 static IPAddress subnetBroadcast(){
   IPAddress ip=WiFi.localIP(),mask=WiFi.subnetMask();
   return IPAddress(

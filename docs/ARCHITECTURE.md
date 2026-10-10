@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.15 / API 7. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback.
+Arbeitsstand: Firmware 1.8.20 / API 7. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Sie enthalten die sieben öffentlichen NewsTicker-Standardquellen; nur n-tv ist standardmäßig aktiviert. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
@@ -13,7 +13,7 @@ Der Wetterdienst aktualisiert nach einem erfolgreichen Abruf alle 30 Minuten. Sc
 Unvollständige Konfigurationsanfragen werden abgewiesen. Vorhandene Signalwege können nur durch eine ausdrücklich bestätigte Löschaktion reduziert werden. Die gemeinsame Konfiguration wird vor dem Austausch zusätzlich als vorherige Generation auf dem ESP gehalten.
 
 ## Implementierter Bestand
-Einzelcontroller führen Schaltaktionen über den lokalen RelayEngine aus. WebUI, MQTT, externe API und Verbundaufrufe sollen diesen Steuerkern verwenden. GPIO-, Board- und Relaiszuordnung bleiben lokal. Gemeinsame Systemdaten werden über Revisionen zwischen zugeordneten Controllern synchronisiert.
+Einzelcontroller führen Schaltaktionen über den lokalen RelayEngine aus. WebUI, externe API und Verbundaufrufe sollen diesen Steuerkern verwenden. GPIO-, Board- und Relaiszuordnung bleiben lokal. Gemeinsame Systemdaten werden über Revisionen zwischen zugeordneten Controllern synchronisiert.
 
 Die Verbunderkennung nutzt UDP und den Marker ANTCTRL3. Controller können als Master und Follower zugeordnet werden. Der konfigurierte Master bleibt dauerhaft; ein geeigneter Follower kann vorübergehend koordinieren. Der Code enthält Zustände für Rückkehr und Wiederübernahme durch den permanenten Master.
 

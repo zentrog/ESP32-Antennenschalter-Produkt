@@ -24,6 +24,9 @@ static String makeControllerId() {
 
 
 static String repairStoredText(String s){
+  // Recover the common radio label if an upstream ESP/browser path already
+  // replaced its UTF-8 umlaut with U+FFFD before it reached local.json.
+  s.replace("Funkger\xEF\xBF\xBDt","Funkger\xC3\xA4t");
   for(int pass=0;pass<4;++pass){
     String before=s;
     s.replace("\xC3\x83\xC6\x92\xC3\x82\xC2\xA4","\xC3\xA4");
@@ -221,7 +224,6 @@ bool Storage::writeLocalFile(const char* path,const LocalConfig& c,String& err){
   JsonDocument d; d["schema"]=c.schema;d["language"]=c.language;d["revision"]=c.revision;d["controllerId"]=c.controllerId;d["boardProfile"]=c.boardProfile;customBoardTo(d["customBoard"].to<JsonObject>(),c.customBoard);
   identityTo(d["identity"].to<JsonObject>(),c.identity);
   auto t=d["time"].to<JsonObject>();t["enabled"]=c.time.enabled;t["tz"]=c.time.tz;t["ntp1"]=c.time.ntp1;t["ntp2"]=c.time.ntp2;t["showLocal"]=c.time.showLocal;t["showUtc"]=c.time.showUtc;t["showDate"]=c.time.showDate;
-  auto m=d["mqtt"].to<JsonObject>();m["enabled"]=c.mqtt.enabled;m["host"]=c.mqtt.host;m["port"]=c.mqtt.port;m["user"]=c.mqtt.user;m["password"]=c.mqtt.password;m["baseTopic"]=c.mqtt.baseTopic;
   auto n=d["news"].to<JsonObject>();n["enabled"]=c.news.enabled;n["language"]=c.news.language;n["refreshMinutes"]=c.news.refreshMinutes;n["maxItems"]=c.news.maxItems;
   auto nf=n["feeds"].to<JsonArray>();for(auto &x:c.news.feeds){auto o=nf.add<JsonObject>();o["id"]=x.id;o["name"]=x.name;o["language"]=x.language;o["url"]=x.url;o["enabled"]=x.enabled;}
   auto li=d["lightning"].to<JsonObject>();li["enabled"]=c.lightning.enabled;li["warningKm"]=c.lightning.warningKm;li["dangerKm"]=c.lightning.dangerKm;li["boxKm"]=c.lightning.boxKm;
@@ -241,7 +243,6 @@ bool Storage::readLocalFile(const char* path,LocalConfig& c,String& err){
   LocalConfig x;x.schema=d["schema"]|8;x.language=String((const char*)(d["language"]|"de"));x.revision=d["revision"]|1;x.controllerId=String((const char*)(d["controllerId"]|""));x.boardProfile=String((const char*)(d["boardProfile"]|"devkit-v1-30"));customBoardFrom(d["customBoard"],x.customBoard);
   JsonObject i=d["identity"].as<JsonObject>();x.identity.callSign=repairStoredText(String((const char*)(i["callSign"]|"")));x.identity.postalCode=String((const char*)(i["postalCode"]|""));x.identity.deviceName=repairStoredText(String((const char*)(i["deviceName"]|"Antennencontroller")));x.identity.description=repairStoredText(String((const char*)(i["description"]|"")));x.identity.location=repairStoredText(String((const char*)(i["location"]|"")));x.identity.hostName=String((const char*)(i["hostName"]|"antenna-controller"));
   JsonObject t=d["time"].as<JsonObject>();x.time.enabled=t["enabled"]|true;x.time.tz=String((const char*)(t["tz"]|"CET-1CEST,M3.5.0,M10.5.0/3"));x.time.ntp1=String((const char*)(t["ntp1"]|"pool.ntp.org"));x.time.ntp2=String((const char*)(t["ntp2"]|"time.cloudflare.com"));x.time.showLocal=t["showLocal"]|true;x.time.showUtc=t["showUtc"]|true;x.time.showDate=t["showDate"]|true;
-  JsonObject m=d["mqtt"].as<JsonObject>();x.mqtt.enabled=m["enabled"]|false;x.mqtt.host=String((const char*)(m["host"]|""));x.mqtt.port=m["port"]|1883;x.mqtt.user=String((const char*)(m["user"]|""));x.mqtt.password=String((const char*)(m["password"]|""));x.mqtt.baseTopic=String((const char*)(m["baseTopic"]|"antenna"));
   JsonObject n=d["news"].as<JsonObject>();x.news.enabled=n["enabled"]|false;x.news.language=String((const char*)(n["language"]|"de"));x.news.refreshMinutes=n["refreshMinutes"]|30;x.news.maxItems=n["maxItems"]|5;
   for(JsonObject q:n["feeds"].as<JsonArray>()){NewsFeed z;z.id=String((const char*)(q["id"]|""));z.name=repairStoredText(String((const char*)(q["name"]|"")));z.language=String((const char*)(q["language"]|"de"));z.url=String((const char*)(q["url"]|""));z.enabled=q["enabled"]|true;x.news.feeds.push_back(z);}
   JsonObject li=d["lightning"].as<JsonObject>();x.lightning.enabled=li["enabled"]|true;x.lightning.warningKm=li["warningKm"]|50;x.lightning.dangerKm=li["dangerKm"]|25;x.lightning.boxKm=li["boxKm"]|70;
@@ -256,6 +257,7 @@ bool Storage::readLocalFile(const char* path,LocalConfig& c,String& err){
 }
 
 bool Storage::saveLocal(LocalConfig& c,String& err){
+  for(auto&d:c.devices)d.name=repairStoredText(d.name);
   if(!validate(c,err))return false;c.revision++;
   if(!writeLocalFile("/local.tmp",c,err))return false;
   LocalConfig check;String e;if(!readLocalFile("/local.tmp",check,e)){quietFsRemove("/local.tmp");err="Prüfung der neuen Konfiguration fehlgeschlagen: "+e;return false;}
@@ -266,6 +268,9 @@ bool Storage::saveLocal(LocalConfig& c,String& err){
 bool Storage::loadLocal(LocalConfig& c,String& err){
   if(readLocalFile("/local.json",c,err)){
     bool migrated=false;
+    // Force one clean rewrite after installing the UTF-8 repair. Backups copy
+    // the canonical file byte-for-byte, so fixing RAM alone is not sufficient.
+    if(!state_.getBool("migU8L",false))migrated=true;
     if(c.schema<6){ensureLogicalDevicesFromLegacy(c);c.schema=6;migrated=true;}
     if(c.schema<7){c.federation.systemId="";c.federation.systemName="Antennenanlage";c.federation.role="unassigned";c.federation.permanentMasterId="";c.federation.admissionMode="ask";c.federation.failoverPriority=100;c.schema=7;migrated=true;}
     if(c.schema<8){for(auto&d:c.devices)d.exclusive=false;c.schema=8;migrated=true;}
@@ -387,7 +392,7 @@ bool Storage::loadLocal(LocalConfig& c,String& err){
     if(migrated){
       String migrationError;
       if(!saveLocal(c,migrationError))err="Standardkonfiguration konnte nicht migriert werden: "+migrationError;
-      else {state_.putBool("mig120",true);state_.putBool("mig130",true);state_.putBool("mig150",true);state_.putBool("mig152",true);state_.putBool("mig153",true);state_.putBool("mig154",true);state_.putBool("mig155",true);state_.putBool("mig162",true);state_.putBool("mig173",true);}
+      else {state_.putBool("mig120",true);state_.putBool("mig130",true);state_.putBool("mig150",true);state_.putBool("mig152",true);state_.putBool("mig153",true);state_.putBool("mig154",true);state_.putBool("mig155",true);state_.putBool("mig162",true);state_.putBool("mig173",true);state_.putBool("migU8L",true);}
     }
     return true;
   }

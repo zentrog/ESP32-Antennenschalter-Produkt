@@ -3,7 +3,6 @@
 #include "Storage.h"
 #include "RelayEngine.h"
 #include <WiFiClient.h>
-#include <PubSubClient.h>
 #include <WiFiUdp.h>
 #include <HTTPClient.h>
 #include <freertos/FreeRTOS.h>
@@ -57,14 +56,6 @@ struct WeatherInfo {
 
 class TimeService {
  public:void begin(const TimeConfig&);bool synced()const;String local()const;String utc()const;uint32_t epoch()const;
-};
-
-class MqttService {
- public:
-  void begin(LocalConfig*,RelayEngine*);void loop();void publishState();void configChanged();
- private:
-  LocalConfig* c_=nullptr;RelayEngine* r_=nullptr;WiFiClient net_;PubSubClient mqtt_{net_};uint32_t lastTry_=0,lastPub_=0;
-  static MqttService* self_;static void thunk(char*,byte*,unsigned int);void onMessage(char*,byte*,unsigned int);String base()const;
 };
 
 class FederationService {

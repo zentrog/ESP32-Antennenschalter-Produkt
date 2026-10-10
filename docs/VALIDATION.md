@@ -1,5 +1,21 @@
 # Prüfprotokoll – Firmware-Releases
 
+## Firmware 1.8.20 · MQTT entfernt und OTA-Platz geschaffen
+
+- Änderung: MQTT/ioBroker-Anbindung vollständig entfernt: Laufzeitdienst und PubSubClient-Abhängigkeit, Konfigurationsfelder und Oberfläche entfallen. Vorhandene `mqtt`-Einträge in älteren Sicherungen werden beim Einlesen ignoriert und beim nächsten Speichern nicht erneut ausgegeben. HTTP-API, lokale Steuerung und ESP-Verbund bleiben davon unberührt.
+- Fehlerbehebung: Bekannte U+FFFD-Ersetzung im Standardnamen „Funkgerät“ wird korrigiert. Lokale Gerätenamen werden vor dem Speichern normalisiert; eine einmalige Migration schreibt vorhandene bereinigte Namen in `/local.json` zurück.
+- Bedienansicht: Die ganze Steuerfläche skaliert proportional als feste 1920×1080-Fläche; Wetter, Newsticker, Texte, Kartenanordnung und Signalpfade werden gemeinsam skaliert.
+- Build/Paket: PASS; PlatformIO Core 6.2.0 / Espressif32 6.12.0. RAM 52.232 / 327.680 Byte; Firmwareabbild 1.355.957 Byte. Vollständiges OTA-Paket 1.498.501 Byte; OTA-Slot 1.507.328 Byte; Reserve 8.827 Byte. Im Vergleich zum unmittelbar vorherigen Build ist das Firmwareabbild 7.280 Byte kleiner. UI Brotli 62.188 Byte + gzip 73.709 Byte.
+- Paketbauer: JavaScript-Syntax und verlustfreier Komprimierungs-/Dekomprimierungsvergleich PASS.
+- Visuelle Gegenprüfung auf dem problematischen Laptop: OFFEN; Screenshot/Bericht des Betreibers nach Installation erforderlich.
+- GitHub-Veröffentlichung: noch offen.
+
+## Firmware 1.8.19 · Einheitliche Skalierung und UTF-8-Sicherung
+
+- Änderung: Die Bedienansicht wird als zusammenhängende 1920×1080-Fläche proportional skaliert. Wetter, Newsticker, Kopf-/Fußbereich, Schrift und Gerätekacheln behalten dabei dieselbe Anordnung; viewportabhängige Umordnungen und Teil-Skalierungen entfallen. Signalpfadlinien werden in der skalierten Fläche weiterhin an den Gerätekacheln ausgerichtet.
+- Fehlerbehebung: Bekannte U+FFFD-Ersetzung im Standardnamen „Funkgerät“ wird korrigiert. Textnormalisierung läuft vor dem Speichern lokaler Gerätenamen. Eine einmalige, nicht destruktive Migration schreibt bereits bereinigte lokale Konfigurationen wieder in die ESP-Dateien, damit zukünftige Backups die reparierten Werte enthalten.
+- Build/Paket/Hardwareansicht/GitHub: noch offen; nach Abschluss jeweils mit konkreter Messung dokumentieren.
+
 ## Firmware 1.8.18 · Skalierung nach Karten- und Fenstergröße
 
 - Anlass: Betreiber-Screenshot nach 1.8.17 zeigte weiterhin abgeschnittene Gerätenamen und Bedienelemente. Die bisherige Schriftregel berücksichtigte die Gesamtfenstergröße; Karten und Tasten hatten aber feste Mindesthöhen, die eine einzelne Rasterzeile überfüllten.

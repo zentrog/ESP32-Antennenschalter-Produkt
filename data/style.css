@@ -184,34 +184,6 @@ body.control-mode .ticker-source{font-size:.72rem;padding:0 7px}.control-mode .t
 .layout-default-actions,.layout-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
 .layout-default-actions button,.layout-item-actions button{padding:8px 11px}
 
-/* Kurze Desktop-/Notebookfenster weiter verdichten, ohne die Steuerseite scrollbar zu machen. */
-body.control-short header{padding:6px 12px}.control-short .brand-logo{width:36px;height:36px}.control-short .brand h1{font-size:1.28rem}.control-short #identity{font-size:.72rem}
-body.control-short .clock #dateLine{font-size:1.25rem}.control-short .clock #localTime,.control-short .clock #utcTime{font-size:.82rem}
-body.control-short .weather-head{display:none}.control-short .weather-current{padding:4px 8px}.control-short .weather-today{padding:3px 8px}.control-short .weather-attribution{display:none}
-body.control-short .news-head{display:none}.control-short .news{padding:4px 6px}.control-short .ticker-row{min-height:28px}
-body.control-very-short .weather-today{display:none}.control-very-short .weather-icon{font-size:1.5rem}.control-very-short .weather-temp strong{font-size:1.1rem}.control-very-short .weather-metrics span{padding:2px 5px}
-body.control-very-short .ticker-row{min-height:24px}.control-very-short .ticker-source{font-size:.64rem}.control-very-short .ticker-track,.control-very-short .ticker-static{font-size:.76rem}
-
-/* Auch auf Tablet/Telefon bleibt die Steueransicht im verfügbaren Fenster. Die gespeicherte
-   Desktopposition wird dort nicht verändert; die Karten werden nur adaptiv angeordnet. */
-@media(max-width:900px){
- body.control-mode header{flex-direction:row;align-items:center}.control-mode .clock{text-align:right;margin-left:auto}.control-mode .date-block{justify-content:flex-end}
- body.control-mode .button-canvas{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(0,1fr)!important;grid-template-rows:none!important;height:auto!important;min-height:100px!important;overflow:hidden}
- body.control-mode .antenna-card{grid-column:auto!important;grid-row:auto!important;max-width:none!important;width:auto!important;min-height:0!important;margin:0!important}
- body.control-mode .weather-current{grid-template-columns:auto minmax(120px,.7fr) minmax(0,1.8fr)}
- body.control-mode .weather-metrics{grid-column:auto;grid-template-columns:repeat(2,minmax(75px,1fr))}
-}
-@media(max-width:620px){
- body.control-mode header{padding:5px 8px;gap:7px}.control-mode .brand-logo{width:30px;height:30px}.control-mode .brand h1{font-size:1.05rem}.control-mode .eyebrow{display:none}.control-mode #identity{font-size:.62rem;white-space:nowrap;max-width:55vw;overflow:hidden;text-overflow:ellipsis}
- body.control-mode .clock{min-width:120px;display:block}.control-mode .date-block{display:block}.control-mode #dateLabel{display:none!important}.control-mode .clock #dateLine{font-size:.95rem}.control-mode .clock #localTime,.control-mode .clock #utcTime{font-size:.68rem}
- body.control-mode nav{padding:3px 6px}.control-mode nav button{padding:5px 8px;font-size:.74rem}.control-mode main{padding:4px 5px}.control-mode footer{display:none}
- body.control-mode .control-head{min-height:27px}.control-mode .control-head button{padding:5px 7px;font-size:.68rem}.control-mode .controller-badge{font-size:.62rem;padding:3px 5px}
- body.control-mode .button-canvas{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px;padding:4px}
- body.control-mode .antenna-card{padding:4px;border-radius:9px}.control-mode .antenna-main{min-height:0!important}.control-mode .antenna-card.compact-actions{grid-template-columns:minmax(0,1.4fr) minmax(72px,.8fr)}
- body.control-mode .weather-current{grid-template-columns:auto 1fr;gap:5px}.control-mode .weather-metrics{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.control-mode .weather-metrics b{display:none}
- body.control-mode .ticker-row{grid-template-columns:72px minmax(0,1fr) 24px;gap:4px}.control-mode .ticker-row time{display:none}.control-mode .ticker-source{font-size:.58rem;padding:0 4px}.control-mode .ticker-track,.control-mode .ticker-static{font-size:.7rem}.control-mode .ticker-link{width:22px;height:22px}
-}
-
 /* Benutzerdefinierte Boardprofile */
 .custom-board-card{border-color:rgba(214,125,0,.42)}
 .custom-warning{margin:0 0 14px;padding:11px 13px;border-left:4px solid #d67d00;background:rgba(214,125,0,.09);line-height:1.45}
