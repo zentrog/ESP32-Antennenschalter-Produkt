@@ -2,7 +2,7 @@
 
 Eine browserbasierte Steuerung für ESP32, Relais, Funkgeräte und Antennen. Ein einzelner ESP kann allein arbeiten. Mehrere ESPs können optional als Master und Slaves zusammenarbeiten.
 
-Aktuelle stabile Firmware: **1.8.22**. Das Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`. [Release v1.8.22 herunterladen](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.22) · [Firmware direkt herunterladen](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin).
+Aktuelle stabile Firmware: **1.8.34** (Stand 11.10.2026). Das Release enthält genau eine vollständige OTA-Datei: `firmware-esp32dev.bin`. [Release v1.8.34 herunterladen](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/tag/v1.8.34) · [Firmware direkt herunterladen](https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin).
 
 Unter **Diagnose** gibt es ein freiwilliges Fehler-/Wunschformular mit sicherer Vorschau und lokalem Download-Fallback. Der komplette Versandweg vom ESP-Formular bis zum E-Mail-Empfang wurde am 10.10.2026 mit Firmware 1.8.10 bestätigt. Der Bericht wird erst nach ausdrücklicher Bestätigung versendet und enthält keine Gerätekonfiguration. Fehlerfälle und der lokale Download-Fallback bleiben gesondert zu prüfen; Details stehen unter [Melde-Endpunkt und Freigabestatus](docs/REPORT-ENDPOINT.md).
 
@@ -41,9 +41,9 @@ Beim ersten Flashen eines neuen Gerätes muss zusätzlich das LittleFS-Dateisyst
 
 ## Updates
 
-Die Weboberfläche prüft GitHub Releases auf die neueste stabile Version. Wird eine neuere Version gefunden, startet **Jetzt aktualisieren** mit einem Klick zuerst den Download einer geprüften Sicherung dieses ESPs und danach die Firmwareinstallation direkt aus GitHub. Es muss keine Firmwaredatei mehr gesucht oder ausgewählt werden. Die Sicherung wird im Browser heruntergeladen; zusätzlich speichert der ESP vor dem Flashen eine interne Sicherung. Die LittleFS-Datenpartition mit der Konfiguration wird nicht formatiert.
+Die Update-Seite führt in drei Schritten durch die Aktualisierung: Sicherung herunterladen, neueste Firmwaredatei von GitHub herunterladen, die `.bin`-Datei auswählen und installieren. Der ESP prüft das Firmwareabbild vor der Aktivierung. Die LittleFS-Datenpartition mit der Konfiguration wird nicht formatiert. Im Verbund ist jedes Steuergerät separat zu sichern und zu aktualisieren.
 
-Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die gemeinsame Anlagenkonfiguration und dessen gespeicherte WLANs. Im Verbund sammelt der Master die lokalen Einstellungen der Slaves nicht ein: Öffne deshalb jeden ESP über seine eigene Adresse und sichere ihn separat. Die automatische Ein-Klick-Aktualisierung aktualisiert nur den geöffneten ESP. Controller-ID und IP stehen im Sicherungsdateinamen und in der Datei.
+Eine Sicherungsdatei enthält die lokalen Einstellungen des geöffneten ESP, die gemeinsame Anlagenkonfiguration und dessen gespeicherte WLANs. Im Verbund sammelt der Master die lokalen Einstellungen der Slaves nicht ein: Öffne deshalb jeden ESP über seine eigene Adresse und sichere ihn separat. Die Update-Seite sichert und aktualisiert nur den geöffneten ESP. Controller-ID und IP stehen im Sicherungsdateinamen und in der Datei.
 
 ## Projektunterlagen
 

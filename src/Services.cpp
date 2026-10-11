@@ -13,6 +13,8 @@
 
 static SemaphoreHandle_t externalServiceMutex=nullptr;
 static SemaphoreHandle_t ensureExternalServiceMutex(){if(!externalServiceMutex)externalServiceMutex=xSemaphoreCreateMutex();return externalServiceMutex;}
+bool lockExternalHttpServices(TickType_t timeout){SemaphoreHandle_t gate=ensureExternalServiceMutex();return gate&&xSemaphoreTake(gate,timeout)==pdTRUE;}
+void unlockExternalHttpServices(){if(externalServiceMutex)xSemaphoreGive(externalServiceMutex);}
 
 void TimeService::begin(const TimeConfig&c){if(c.enabled)configTzTime(c.tz.c_str(),c.ntp1.c_str(),c.ntp2.c_str());}
 bool TimeService::synced()const{return time(nullptr)>1700000000;}

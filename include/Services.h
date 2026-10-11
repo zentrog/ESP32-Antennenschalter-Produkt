@@ -8,6 +8,9 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
+bool lockExternalHttpServices(TickType_t timeout);
+void unlockExternalHttpServices();
+
 struct PeerInfo {
   String controllerId,name,callSign,location,firmware,boardProfile,ip;
   String systemId,systemName,role,permanentMasterId,admissionMode;

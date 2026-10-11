@@ -494,7 +494,7 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - Korrektur in v1.8.25: Wenn die lokale Verbindung beim erwarteten ESP-Neustart abreißt, bleibt die Updateoberfläche aktiv und prüft bis zu 90 Sekunden Controller-ID, Firmwareversion und Neustart, bevor sie Erfolg meldet. Die Update-Seite prüft außerdem, ob wirklich eine neuere stabile Version existiert.
 - Verifikation des Versionswechsels 1.8.24 → 1.8.25 über den echten GitHub-Abruf, inklusive Antwort-/Neustartbestätigung und identischer Konfigurations-/WLAN-Sicherung: OFFEN bis Test-ESP-Lauf abgeschlossen.
 
-## Firmware 1.8.25–1.8.28 – Hintergrund-OTA gegen Watchdog-Neustart
+## Firmware 1.8.25–1.8.32 – Hintergrund-OTA gegen Watchdog-Neustart
 
 - Reproduzierter Hardwarefehler nach v1.8.25: Der Ein-Klick-Aufruf von v1.8.24 startete einen Watchdog-Neustart (`TG1WDT_SYS_RESET`); der ESP kam mit v1.8.24 zurück. Das Update war somit NICHT erfolgreich.
 - Ursache: Der GitHub-Download und Flash liefen synchron im Webserver-Request. Während dieses langen Aufrufs konnte der ESP-Webtask den Watchdog nicht zuverlässig bedienen.
@@ -506,5 +506,30 @@ Die privaten Sicherungsdateien enthalten WLAN- und Gerätekonfiguration und blei
 - v1.8.27-Test: Serielle Ausgabe bestätigte weiterhin `TG1WDT_SYS_RESET`; die Installationsantwort kam nicht an und der ESP startete v1.8.26 erneut. Damit war die Wartezeit allein nicht ausreichend.
 - v1.8.28 ersetzt `Update.writeStream()` durch blockweisen Download mit kooperativem Yield zwischen Schreibvorgängen, damit der ESP während des Flashens seine Hintergrundaufgaben bedienen kann.
 - Buildstatus v1.8.28: PASS; PlatformIO RAM 52.768 / 327.680 Byte, Firmware 1.367.424 Byte, UI Brotli 63.236 Byte + gzip 74.885 Byte, vollständiges Paket 1.507.328 Byte, OTA-Reserve 1.707 Byte. JavaScript-Syntax und `git diff --check` PASS. SHA-256 `42B5146EAA13E6DD94FC7738E1B0F301043EBE00F3D1432A7D88F50B21FFF65B`.
-- OTA-Hardwarewechsel v1.8.26 → v1.8.28: OFFEN bis Verifikation abgeschlossen.
+- v1.8.28-Test: HTTP-202 kam in 0,06 Sekunden beim Client an, danach trat jedoch weiterhin `TG1WDT_SYS_RESET` auf. Yield zwischen Datenblöcken reichte bei Task-Priorität 1 nicht aus.
+- v1.8.29 senkt den OTA-Hintergrundtask auf Idle-Priorität und protokolliert OTA-Phasen über die serielle Diagnose.
+- v1.8.29-Test: Nach der HTTP-202-Antwort wurde `OTA: download begin` ausgegeben, dann folgte weiterhin `TG1WDT_SYS_RESET`, noch vor dem HTTP-GET. Die TLS-Einrichtung im Task auf Kern 1 war damit noch nicht stabil.
+- v1.8.30 verlegt den Task auf Kern 0, vergrößert den Task-Stack auf 24 KiB und protokolliert TLS-/HTTP-Phasen.
+- v1.8.30-Test: HTTP 202 wurde sofort bestätigt; serieller Mitschnitt zeigte Task-Watchdog-Reset unmittelbar bei `setCACertBundle`, vor dem GitHub-Request.
+- v1.8.31-Test: Der Hintergrund-OTA-Lauf kollidierte mit zeitgleichem News-Abruf; seriell traten Socket-/lwIP-Ressourcenfehler und ein Absturz im News-Worker auf. Das OTA-Verhalten war damit weiterhin nicht bestanden.
+- v1.8.32 teilt die bereits von Wetter/Newsticker genutzte externe HTTP-Sperre mit GitHub-Prüfung und OTA-Download. OTA wartet begrenzt auf laufende externe Abrufe und gibt die Sperre bei Fehlern wieder frei.
+- Build-/Paketstatus v1.8.32 und OTA-Hardwarelauf: OFFEN bis Verifikation abgeschlossen.
 - Verbund-Update: weiterhin nur Einzelgerät. Ein Master-Button, der Slaves mit sichert/aktualisiert, ist nicht implementiert.
+
+## Firmware 1.8.33 – fehlgeschlagene GitHub-OTA-Versuche
+
+- Die direkten ESP-seitigen GitHub-Downloads wurden mit HTTP 202 gestartet, endeten am Test-ESP jedoch mit Watchdog-Neustart (`TG1WDT_SYS_RESET`) und unveränderter Firmwareversion. Diese Updatevariante ist nicht bestanden und wird durch den Browser-Upload ersetzt.
+- Im seriellen Protokoll traten außerdem `WiFiClient.write()`-Fehler (`errno 11`, „No more processes“) und ein `LoadProhibited` in `NewsService::fetchAll` auf. Dieser NewsTicker-Absturz ist separat zu behandeln; er darf nicht als gelöst gelten.
+
+## Firmware 1.8.34 – PC-Download und geprüfter OTA-Upload
+
+- Updateablauf: Konfigurationssicherung im Browser herunterladen, aktuelles Release-Asset am PC herunterladen, `.bin`-Datei auswählen und zum ESP hochladen. ESP-seitiger GitHub-Firmwaredownload und dessen Hintergrundtask entfallen.
+- `POST /api/update/install` schreibt den Browserupload in die inaktive OTA-Partition. Upload nur nach heruntergeladener Sicherung; die interne Sicherung wird vor dem Flash erneut geprüft. Die Firmwareprüfung muss vor Aktivierung erfolgreich sein. LittleFS wird nicht formatiert. Jeder Controller wird weiterhin einzeln aktualisiert.
+- Build/Paket: PASS; PlatformIO Core 6.2.0, Espressif32 6.12.0, Arduino-ESP32 2.0.17, Xtensa-GCC 8.4.0, Node.js 24.19.0, esptool 4.9.0. RAM 52.248 / 327.680 Byte; Firmwareabbild 1.364.480 Byte; UI Brotli 63.236 Byte + gzip 74.885 Byte; Paket 1.507.328 Byte; Reserve 4.651 Byte. SHA-256 `255D430AA1E7CE6C83DCDB461BF746B4F24528D1AC4E284CCC5429B1B5C2CB99`.
+- Test-ESP vor dem OTA: USB-Kennung MAC `78:21:84:e2:fd:28` entsprach Controller-ID `ESP32-28FDE2842178`; Master, `192.168.0.154`, v1.8.34. Konfigurationssicherung außerhalb des Repositories gespeichert, 13.376 Byte; Controller-ID/IP/Formaterkennung stimmen.
+- Der Testkandidat wurde für die Vorbereitung per esptool in beide App-Partitionen geschrieben; nur `0x10000` und `0x180000` wurden beschrieben. NVS, OTA-Metadaten und LittleFS wurden nicht gelöscht.
+- Update-UI: HTTP 200; Sicherungsschaltfläche, direkter Latest-Download-Link, `.bin`-Dateiauswahl und neuer Multipart-Endpunkt vorhanden; alter ESP-GitHub-Installationsendpunkt fehlt.
+- Hardware-Multipart-Upload: PASS; genau `firmware-esp32dev.bin`, HTTP 200, 1.507.328 Firmwarebytes, 14,61 Sekunden. Der ESP bestätigte die Firmwareprüfung; anschließend wurde ein Neustart beobachtet.
+- Readback: PASS; nach Neustart dieselbe Controller-ID, Master-Rolle und IP `192.168.0.154`, Firmware v1.8.34. Im abschließenden Lauf antworteten 20/20 aufeinanderfolgende Statusabfragen; Newsticker aktiv, n-tv HTTP 200 mit fünf Meldungen.
+- Sicherungsvergleich: PASS; lokale Konfiguration, gemeinsame Konfiguration und WLAN-Einträge vor/nach dem Upload wurden jeweils kanonisch serialisiert und waren identisch. Vorher-/Nachher-Dateien bleiben privat außerhalb des Repositories.
+- Der Hardwaretest hat den endgültigen v1.8.34-Paketstand auf v1.8.34 hochgeladen und damit Dateiannahme, Firmwareprüfung, Neustart und Konfigurationserhalt geprüft; ein Versionswechsel über die neue Route wurde nicht separat geprüft. GitHub-Veröffentlichung und öffentlicher Direktdownload bleiben bis zum Release-Prozess OFFEN.

@@ -1,4 +1,4 @@
-# HTTP/JSON-API – Firmware 1.8.23 / API 7
+# HTTP/JSON-API – API 7
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -22,9 +22,9 @@ GET/PUT /api/controller/config (PUT übernimmt im vollständigen Konfigurationso
 POST /api/controller/test-relay, /api/controller/restart, /api/controller/factory-reset
 
 ## WLAN / Update / externe API
-GET /api/update/check prüft das neueste stabile GitHub-Release. Der Aufruf zeigt nur die Version an und startet kein Update. POST /api/update/install-latest verlangt eine zuvor heruntergeladene Sicherung, erstellt eine interne Sicherung und startet den Download von ausschließlich `firmware-esp32dev.bin` im Hintergrund. GET /api/update/status meldet `running`, `success` oder `error`. Die Browseroberfläche wartet auf die neue Firmwareversion und denselben Controller, bevor sie Erfolg zeigt. LittleFS bleibt erhalten. Der Endpunkt aktualisiert ausschließlich den aufrufenden ESP; Slaves werden nicht automatisch aktualisiert. Das eingebettete Root-Zertifikatsbündel wird mit `tools/convert_github_trust_bundle.py` aus `certs/github-roots.json` im ESP-IDF-Format erzeugt; der Paketbau führt diesen Schritt vor PlatformIO automatisch aus.
+GET /api/update/check prüft das neueste stabile GitHub-Release und zeigt die Versionsinformation an. GET /api/update-backup erstellt und lädt die Sicherung des geöffneten ESP herunter. POST /api/update/install nimmt das vom Browser ausgewählte `.bin`-Firmwareabbild als Multipart-Upload an; die Sicherung muss zuvor heruntergeladen worden sein. Die interne Sicherung wird vor dem Schreiben erneut geprüft. Das Firmwareabbild wird in die inaktive OTA-Partition geschrieben und erst nach erfolgreicher ESP-Abbildprüfung aktiviert. Danach startet das Gerät neu. LittleFS bleibt erhalten. Es wird nur der aufrufende ESP aktualisiert; Slaves müssen jeweils separat bearbeitet werden.
 /api/wifi, /api/wifi/saved, /api/wifi/restore, /api/setup-mode
-/api/update/check, /api/update-backup, /api/update/install-latest, /api/ui-upload, /update, /rollback
+/api/update/check, /api/update-backup, /api/update/install, /api/ui-upload, /update, /rollback
 GET /ext/status, POST /ext/execute
 
 Administrative Handler verwenden die konfigurierte Admin-Authentisierung, soweit im jeweiligen Route-Handler registriert. Interne Verbundauthentisierung und lokale Safety sind getrennte Themen. Der Verbundmarker ist keine kryptografische Node-Authentisierung.

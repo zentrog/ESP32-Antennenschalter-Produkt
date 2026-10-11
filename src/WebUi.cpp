@@ -4,16 +4,14 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <ESPmDNS.h>
 #include <HTTPClient.h>
-#include <WiFiClientSecure.h>
-#include "GitHubTrustBundle.h"
 #include <Update.h>
 #include <esp_system.h>
 #include <esp_partition.h>
 #include <esp_ota_ops.h>
 #include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 #include <sys/stat.h>
 #include <cstring>
 #include <vector>
@@ -28,13 +26,11 @@ static File uiUploadFile;
 static uint32_t safetyBackupFreshAtMs=0;
 static bool updateBackupDownloaded=false;
 static const uint32_t SAFETY_BACKUP_FRESH_MS=5U*60U*1000U;
-enum OtaJobState:uint8_t{OTA_JOB_IDLE,OTA_JOB_RUNNING,OTA_JOB_SUCCESS,OTA_JOB_FAILED};
-static volatile uint8_t otaJobState=OTA_JOB_IDLE;
-static char otaJobError[192]={0};
-static portMUX_TYPE otaJobMux=portMUX_INITIALIZER_UNLOCKED;
-static void setOtaJobState(uint8_t state,const char*error=""){
-  portENTER_CRITICAL(&otaJobMux);otaJobState=state;strlcpy(otaJobError,error,sizeof(otaJobError));portEXIT_CRITICAL(&otaJobMux);
-}
+static bool otaUploadAuthorized=false,otaUploadStarted=false,otaUploadOk=false,otaRestartPending=false;
+static bool otaExternalLockHeld=false;
+static String otaUploadError;
+static size_t otaUploadBytes=0;
+static uint32_t otaRestartAt=0;
 
 static String safeBackupPart(String value){
   String out;out.reserve(value.length());
@@ -280,7 +276,7 @@ static bool federationPeerRequestOk(WebServer&server,LocalConfig*c,FederationSer
 
 void WebUi::begin(LocalConfig*c,SharedConfig*s,Storage*st,RelayEngine*r,TimeService*t,FederationService*f,NewsService*n,WeatherService*weather,WifiManager*w,bool rec){
   const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;if(!recovery_)removeBundledUiFromLittleFs();recovery_?setupRoutes():routes();server_.begin();}
-void WebUi::loop(){server_.handleClient();}
+void WebUi::loop(){server_.handleClient();if(otaRestartPending&&(int32_t)(millis()-otaRestartAt)>=0){otaRestartPending=false;ESP.restart();}}
 bool WebUi::auth(bool){const SecurityConfig&sec=s_?s_->security:c_->security;if(!sec.adminAuthEnabled)return true;if(server_.authenticate(sec.adminUser.c_str(),sec.adminPassword.c_str()))return true;server_.requestAuthentication();return false;}
 void WebUi::sendJson(JsonDocument&d,int code){String x;serializeJson(d,x);server_.send(code,"application/json; charset=utf-8",x);}
 
@@ -357,10 +353,9 @@ void WebUi::routes(){
  server_.on("/api/setup-mode",HTTP_POST,[this](){if(auth())apiEnterSetupMode();});
  server_.on("/api/wifi/saved",HTTP_GET,[this](){if(auth())setupSaved();});
  server_.on("/api/federation/pull-shared",HTTP_POST,[this](){apiPullShared();});
- server_.on("/api/update/check",HTTP_GET,[this](){if(auth())sendOnlineUpdateCheck(server_,c_);});
+ server_.on("/api/update/check",HTTP_GET,[this](){if(!auth())return;if(!lockExternalHttpServices(pdMS_TO_TICKS(12000))){server_.send(503,"application/json","{\"error\":\"Andere Internetabfrage läuft; bitte erneut versuchen\"}");return;}sendOnlineUpdateCheck(server_,c_);unlockExternalHttpServices();});
  server_.on("/api/update-backup",HTTP_GET,[this](){if(auth())sendUpdateSafetyBackup(server_,store_,c_,String(ANTCTRL_VERSION));});
- server_.on("/api/update/install-latest",HTTP_POST,[this](){if(auth())otaInstallLatest();});
- server_.on("/api/update/status",HTTP_GET,[this](){if(auth())apiOtaStatus();});
+  server_.on("/api/update/install",HTTP_POST,[this](){if(!auth())return;JsonDocument r;r["ok"]=otaUploadOk;r["bytes"]=otaUploadBytes;if(!otaUploadOk)r["error"]=otaUploadError.isEmpty()?String("Firmware-Upload fehlgeschlagen"):otaUploadError;if(otaUploadOk)server_.sendHeader("Connection","close");sendJson(r,otaUploadOk?200:409);if(otaUploadOk){otaRestartPending=true;otaRestartAt=millis()+1200U;}},[this](){handleOtaUpload(server_.upload());});
  server_.on("/api/ui-upload",HTTP_POST,[this](){if(!auth())return;JsonDocument r;r["ok"]=uiUploadOk;if(!uiUploadOk)r["error"]=uiUploadError;else r["file"]=uiUploadTarget;sendJson(r,uiUploadOk?200:409);},[this](){if(auth())handleUiUpload(server_.upload(),store_);});
  server_.on("/update",HTTP_GET,[this](){if(auth())otaPage();});
  server_.on("/rollback",HTTP_POST,[this](){if(auth())otaRollback();});
@@ -771,45 +766,37 @@ void WebUi::otaPage(){
   updateBackupDownloaded=false;
   if(!c_->features.ota){server_.send(404,"text/plain",c_->language=="en"?"OTA disabled":"OTA deaktiviert");return;}
   bool en=c_->language=="en";
-  String page="<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>"+String(en?"Antenna Controller Update":"Antennensteuerung Aktualisierung")+"</title><style>body{font-family:system-ui;background:#101216;color:#eef2f6;max-width:820px;margin:32px auto;padding:20px}section{background:#1a1e25;border:1px solid #343b46;padding:18px;border-radius:12px;margin:16px 0}.warn{border-left:4px solid #d69a36}button,a.button{font-size:1rem;padding:12px 16px}button{border:0;border-radius:6px;background:#2874b8;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:wait}a{color:#77c9f4}.ok{color:#8ed9a5}#status{min-height:1.5em}</style><h1>"+String(en?"Program / update":"Programm / Update")+" · v"+String(ANTCTRL_VERSION)+"</h1>";
-  page+="<section class=warn><h2>"+String(en?"Update this controller":"Dieses Steuergerät aktualisieren")+"</h2><p>"+String(en?"One click downloads this controller's configuration and Wi-Fi backup, saves it in your browser's downloads, then installs the latest stable firmware from GitHub. Settings are preserved.":"Ein Klick lädt die Konfigurations- und WLAN-Sicherung dieses Steuergeräts herunter und speichert sie bei den Browser-Downloads. Danach installiert der ESP die neueste stabile Firmware von GitHub. Die Einstellungen bleiben erhalten.")+"</p><p><b>"+String(en?"Cluster: only this controller is updated and backed up. Update each other controller separately.":"Verbund: Nur dieses Steuergerät wird aktualisiert und gesichert. Weitere Steuergeräte müssen einzeln aktualisiert werden.")+"</b> "+String(en?"The backup filename contains the controller ID and IP.":"Controller-ID und IP stehen im Dateinamen der Sicherung.")+"</p><button id=installLatest>"+String(en?"Download backup and install latest firmware":"Sicherung laden und neueste Firmware installieren")+"</button><p id=status role=status aria-live=polite></p></section>";
+  String page="<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>"+String(en?"Antenna Controller Update":"Antennensteuerung Aktualisierung")+"</title><style>body{font-family:system-ui;background:#101216;color:#eef2f6;max-width:820px;margin:32px auto;padding:20px}section{background:#1a1e25;border:1px solid #343b46;padding:18px;border-radius:12px;margin:16px 0}.warn{border-left:4px solid #d69a36}button,a.button{font-size:1rem;padding:12px 16px}button{border:0;border-radius:6px;background:#2874b8;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}input{display:block;margin:16px 0;max-width:100%}a{color:#77c9f4}.ok{color:#8ed9a5}#status{min-height:1.5em}</style><h1>"+String(en?"Program / update":"Programm / Update")+" · v"+String(ANTCTRL_VERSION)+"</h1>";
+  page+="<section class=warn><h2>1. "+String(en?"Save a backup":"Sicherung herunterladen")+"</h2><p>"+String(en?"Download this controller's configuration and Wi-Fi backup before updating.":"Lade vor dem Update die Konfigurations- und WLAN-Sicherung dieses Steuergeräts herunter.")+"</p><button id=backup>"+String(en?"Download configuration backup":"Konfigurationssicherung herunterladen")+"</button><p id=backupStatus role=status aria-live=polite></p><p>"+String(en?"The filename contains the controller ID and IP.":"Controller-ID und IP stehen im Dateinamen.")+"</p></section>";
+  page+="<section><h2>2. "+String(en?"Download firmware":"Firmware herunterladen")+"</h2><p>"+String(en?"Latest stable version":"Neueste stabile Version")+": <b id=latest>…</b></p><a class=button href='https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin' target=_blank rel=noopener>"+String(en?"Download latest firmware":"Neueste Firmware herunterladen")+"</a></section>";
+  page+="<section><h2>3. "+String(en?"Select and install":"Auswählen und installieren")+"</h2><p>"+String(en?"Select the downloaded firmware-esp32dev.bin file.":"Wähle die heruntergeladene Datei firmware-esp32dev.bin aus.")+"</p><input id=file type=file accept='.bin,application/octet-stream'><button id=install disabled>"+String(en?"Install firmware":"Firmware installieren")+"</button><p id=status role=status aria-live=polite></p><p><b>"+String(en?"Cluster: this updates only this controller. Repeat these steps separately for every other controller.":"Verbund: Dieses Update betrifft nur dieses Steuergerät. Für jedes weitere Steuergerät die Schritte einzeln wiederholen.")+"</b></p></section>";
   page+="<section><h2>"+String(en?"Previous firmware":"Vorherige Firmware starten")+"</h2><p>"+String(en?"Rollback is available only when the ESP still has a valid previous firmware partition. A safety backup is created first.":"Zurückschalten ist nur möglich, wenn noch eine gültige vorherige Firmwarepartition vorhanden ist. Zuerst wird eine interne Sicherung erstellt.")+"</p><button id=rollbackSubmit>"+String(en?"Start previous firmware":"Vorherige Firmware starten")+"</button></section>";
-  page+="<script>const b=document.getElementById('installLatest'),s=document.getElementById('status');b.onclick=async()=>{b.disabled=true;let check,before;s.textContent='"+String(en?"Downloading backup…":"Sicherung wird heruntergeladen …")+"' ;try{before=await(await fetch('/api/snapshot',{cache:'no-store'})).json();check=await(await fetch('/api/update/check',{cache:'no-store'})).json();if(!check.latest)throw Error(check.error||'Update check failed');if(!check.available){s.textContent='"+String(en?"This controller already has the latest firmware.":"Dieses Steuergerät hat bereits die neueste Firmware.")+"';b.disabled=false;return}const backup=await fetch('/api/update-backup',{cache:'no-store'});if(!backup.ok)throw Error(await backup.text());const blob=await backup.blob(),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=(backup.headers.get('Content-Disposition')||'').match(/filename=\"?([^\";]+)\"?/i)?.[1]||'Antennensteuerung-Sicherung.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);s.textContent='"+String(en?"Installing the latest firmware…":"Neueste Firmware wird installiert …")+"';const r=await fetch('/api/update/install-latest',{method:'POST',cache:'no-store'}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Update failed');const expected=String(check.latest).replace(/^v/i,''),until=Date.now()+120000;let done=false,updateError='';while(Date.now()<until){try{const q=await fetch('/api/update/status',{cache:'no-store'});if(q.ok){const z=await q.json();if(z.state==='error')updateError=z.error||'Update failed'}}catch{}if(updateError)throw Error(updateError);try{const q=await fetch('/api/snapshot',{cache:'no-store'});if(q.ok){const x=await q.json();if(x.controllerId===before.controllerId&&x.firmwareVersion===expected&&x.firmwareVersion!==before.firmwareVersion){done=true;break}}}catch{}await new Promise(r=>setTimeout(r,1500))}if(!done)throw Error('Update and restart could not be confirmed');s.className='ok';s.textContent='"+String(en?"Update complete. The new firmware is active.":"Update erfolgreich. Firmware ist aktiv.")+"';setTimeout(()=>location.reload(),3000)}catch(e){if(e instanceof TypeError||e instanceof SyntaxError){s.textContent='ESP rebooting. Checking connection and firmware...';const expected=String(check.latest||'').replace(/^v/i,''),until=Date.now()+90000;let confirmed=false;while(Date.now()<until){await new Promise(r=>setTimeout(r,2000));try{const q=await fetch('/api/snapshot',{cache:'no-store'});if(!q.ok)continue;const x=await q.json();if(x.controllerId===before.controllerId&&x.firmwareVersion===expected&&(x.firmwareVersion!==before.firmwareVersion||x.uptimeMs<before.uptimeMs)){confirmed=true;break}}catch{}}if(confirmed){s.className='ok';s.textContent='"+String(en?"Update complete. The new firmware is active.":"Update erfolgreich. Die neue Firmware ist aktiv.")+"';setTimeout(()=>location.reload(),3000);return}s.textContent='"+String(en?"Restart could not be confirmed. Reload and check the version.":"Neustart konnte nicht bestätigt werden. Bitte Seite neu laden und Version prüfen.")+"'}else s.textContent=e.message;b.disabled=false}};document.getElementById('rollbackSubmit').onclick=async()=>{if(!confirm('"+String(en?"Start the previous firmware?":"Vorherige Firmware wirklich starten?")+"'))return;try{const r=await fetch('/rollback',{method:'POST'});const t=await r.text();if(!r.ok)throw Error(t);s.textContent=t}catch(e){s.textContent=e.message}};</script>";
+  page+="<script>const en="+String(en?"true":"false")+",backupButton=document.getElementById('backup'),backupStatus=document.getElementById('backupStatus'),file=document.getElementById('file'),install=document.getElementById('install'),status=document.getElementById('status');let backupReady=false;function updateButton(){install.disabled=!(backupReady&&file.files.length===1)}backupButton.onclick=async()=>{backupButton.disabled=true;backupStatus.textContent=en?'Preparing backup…':'Sicherung wird vorbereitet …';try{const r=await fetch('/api/update-backup',{cache:'no-store'});if(!r.ok)throw Error(await r.text());const blob=await r.blob(),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=(r.headers.get('Content-Disposition')||'').match(/filename=\"?([^\";]+)\"?/i)?.[1]||'Antennensteuerung-Sicherung.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);backupReady=true;backupStatus.className='ok';backupStatus.textContent=en?'Backup downloaded. Keep the file on your computer.':'Sicherung heruntergeladen. Bitte die Datei auf dem Computer aufbewahren.'}catch(e){backupStatus.textContent=e.message;backupButton.disabled=false}updateButton()};file.onchange=()=>{status.textContent=file.files.length?file.files[0].name+' ('+file.files[0].size+' bytes)':'';updateButton()};fetch('/api/update/check',{cache:'no-store'}).then(r=>r.json()).then(j=>{document.getElementById('latest').textContent=j.latest|| (en?'not available':'nicht erreichbar')}).catch(()=>{document.getElementById('latest').textContent=en?'not available':'nicht erreichbar'});install.onclick=async()=>{if(!backupReady||file.files.length!==1)return;install.disabled=true;backupButton.disabled=true;status.textContent=en?'Installing firmware…':'Firmware wird installiert …';try{const form=new FormData();form.append('firmware',file.files[0],file.files[0].name);const r=await fetch('/api/update/install',{method:'POST',body:form,cache:'no-store'}),j=await r.json();if(!r.ok||!j.ok){backupReady=false;updateButton();throw Error(j.error||'Update failed')}status.className='ok';status.textContent=en?'Firmware accepted and verified. The controller is restarting…':'Firmware angenommen und geprüft. Das Steuergerät startet neu …';setTimeout(()=>location.reload(),12000)}catch(e){status.textContent=e.message;backupButton.disabled=false;updateButton()}};document.getElementById('rollbackSubmit').onclick=async()=>{if(!confirm(en?'Start the previous firmware?':'Vorherige Firmware wirklich starten?'))return;try{const r=await fetch('/rollback',{method:'POST'}),t=await r.text();if(!r.ok)throw Error(t);status.textContent=t}catch(e){status.textContent=e.message}};</script>";
   server_.send(200,"text/html; charset=utf-8",page);
 }
-void WebUi::otaInstallLatest(){
-  if(!c_->features.ota){JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"OTA disabled":"OTA deaktiviert";sendJson(r,404);return;}
-  if(otaJobState==OTA_JOB_RUNNING){JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"An update is already running":"Ein Update läuft bereits";sendJson(r,409);return;}
-  if(!updateBackupDownloaded){JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"Download the configuration backup before updating":"Bitte zuerst die Konfigurationssicherung herunterladen";sendJson(r,409);return;}
-  updateBackupDownloaded=false;String error;if(!ensureFreshUpdateSafetyBackup(store_,error)){JsonDocument r;r["ok"]=false;r["error"]=(c_->language=="en"?"Safety backup failed. Update refused: ":"Sicherheitskopie fehlgeschlagen. Aktualisierung verweigert: ")+error;sendJson(r,409);return;}
-  if(WiFi.status()!=WL_CONNECTED){JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"No internet connection":"Keine Internetverbindung";sendJson(r,503);return;}
-  setOtaJobState(OTA_JOB_RUNNING);BaseType_t started=xTaskCreatePinnedToCore(&WebUi::otaInstallTask,"otaGithub",12288,this,1,nullptr,1);
-  if(started!=pdPASS){setOtaJobState(OTA_JOB_FAILED,"Update-Hintergrundauftrag konnte nicht gestartet werden");JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"Could not start update task":"Update-Auftrag konnte nicht gestartet werden";sendJson(r,503);return;}
-  JsonDocument r;r["ok"]=true;r["state"]="running";r["firmware"]=ANTCTRL_VERSION;sendJson(r,202);
+void WebUi::handleOtaUpload(HTTPUpload&u){
+  if(u.status==UPLOAD_FILE_START){
+    otaUploadAuthorized=auth();otaUploadStarted=false;otaUploadOk=false;otaUploadBytes=0;otaUploadError="";otaRestartPending=false;otaExternalLockHeld=false;
+    if(!otaUploadAuthorized)return;
+    if(!c_->features.ota){otaUploadError="OTA ist auf diesem Steuergerät deaktiviert";return;}
+    if(!updateBackupDownloaded){otaUploadError="Bitte zuerst die Konfigurationssicherung herunterladen";return;}
+    if(!u.filename.endsWith(".bin")){otaUploadError="Bitte die Firmwaredatei mit der Endung .bin auswählen";return;}
+    String backupError;if(!ensureFreshUpdateSafetyBackup(store_,backupError)){otaUploadError="Sicherheitskopie fehlgeschlagen; Update verweigert: "+backupError;return;}
+    if(!lockExternalHttpServices(pdMS_TO_TICKS(12000))){otaUploadError="Eine Internetabfrage läuft noch. Bitte kurz warten und erneut versuchen.";return;}otaExternalLockHeld=true;
+    if(!Update.begin(UPDATE_SIZE_UNKNOWN)){otaUploadError="Firmware kann nicht in den OTA-Speicher geschrieben werden";unlockExternalHttpServices();otaExternalLockHeld=false;return;}
+    updateBackupDownloaded=false;
+    otaUploadStarted=true;
+  }else if(u.status==UPLOAD_FILE_WRITE){
+    if(!otaUploadAuthorized||!otaUploadStarted||!otaUploadError.isEmpty())return;
+    size_t n=Update.write(u.buf,u.currentSize);if(n!=u.currentSize){otaUploadError="Firmware konnte nicht vollständig geschrieben werden";Update.abort();otaUploadStarted=false;if(otaExternalLockHeld){unlockExternalHttpServices();otaExternalLockHeld=false;}return;}otaUploadBytes+=n;
+  }else if(u.status==UPLOAD_FILE_END){
+    if(!otaUploadAuthorized||!otaUploadStarted||!otaUploadError.isEmpty())return;
+    if(otaUploadBytes<512U*1024U){otaUploadError="Die ausgewählte Datei ist zu klein und sieht nicht wie eine Firmware aus";Update.abort();otaUploadStarted=false;if(otaExternalLockHeld){unlockExternalHttpServices();otaExternalLockHeld=false;}return;}
+    if(!Update.end(true)){otaUploadError="Firmwareprüfung fehlgeschlagen; die Datei wurde nicht aktiviert";Update.abort();otaUploadStarted=false;if(otaExternalLockHeld){unlockExternalHttpServices();otaExternalLockHeld=false;}return;}
+    if(otaExternalLockHeld){unlockExternalHttpServices();otaExternalLockHeld=false;}
+    otaUploadStarted=false;otaUploadOk=true;
+  }else if(u.status==UPLOAD_FILE_ABORTED){if(otaUploadStarted)Update.abort();otaUploadStarted=false;otaUploadOk=false;otaUploadError="Firmwareübertragung abgebrochen";if(otaExternalLockHeld){unlockExternalHttpServices();otaExternalLockHeld=false;}}
 }
-void WebUi::otaInstallTask(void*context){static_cast<WebUi*>(context)->otaInstallLatestWorker();vTaskDelete(nullptr);}
-void WebUi::otaInstallLatestWorker(){
-  // Let the web task deliver the HTTP 202 response before the OTA task can
-  // consume bandwidth or restart the controller.
-  vTaskDelay(pdMS_TO_TICKS(1500));
-  WiFiClientSecure tls;tls.setCACertBundle(GITHUB_TRUST_BUNDLE);HTTPClient h;h.setConnectTimeout(15000);h.setTimeout(45000);h.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-  if(!h.begin(tls,"https://github.com/zentrog/ESP32-Antennenschalter-Produkt/releases/latest/download/firmware-esp32dev.bin")){setOtaJobState(OTA_JOB_FAILED,"GitHub-Download konnte nicht vorbereitet werden");return;}
-  int code=h.GET();int32_t expected=h.getSize();if(code!=200||expected<512U*1024U||expected>3U*1024U*1024U){h.end();String msg="GitHub-Firmwaredownload fehlgeschlagen (HTTP "+String(code)+")";setOtaJobState(OTA_JOB_FAILED,msg.c_str());return;}
-  if(!Update.begin((size_t)expected)){h.end();setOtaJobState(OTA_JOB_FAILED,"Firmware passt nicht in die OTA-Partition");return;}
-  WiFiClient* stream=h.getStreamPtr();uint8_t buffer[1024];size_t written=0;uint32_t lastDataAt=millis();
-  while(written<(size_t)expected){
-    int available=stream->available();
-    if(available<=0){if(!h.connected()||millis()-lastDataAt>60000U)break;vTaskDelay(pdMS_TO_TICKS(1));continue;}
-    size_t requested=(size_t)available;if(requested>sizeof(buffer))requested=sizeof(buffer);int received=stream->readBytes(buffer,requested);
-    if(received<=0){vTaskDelay(pdMS_TO_TICKS(1));continue;}
-    size_t accepted=Update.write(buffer,(size_t)received);if(accepted!=(size_t)received)break;written+=accepted;lastDataAt=millis();vTaskDelay(pdMS_TO_TICKS(1));
-  }
-  h.end();
-  if(written!=(size_t)expected){Update.abort();setOtaJobState(OTA_JOB_FAILED,"Download unvollständig");return;}
-  if(!Update.end(true)){Update.abort();setOtaJobState(OTA_JOB_FAILED,"Firmware-Prüfung fehlgeschlagen");return;}
-  setOtaJobState(OTA_JOB_SUCCESS);delay(1200);ESP.restart();
-}
-void WebUi::apiOtaStatus(){uint8_t state;char error[sizeof(otaJobError)];portENTER_CRITICAL(&otaJobMux);state=otaJobState;strlcpy(error,otaJobError,sizeof(error));portEXIT_CRITICAL(&otaJobMux);JsonDocument r;r["state"]=state==OTA_JOB_RUNNING?"running":(state==OTA_JOB_SUCCESS?"success":(state==OTA_JOB_FAILED?"error":"idle"));if(state==OTA_JOB_FAILED)r["error"]=error;r["firmware"]=ANTCTRL_VERSION;sendJson(r);}
 void WebUi::otaRollback(){
   if(!updateBackupDownloaded){server_.send(409,"text/plain; charset=utf-8",c_->language=="en"?"Download the configuration backup before rollback":"Bitte zuerst die Konfigurationssicherung herunterladen");return;}
   if(!c_->features.ota){server_.send(404,"text/plain",c_->language=="en"?"OTA disabled":"OTA deaktiviert");return;}
