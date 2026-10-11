@@ -461,6 +461,10 @@ RuntimeState Storage::loadState(){
   if(!s.activeSelections.empty())s.activeAntennaId=s.activeSelections[0].functionId;
   s.polarization=state_.isKey("pol")?state_.getString("pol",""):String();s.motorRunning=state_.getBool("motor",false);s.stormMode=state_.getBool("storm",false);return s;
 }
+bool Storage::loadActiveRoutes(std::vector<String>& ids){
+  ids.clear();if(!state_.isKey("activeRoutes"))return false;String js=state_.getString("activeRoutes","");JsonDocument d;if(!js.isEmpty()&&deserializeJson(d,js))return false;for(JsonVariantConst v:d.as<JsonArrayConst>()){String id=String((const char*)(v|""));if(!id.isEmpty())ids.push_back(id);}return true;
+}
+void Storage::saveActiveRoutes(const std::vector<String>& ids){JsonDocument d;auto a=d.to<JsonArray>();for(const auto&id:ids)if(!id.isEmpty())a.add(id);String js;serializeJson(d,js);state_.putString("activeRoutes",js);}
 void Storage::saveSelection(const String&group,const String&id){
   JsonDocument d;String js=state_.isKey("sel")?state_.getString("sel",""):String();if(js.length())deserializeJson(d,js);JsonObject o=d.is<JsonObject>()?d.as<JsonObject>():d.to<JsonObject>();
   if(id.isEmpty())o.remove(group);else o[group]=id;String out;serializeJson(d,out);state_.putString("sel",out);

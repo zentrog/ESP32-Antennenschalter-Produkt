@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.35 / API 8, lokaler Buildkandidat. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback. Hardwareprüfung und Veröffentlichung sind für diesen Stand noch nicht bestätigt.
+Arbeitsstand: Firmware 1.8.36 / API 8, auf dem Test-ESP geprüft; Veröffentlichung noch offen. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback. Unabhängige Signalwege können gleichzeitig aktiv sein; der Master speichert die aktiven Signalweg-IDs dauerhaft, damit kombinierte Relaiszustände nicht als zusätzliche Signalwege fehlinterpretiert werden.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Sie enthalten die sieben öffentlichen NewsTicker-Standardquellen; nur n-tv ist standardmäßig aktiviert. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
@@ -20,6 +20,8 @@ Die nicht benötigten Alias-Routen `/ext/status` und `/ext/execute` sowie der Sc
 **Ortswetter anzeigen** und **Blitzwarnung aktiv** sind getrennte Einstellungen unter **Konfigurieren → Dienste**. Die PLZ unter **Geräteidentität** ist der gemeinsame Standort. Bei abgeschalteter Wetteranzeige stoppt der Wettervorhersageabruf; eine aktive Blitzwarnung kann die PLZ-Koordinaten unabhängig davon auflösen. Konfigurationen ohne `weather.enabled` behalten den bisherigen Standard bei und aktivieren das Ortswetter.
 
 Die Verbunderkennung nutzt UDP und den Marker ANTCTRL3. Controller können als Master und Follower zugeordnet werden. Der konfigurierte Master bleibt dauerhaft; ein geeigneter Follower kann vorübergehend koordinieren. Der Code enthält Zustände für Rückkehr und Wiederübernahme durch den permanenten Master.
+
+Ab Firmware 1.8.36 können mehrere unabhängige Funkwege gleichzeitig aktiv sein. Ein Funkgerät bleibt auf höchstens einem aktiven Weg. Gemeinsame Schaltgruppen mit unterschiedlichen Relaisfunktionen sowie ausdrücklich exklusive Anlagenteile verhindern weiterhin den Parallelbetrieb. Beim Wechsel werden nur tatsächlich kollidierende Wege abgeschaltet; unabhängige Wege bleiben eingeschaltet. Bei einem fehlgeschlagenen Schaltversuch werden nur die betroffenen Relaisgruppen auf AUS gesetzt.
 
 ## Peer-Status in der Bedienoberfläche
 Der Master kann einen Peer beim kurzen Snapshot-Timeout weiterhin als online führen, aber ohne dessen Geräte- und Funktionsdaten liefern. Der Browser verwendet in diesem Fall den letzten bekannten Snapshot nur zur Anzeige und sperrt Schaltaktionen für diesen Peer, bis ein vollständiger Snapshot bestätigt wurde. Damit bleibt das Bedienlayout stabil, ohne einen veralteten Gerätezustand als schaltbar auszugeben.

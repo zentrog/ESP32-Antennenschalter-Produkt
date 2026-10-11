@@ -14,6 +14,7 @@
 #include <freertos/FreeRTOS.h>
 #include <sys/stat.h>
 #include <cstring>
+#include <algorithm>
 #include <vector>
 
 static const char* PREUPDATE_LOCAL="/preupdate-local.json";
@@ -277,7 +278,7 @@ static bool federationPeerRequestOk(WebServer&server,LocalConfig*c,FederationSer
 }
 
 void WebUi::begin(LocalConfig*c,SharedConfig*s,Storage*st,RelayEngine*r,TimeService*t,FederationService*f,NewsService*n,WeatherService*weather,WifiManager*w,bool rec){
-  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;if(!recovery_)removeBundledUiFromLittleFs();recovery_?setupRoutes():routes();server_.begin();}
+  const char* hdrs[]={"X-Ant-Controller","X-Ant-System","X-Ant-From","If-None-Match","Accept-Encoding"};server_.collectHeaders(hdrs,5);c_=c;s_=s;store_=st;rel_=r;time_=t;fed_=f;news_=n;weather_=weather;wifiMgr_=w;recovery_=rec;activeRouteStateKnown_=store_&&store_->loadActiveRoutes(activeRouteIds_);if(!recovery_)removeBundledUiFromLittleFs();recovery_?setupRoutes():routes();server_.begin();}
 void WebUi::loop(){server_.handleClient();if(otaRestartPending&&(int32_t)(millis()-otaRestartAt)>=0){otaRestartPending=false;ESP.restart();}}
 bool WebUi::auth(bool){const SecurityConfig&sec=s_?s_->security:c_->security;if(!sec.adminAuthEnabled)return true;if(server_.authenticate(sec.adminUser.c_str(),sec.adminPassword.c_str()))return true;server_.requestAuthentication();return false;}
 void WebUi::sendJson(JsonDocument&d,int code){String x;serializeJson(d,x);server_.send(code,"application/json; charset=utf-8",x);}
@@ -539,7 +540,7 @@ void WebUi::apiRouteActivate(){
  if(route->deviceKeys.size()<2){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=c_->language=="en"?"Signal path needs at least two system devices":"Signalweg benötigt mindestens zwei Anlagenteile";sendJson(r,409);return;}
 
  struct Req{String controllerId;String functionId;String group;};
- std::vector<Req> reqs;std::vector<String> cacheIds,cacheBodies,nodeIds,routeNodeIds,exclusiveKeys,exclusiveNames,routeSeenKeys,routeCategories;std::vector<std::vector<String>> knownBands;String error;auto peers=fed_->peers();
+  std::vector<Req> reqs;std::vector<String> cacheIds,cacheBodies,nodeIds,routeNodeIds,exclusiveKeys,routeSeenKeys,routeCategories;std::vector<std::vector<String>> knownBands;String error;auto peers=fed_->peers();
  auto peerById=[&](const String&cid)->PeerInfo*{for(auto&p:peers)if(p.controllerId==cid&&fed_->sameSystem(p))return &p;return nullptr;};
  auto remoteBody=[&](const String&cid,String&body)->bool{
   for(size_t i=0;i<cacheIds.size();++i)if(cacheIds[i]==cid){body=cacheBodies[i];return true;}
@@ -562,12 +563,12 @@ void WebUi::apiRouteActivate(){
   addRouteNode(cid);
   if(cid==c_->controllerId){
    const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev){error=c_->language=="en"?"System device referenced by signal path is missing":"Ein im Signalweg verwendetes Anlagenteil fehlt";break;}routeCategories.push_back(dev->category);
-   if(!dev->bands.empty())knownBands.push_back(dev->bands);if(dev->exclusive){exclusiveKeys.push_back(key);exclusiveNames.push_back(dev->name);}
+    if(!dev->bands.empty())knownBands.push_back(dev->bands);if(dev->exclusive)exclusiveKeys.push_back(key);
    for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(!f){error=c_->language=="en"?"System device references a missing switching function":"Anlagenteil verweist auf eine fehlende Schaltfunktion";break;}if(f->type==FunctionType::Antenna&&!addReq(cid,f->id,f->group.isEmpty()?String("ANT"):f->group))break;}
    if(!error.isEmpty())break;
   }else{
    String body;if(!remoteBody(cid,body))break;JsonDocument rd;if(deserializeJson(rd,body)){error=c_->language=="en"?"Invalid controller state received":"Ungültiger Steuergerätezustand empfangen";break;}
-   bool devFound=false;for(JsonObjectConst dev:rd["devices"].as<JsonArrayConst>()){if(String((const char*)(dev["id"]|""))!=did)continue;devFound=true;routeCategories.push_back(String((const char*)(dev["category"]|"other")));addBands(dev["bands"]);if(dev["exclusive"]|false){exclusiveKeys.push_back(key);exclusiveNames.push_back(String((const char*)(dev["name"]|did.c_str())));}for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));bool fnFound=false;String type,group;for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid){fnFound=true;type=String((const char*)(fn["type"]|""));group=String((const char*)(fn["group"]|"ANT"));break;}if(!fnFound){error=c_->language=="en"?"System device references a missing switching function":"Anlagenteil verweist auf eine fehlende Schaltfunktion";break;}if(type=="antenna"&&!addReq(cid,fid,group))break;}break;}
+   bool devFound=false;for(JsonObjectConst dev:rd["devices"].as<JsonArrayConst>()){if(String((const char*)(dev["id"]|""))!=did)continue;devFound=true;routeCategories.push_back(String((const char*)(dev["category"]|"other")));addBands(dev["bands"]);if(dev["exclusive"]|false)exclusiveKeys.push_back(key);for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));bool fnFound=false;String type,group;for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid){fnFound=true;type=String((const char*)(fn["type"]|""));group=String((const char*)(fn["group"]|"ANT"));break;}if(!fnFound){error=c_->language=="en"?"System device references a missing switching function":"Anlagenteil verweist auf eine fehlende Schaltfunktion";break;}if(type=="antenna"&&!addReq(cid,fid,group))break;}break;}
    if(!devFound&&error.isEmpty())error=c_->language=="en"?"System device referenced by signal path is missing":"Ein im Signalweg verwendetes Anlagenteil fehlt";if(!error.isEmpty())break;
   }
  }
@@ -577,51 +578,35 @@ void WebUi::apiRouteActivate(){
 
  auto containsKey=[](const std::vector<String>&v,const String&key){for(const auto&x:v)if(x==key)return true;return false;};
  auto quietRemoteBody=[&](const String&cid,String&body)->bool{for(size_t i=0;i<cacheIds.size();++i)if(cacheIds[i]==cid){body=cacheBodies[i];return true;}PeerInfo*p=peerById(cid);if(!p||!p->online)return false;if(!fed_->fetchRemoteSnapshot(*p,body))return false;cacheIds.push_back(cid);cacheBodies.push_back(body);return true;};
- auto routeActiveNow=[&](const RouteConfig&rr)->bool{bool hasPersistent=false;for(const auto&key:rr.deviceKeys){String cid,did;if(!splitKey(key,cid,did))return false;if(cid==c_->controllerId){const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev)return false;for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(f&&f->type==FunctionType::Antenna){hasPersistent=true;if(!rel_->isFunctionActive(f->id))return false;}}}else{String body;if(!quietRemoteBody(cid,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;JsonObjectConst found;for(JsonObjectConst dev:rd["devices"].as<JsonArrayConst>())if(String((const char*)(dev["id"]|""))==did){found=dev;break;}if(found.isNull())return false;for(JsonVariantConst fv:found["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid&&String((const char*)(fn["type"]|""))=="antenna"){hasPersistent=true;String group=String((const char*)(fn["group"]|"ANT"));const char*active=rd["activeByGroup"][group.c_str()];if(!active||String(active)!=fid)return false;break;}}}}return hasPersistent;};
- for(size_t i=0;i<exclusiveKeys.size()&&error.isEmpty();++i){for(const auto&other:s_->routes){if(other.id==route->id||other.enabled==false||!containsKey(other.deviceKeys,exclusiveKeys[i]))continue;if(routeActiveNow(other)){error=(c_->language=="en"?"Exclusive system device is already used by active signal path: ":"Exklusives Anlagenteil wird bereits von einem aktiven Signalweg verwendet: ")+exclusiveNames[i];break;}}}
- if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
-
- // Vor dem Einschalten eines Signalwegs müssen alle anderen Wege vollständig AUS sein.
- // Die Oberfläche schaltet den bisherigen Weg zuerst ab; diese Prüfung schützt auch
- // direkte API-Aufrufe und verhindert parallele Verbindungen aus verschiedenen Gruppen.
- auto collectRouteReqs=[&](const RouteConfig&rr,std::vector<Req>&out)->bool{
-  out.clear();for(const auto&key:rr.deviceKeys){String cid,did;if(!splitKey(key,cid,did))return false;
-   if(cid==c_->controllerId){const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev)return false;for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(f&&f->type==FunctionType::Antenna){Req q{cid,f->id,f->group.isEmpty()?String("ANT"):f->group};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);}}}
-   else{String body;if(!quietRemoteBody(cid,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;JsonObjectConst dev;for(JsonObjectConst d:rd["devices"].as<JsonArrayConst>())if(String((const char*)(d["id"]|""))==did){dev=d;break;}if(dev.isNull())return false;for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid&&String((const char*)(fn["type"]|""))=="antenna"){Req q{cid,fid,String((const char*)(fn["group"]|"ANT"))};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);break;}}}
+  // Andere Signalwege dürfen aktiv bleiben, wenn sie weder dieselbe Funkquelle
+  // noch eine widersprüchliche Schaltgruppe oder exklusive Anlagenteile verwenden.
+  auto collectRouteReqs=[&](const RouteConfig&rr,std::vector<Req>&out,std::vector<String>&exclusive)->bool{
+   out.clear();exclusive.clear();for(const auto&key:rr.deviceKeys){String cid,did;if(!splitKey(key,cid,did))return false;
+    if(cid==c_->controllerId){const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev)return false;if(dev->exclusive)exclusive.push_back(key);for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(f&&f->type==FunctionType::Antenna){Req q{cid,f->id,f->group.isEmpty()?String("ANT"):f->group};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);}}}
+    else{String body;if(!quietRemoteBody(cid,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;JsonObjectConst dev;for(JsonObjectConst d:rd["devices"].as<JsonArrayConst>())if(String((const char*)(d["id"]|""))==did){dev=d;break;}if(dev.isNull())return false;if(dev["exclusive"]|false)exclusive.push_back(key);for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid&&String((const char*)(fn["type"]|""))=="antenna"){Req q{cid,fid,String((const char*)(fn["group"]|"ANT"))};bool have=false;for(const auto&z:out)if(z.controllerId==q.controllerId&&z.group==q.group&&z.functionId==q.functionId){have=true;break;}if(!have)out.push_back(q);break;}}}
   }return true;};
- for(const auto&other:s_->routes){
-  if(!error.isEmpty())break;
-  if(other.id==route->id||other.enabled==false)continue;
-  std::vector<Req>otherReqs;
-  if(!collectRouteReqs(other,otherReqs)){
-   error=c_->language=="en"?"Cannot verify that every other signal path is off; check controller connectivity":"Es kann nicht sicher geprüft werden, ob alle anderen Signalwege AUS sind. Bitte Steuergeräteverbindung prüfen";
-   break;
-  }
-  for(const auto&otherReq:otherReqs){
-   bool active=false;
-   if(otherReq.controllerId==c_->controllerId)active=rel_->isFunctionActive(otherReq.functionId);
-   else{
-    String body;
-    if(!quietRemoteBody(otherReq.controllerId,body)){
-     error=c_->language=="en"?"Cannot verify that every other signal path is off; check controller connectivity":"Es kann nicht sicher geprüft werden, ob alle anderen Signalwege AUS sind. Bitte Steuergeräteverbindung prüfen";
-     break;
+  auto routeIdKnownActive=[&](const String&id){for(const auto&x:activeRouteIds_)if(x==id)return true;return false;};
+  if(!activeRouteStateKnown_){activeRouteIds_.clear();for(const auto&candidate:s_->routes){if(!candidate.enabled)continue;std::vector<Req>cr;std::vector<String>cx;if(!collectRouteReqs(candidate,cr,cx)||cr.empty())continue;bool full=true;for(const auto&q:cr){bool on=false;if(q.controllerId==c_->controllerId)on=rel_->isFunctionActive(q.functionId);else{String body;if(!quietRemoteBody(q.controllerId,body)){full=false;break;}JsonDocument rd;if(deserializeJson(rd,body)){full=false;break;}const char*v=rd["activeByGroup"][q.group.c_str()];on=v&&String(v)==q.functionId;}if(!on){full=false;break;}}if(full){activeRouteIds_.push_back(candidate.id);break;}}activeRouteStateKnown_=true;store_->saveActiveRoutes(activeRouteIds_);}
+  std::vector<Req>sharedActiveReqs;
+  for(const auto&other:s_->routes){
+   if(!error.isEmpty())break;
+    if(other.id==route->id||other.enabled==false||!routeIdKnownActive(other.id))continue;
+    bool sameRadio=!other.deviceKeys.empty()&&!route->deviceKeys.empty()&&!routeCategories.empty()&&routeCategories.front()=="radio"&&other.deviceKeys.front()==route->deviceKeys.front();
+    bool sameController=false;for(const auto&key:other.deviceKeys){String cid,did;if(!splitKey(key,cid,did))continue;if(containsKey(routeNodeIds,cid)){sameController=true;break;}}
+    if(!sameRadio&&!sameController)continue;
+    std::vector<Req>ors;std::vector<String>otherExclusive;
+    if(!collectRouteReqs(other,ors,otherExclusive)){error=c_->language=="en"?"Cannot verify a potentially conflicting signal path; check controller connectivity":"Ein möglicherweise kollidierender Signalweg kann nicht geprüft werden. Bitte Steuergeräteverbindung prüfen";break;}
+    bool otherAnyActive=false,otherFullyActive=!ors.empty();std::vector<bool>otherReqActive(ors.size(),false);
+    for(size_t oi=0;oi<ors.size();++oi){const auto&ar=ors[oi];bool active=false;if(ar.controllerId==c_->controllerId)active=rel_->isFunctionActive(ar.functionId);else{String body;if(!quietRemoteBody(ar.controllerId,body)){error=c_->language=="en"?"Cannot verify a potentially conflicting signal path":"Ein möglicherweise kollidierender Signalweg kann nicht geprüft werden";break;}JsonDocument rd;if(deserializeJson(rd,body)){error=c_->language=="en"?"Invalid state received while checking another signal path":"Ungültiger Zustand beim Prüfen eines anderen Signalwegs";break;}const char*activeId=rd["activeByGroup"][ar.group.c_str()];active=activeId&&String(activeId)==ar.functionId;}otherReqActive[oi]=active;otherAnyActive|=active;otherFullyActive&=active;}
+    if(!error.isEmpty())break;if(!otherAnyActive)continue;
+    if(sameRadio&&otherFullyActive){error=c_->language=="en"?"This radio is already connected by another active signal path":"Dieses Funkgerät ist bereits mit einem anderen aktiven Signalweg verbunden";break;}
+    bool exclusiveCollision=false;for(const auto&key:exclusiveKeys)if(containsKey(other.deviceKeys,key))exclusiveCollision=true;for(const auto&key:otherExclusive)if(containsKey(routeSeenKeys,key))exclusiveCollision=true;
+    if(exclusiveCollision){error=c_->language=="en"?"An exclusive system device is already used by another active signal path":"Ein exklusives Anlagenteil wird bereits von einem anderen aktiven Signalweg verwendet";break;}
+    for(const auto&nr:reqs)for(size_t oi=0;oi<ors.size();++oi){const auto&ar=ors[oi];if(!otherReqActive[oi]||nr.controllerId!=ar.controllerId||nr.group!=ar.group)continue;
+     if(nr.functionId==ar.functionId){bool known=false;for(const auto&saved:sharedActiveReqs)if(saved.controllerId==nr.controllerId&&saved.group==nr.group&&saved.functionId==nr.functionId)known=true;if(!known)sharedActiveReqs.push_back(nr);}
+     else{error=(c_->language=="en"?"Switching group is already occupied by active signal path ":"Schaltgruppe ist bereits durch aktiven Signalweg belegt: ")+(other.label.isEmpty()?other.id:other.label)+" · "+nr.group;break;}
     }
-    JsonDocument rd;
-    if(deserializeJson(rd,body)){
-     error=c_->language=="en"?"Cannot verify the state of another signal path":"Der Zustand eines anderen Signalwegs kann nicht sicher geprüft werden";
-     break;
-    }
-    const char*activeId=rd["activeByGroup"][otherReq.group.c_str()];
-    active=activeId&&String(activeId)==otherReq.functionId;
-   }
-   if(active){
-    error=c_->language=="en"?"Another signal path is active. Only one radio-to-antenna connection may be active at a time":"Ein anderer Signalweg ist aktiv. Es darf immer nur eine Verbindung von einem Funkgerät zu einer Antenne aktiv sein";
-    break;
-   }
   }
- }
- if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
- for(const auto&other:s_->routes){if(!error.isEmpty())break;if(other.id==route->id||other.enabled==false||!routeActiveNow(other))continue;std::vector<Req>ors;if(!collectRouteReqs(other,ors))continue;for(const auto&nr:reqs){for(const auto&ar:ors){if(nr.controllerId==ar.controllerId&&nr.group==ar.group&&nr.functionId!=ar.functionId){error=(c_->language=="en"?"Switching group is already occupied by active signal path ":"Schaltgruppe ist bereits durch aktiven Signalweg belegt: ")+(other.label.isEmpty()?other.id:other.label)+" · "+nr.group;break;}}if(!error.isEmpty())break;}}
  if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}
 
  String bandStatus="unknown";std::vector<String>common;if(knownBands.size()>=2){common=knownBands[0];for(size_t i=1;i<knownBands.size();++i){std::vector<String>next;for(const auto&b:common){bool found=false;for(const auto&x:knownBands[i])if(x==b){found=true;break;}if(found)next.push_back(b);}common=next;}bandStatus=common.empty()?"conflict":"ok";}
@@ -636,10 +621,11 @@ void WebUi::apiRouteActivate(){
 
  auto remoteActiveFromBody=[&](const String&body,const Req&r)->bool{JsonDocument d;if(deserializeJson(d,body))return false;const char*v=d["activeByGroup"][r.group.c_str()];return v&&String(v)==r.functionId;};
  auto cachedActive=[&](const Req&r)->bool{if(r.controllerId==c_->controllerId)return rel_->isFunctionActive(r.functionId);String body;if(!remoteBody(r.controllerId,body))return false;return remoteActiveFromBody(body,r);};
- auto safeOff=[&](){
-  for(const auto&cid:nodeIds){if(cid==c_->controllerId){rel_->emergencyOff();continue;}PeerInfo*p=peerById(cid);if(!p||!p->online)continue;HTTPClient h;h.setTimeout(1200);h.begin("http://"+p->ip+"/api/federation/stop");fed_->addSystemHeaders(h);h.POST("");h.end();}
-
- };
+  auto safeOff=[&](){
+   for(const auto&r:reqs){bool preserve=false;for(const auto&saved:sharedActiveReqs)if(saved.controllerId==r.controllerId&&saved.group==r.group&&saved.functionId==r.functionId)preserve=true;if(preserve)continue;
+    if(r.controllerId==c_->controllerId){String ignored;rel_->clearGroup(r.group,ignored);continue;}PeerInfo*p=peerById(r.controllerId);if(!p||!p->online)continue;HTTPClient h;h.setTimeout(1200);h.begin("http://"+p->ip+"/api/federation/group/off");fed_->addSystemHeaders(h);h.addHeader("Content-Type","application/json");JsonDocument q;q["group"]=r.group;String body;serializeJson(q,body);h.POST(body);h.end();
+   }
+  };
  int commands=0;bool switchingStarted=false;
  for(const auto&r:reqs){
   if(cachedActive(r))continue;String e;bool ok=false;switchingStarted=true;
@@ -653,6 +639,7 @@ void WebUi::apiRouteActivate(){
  std::vector<String>verifyIds,verifyBodies;auto freshRemote=[&](const String&cid,String&body)->bool{for(size_t i=0;i<verifyIds.size();++i)if(verifyIds[i]==cid){body=verifyBodies[i];return true;}PeerInfo*p=peerById(cid);if(!p||!p->online||!fed_->fetchRemoteSnapshot(*p,body))return false;verifyIds.push_back(cid);verifyBodies.push_back(body);return true;};
  for(const auto&r:reqs){bool active=false;if(r.controllerId==c_->controllerId)active=rel_->isFunctionActive(r.functionId);else{String body;active=freshRemote(r.controllerId,body)&&remoteActiveFromBody(body,r);}if(!active){error=c_->language=="en"?"A controller did not confirm the requested switching state":"Ein Steuergerät hat den angeforderten Schaltzustand nicht bestätigt";break;}}
  if(!error.isEmpty()){safeOff();error+=(c_->language=="en"?". Required controllers were switched to safe OFF.":". Die beteiligten Steuergeräte wurden sicher auf AUS gesetzt.");store_->addError("ROUTE_VERIFY",error);JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["safeOff"]=true;r["bandStatus"]=bandStatus;r["error"]=error;sendJson(r,409);return;}
+ if(!routeIdKnownActive(route->id))activeRouteIds_.push_back(route->id);activeRouteStateKnown_=true;store_->saveActiveRoutes(activeRouteIds_);
  JsonDocument out;out["ok"]=true;out["confirmed"]=true;out["routeId"]=route->id;out["label"]=route->label;out["commands"]=commands;out["bandStatus"]=bandStatus;auto ba=out["commonBands"].to<JsonArray>();for(const auto&b:common)ba.add(b);auto na=out["controllers"].to<JsonArray>();for(const auto&cid:nodeIds)na.add(cid);sendJson(out);
 }
 
@@ -679,11 +666,14 @@ void WebUi::apiRouteDeactivate(){
  auto addReq=[](std::vector<Req>&out,const Req&r){for(const auto&x:out)if(x.controllerId==r.controllerId&&x.group==r.group){return x.functionId==r.functionId;}out.push_back(r);return true;};
  auto collect=[&](const RouteConfig&rr,std::vector<Req>&out)->bool{out.clear();for(const auto&key:rr.deviceKeys){String cid,did;if(!splitKey(key,cid,did))return false;if(cid==c_->controllerId){const LogicalDeviceConfig*dev=nullptr;for(const auto&d:c_->devices)if(d.enabled&&d.id==did){dev=&d;break;}if(!dev)return false;for(const auto&fid:dev->functionIds){const FunctionConfig*f=nullptr;for(const auto&x:c_->functions)if(x.enabled&&x.visible&&x.id==fid){f=&x;break;}if(f&&f->type==FunctionType::Antenna){Req q{cid,f->id,f->group.isEmpty()?String("ANT"):f->group};if(!addReq(out,q))return false;}}}else{String body;if(!remoteBody(cid,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;JsonObjectConst dev;for(JsonObjectConst d:rd["devices"].as<JsonArrayConst>())if(String((const char*)(d["id"]|""))==did){dev=d;break;}if(dev.isNull())return false;for(JsonVariantConst fv:dev["functionIds"].as<JsonArrayConst>()){String fid=String((const char*)(fv|""));for(JsonObjectConst fn:rd["functions"].as<JsonArrayConst>())if(String((const char*)(fn["id"]|""))==fid&&String((const char*)(fn["type"]|""))=="antenna"){Req q{cid,fid,String((const char*)(fn["group"]|"ANT"))};if(!addReq(out,q))return false;break;}}}}return !out.empty();};
  auto active=[&](const std::vector<Req>&rs)->bool{if(rs.empty())return false;for(const auto&r:rs){if(r.controllerId==c_->controllerId){if(!rel_->isFunctionActive(r.functionId))return false;}else{String body;if(!remoteBody(r.controllerId,body))return false;JsonDocument rd;if(deserializeJson(rd,body))return false;const char*v=rd["activeByGroup"][r.group.c_str()];if(!v||String(v)!=r.functionId)return false;}}return true;};
- std::vector<Req>target;if(!collect(*route,target)){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=c_->language=="en"?"Signal path cannot be resolved":"Signalweg kann nicht vollständig aufgelöst werden";sendJson(r,409);return;}std::vector<bool>keep(target.size(),false);for(const auto&other:s_->routes){if(other.id==route->id||other.enabled==false)continue;std::vector<Req>ors;if(!collect(other,ors)||!active(ors))continue;for(size_t i=0;i<target.size();++i)for(const auto&o:ors)if(o.controllerId==target[i].controllerId&&o.group==target[i].group&&o.functionId==target[i].functionId)keep[i]=true;}
+ auto routeIdKnownActive=[&](const String&id){for(const auto&x:activeRouteIds_)if(x==id)return true;return false;};
+ std::vector<Req>target;if(!collect(*route,target)){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=c_->language=="en"?"Signal path cannot be resolved":"Signalweg kann nicht vollständig aufgelöst werden";sendJson(r,409);return;}
+ if(!activeRouteStateKnown_){activeRouteIds_.clear();for(const auto&candidate:s_->routes){if(!candidate.enabled)continue;std::vector<Req>cr;if(!collect(candidate,cr)||!active(cr))continue;activeRouteIds_.push_back(candidate.id);break;}activeRouteStateKnown_=true;store_->saveActiveRoutes(activeRouteIds_);}
+ std::vector<bool>keep(target.size(),false);for(const auto&other:s_->routes){if(other.id==route->id||other.enabled==false||!routeIdKnownActive(other.id))continue;std::vector<Req>ors;if(!collect(other,ors)||!active(ors))continue;for(size_t i=0;i<target.size();++i)for(const auto&o:ors)if(o.controllerId==target[i].controllerId&&o.group==target[i].group&&o.functionId==target[i].functionId)keep[i]=true;}
  size_t releasable=0;for(bool x:keep)if(!x)releasable++;if(!releasable){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["shared"]=true;r["error"]=c_->language=="en"?"This signal path shares all persistent switching states with another active path and cannot be electrically deactivated separately":"Dieser Signalweg teilt alle dauerhaften Schaltzustände mit einem anderen aktiven Weg und kann elektrisch nicht separat deaktiviert werden";sendJson(r,409);return;}
  String error;std::vector<String>checked;for(size_t i=0;i<target.size()&&error.isEmpty();++i){if(keep[i])continue;bool done=false;for(const auto&x:checked)if(x==target[i].controllerId)done=true;if(done)continue;checked.push_back(target[i].controllerId);if(target[i].controllerId==c_->controllerId){if(rel_->txActive())error=c_->language=="en"?"Deactivation blocked: TX active":"Deaktivieren gesperrt: TX ist aktiv";else if(rel_->state().motorRunning)error=c_->language=="en"?"Deactivation blocked: timed action running":"Deaktivieren gesperrt: Zeitaktion läuft";}else{String body;if(!remoteBody(target[i].controllerId,body)){error=c_->language=="en"?"Controller offline":"Steuergerät nicht erreichbar";break;}JsonDocument rd;if(deserializeJson(rd,body)){error=c_->language=="en"?"Invalid controller state":"Ungültiger Steuergerätezustand";break;}if(rd["txActive"]|false)error=c_->language=="en"?"Deactivation blocked: TX active on required controller":"Deaktivieren gesperrt: TX ist auf einem benötigten Steuergerät aktiv";else if(rd["motorRunning"]|false)error=c_->language=="en"?"Deactivation blocked: timed action running on required controller":"Deaktivieren gesperrt: Auf einem benötigten Steuergerät läuft eine Zeitaktion";}}
  if(!error.isEmpty()){JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}int commands=0;for(size_t i=0;i<target.size();++i){if(keep[i])continue;String e;bool ok=false;if(target[i].controllerId==c_->controllerId)ok=rel_->clearGroup(target[i].group,e);else{PeerInfo*p=peerById(target[i].controllerId);if(p&&p->online){HTTPClient h;h.setTimeout(1500);h.begin("http://"+p->ip+"/api/federation/group/off");fed_->addSystemHeaders(h);h.addHeader("Content-Type","application/json");JsonDocument q;q["group"]=target[i].group;String b;serializeJson(q,b);int code=h.POST(b);String resp=h.getString();h.end();ok=code>=200&&code<300;if(!ok){JsonDocument rd;if(!deserializeJson(rd,resp))e=String((const char*)(rd["error"]|""));}}}if(!ok){error=(c_->language=="en"?"Signal path could not be completely deactivated: ":"Signalweg konnte nicht vollständig deaktiviert werden: ")+e;break;}commands++;}
- if(!error.isEmpty()){store_->addError("ROUTE_DEACTIVATE",error);JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}JsonDocument out;out["ok"]=true;out["confirmed"]=true;out["routeId"]=route->id;out["commands"]=commands;int sharedKept=0;for(bool x:keep)if(x)sharedKept++;out["sharedKept"]=sharedKept;sendJson(out);
+ if(!error.isEmpty()){store_->addError("ROUTE_DEACTIVATE",error);JsonDocument r;r["ok"]=false;r["confirmed"]=false;r["error"]=error;sendJson(r,409);return;}activeRouteIds_.erase(std::remove(activeRouteIds_.begin(),activeRouteIds_.end(),route->id),activeRouteIds_.end());store_->saveActiveRoutes(activeRouteIds_);JsonDocument out;out["ok"]=true;out["confirmed"]=true;out["routeId"]=route->id;out["commands"]=commands;int sharedKept=0;for(bool x:keep)if(x)sharedKept++;out["sharedKept"]=sharedKept;sendJson(out);
 }
 
 void WebUi::apiExecute(){
@@ -697,7 +687,7 @@ void WebUi::apiPeers(){
 }
 void WebUi::apiCombined(){
  JsonDocument d;d["firmwareVersion"]=ANTCTRL_VERSION;d["language"]=c_->language;d["localTime"]=time_->local();d["utcTime"]=time_->utc();d["showLocal"]=c_->time.showLocal;d["showUtc"]=c_->time.showUtc;d["showDate"]=c_->time.showDate;
- auto sys=d["system"].to<JsonObject>();sys["role"]=c_->federation.role;sys["assigned"]=!fed_->isUnassigned();sys["systemName"]=c_->federation.systemName;sys["systemHost"]=fed_->systemHost();sys["systemUrl"]=fed_->systemHost().isEmpty()?String():String("http://")+fed_->systemHost()+".local/";sys["coordinator"]=fed_->isCoordinator();sys["temporaryCoordinator"]=fed_->isTemporaryCoordinator();sys["reclaiming"]=fed_->reclaiming();sys["permanentMasterOnline"]=fed_->permanentMasterOnline();sys["masterOnline"]=fed_->masterOnline();sys["masterIp"]=fed_->masterIp();sys["admissionMode"]=c_->federation.admissionMode;sys["stormMode"]=s_->systemStormMode;
+ auto sys=d["system"].to<JsonObject>();sys["role"]=c_->federation.role;sys["assigned"]=!fed_->isUnassigned();sys["systemName"]=c_->federation.systemName;sys["systemHost"]=fed_->systemHost();sys["systemUrl"]=fed_->systemHost().isEmpty()?String():String("http://")+fed_->systemHost()+".local/";sys["coordinator"]=fed_->isCoordinator();sys["temporaryCoordinator"]=fed_->isTemporaryCoordinator();sys["reclaiming"]=fed_->reclaiming();sys["permanentMasterOnline"]=fed_->permanentMasterOnline();sys["masterOnline"]=fed_->masterOnline();sys["masterIp"]=fed_->masterIp();sys["admissionMode"]=c_->federation.admissionMode;sys["stormMode"]=s_->systemStormMode;sys["activeRouteStateKnown"]=activeRouteStateKnown_;auto activeRoutes=sys["activeRouteIds"].to<JsonArray>();for(const auto&id:activeRouteIds_)activeRoutes.add(id);
  JsonArray a=d["controllers"].to<JsonArray>();
  auto so=a.add<JsonObject>();so["controllerId"]=c_->controllerId;so["name"]=c_->identity.deviceName;so["displayName"]=controllerDisplayName(c_->identity.deviceName,c_->federation.role,c_->federation.failoverPriority);so["callSign"]=c_->identity.callSign;so["description"]=c_->identity.description;so["location"]=c_->identity.location;so["ip"]=WiFi.localIP().toString();so["self"]=true;so["online"]=true;so["federationEnabled"]=c_->federation.enabled;so["firmware"]=ANTCTRL_VERSION;so["boardProfile"]=c_->boardProfile;so["role"]=c_->federation.role;so["coordinator"]=fed_->isCoordinator();so["txActive"]=rel_->txActive();auto&st=rel_->state();so["activeAntenna"]=st.activeAntennaId;auto sabg=so["activeByGroup"].to<JsonObject>();for(const auto&sel:st.activeSelections)sabg[sel.group]=sel.functionId;so["polarization"]=st.polarization;so["motorRunning"]=st.motorRunning;so["motorFunctionId"]=st.motorFunctionId;so["motorRemainingMs"]=rel_->motorRemainingMs();so["stormMode"]=st.stormMode;auto fs=so["functions"].to<JsonArray>();for(auto&x:c_->functions)if(x.enabled&&x.visible){auto q=fs.add<JsonObject>();q["id"]=x.id;q["label"]=x.label;q["type"]=x.type==FunctionType::Timed?"timed":(x.type==FunctionType::Storm?"storm":(x.type==FunctionType::Toggle?"toggle":"antenna"));q["requires"]=x.requiresFunctionId;q["group"]=x.group;q["stateToken"]=x.stateToken;q["durationMs"]=x.durationMs;bool configured=x.type==FunctionType::Storm;for(const auto&r:c_->relays)if(r.enabled&&r.id==x.relayId)configured=true;q["configured"]=configured;}auto ds=so["devices"].to<JsonArray>();for(const auto&x:c_->devices)if(x.enabled)deviceJson(ds.add<JsonObject>(),x);
  for(auto&p:fed_->peers())if(fed_->sameSystem(p)){auto o=a.add<JsonObject>();o["controllerId"]=p.controllerId;o["name"]=p.name;o["displayName"]=controllerDisplayName(p.name,p.role,p.failoverPriority);o["callSign"]=p.callSign;o["location"]=p.location;o["ip"]=p.ip;o["self"]=false;o["firmware"]=p.firmware;o["boardProfile"]=p.boardProfile;o["role"]=p.role;o["coordinator"]=p.coordinator;o["online"]=p.online;if(p.online){String js;if(fed_->fetchRemoteSnapshot(p,js,350)){JsonDocument rd;if(!deserializeJson(rd,js)){o["ip"]=String((const char*)(rd["ip"]|p.ip.c_str()));o["activeAntenna"]=rd["activeAntenna"];o["activeByGroup"].set(rd["activeByGroup"]);o["polarization"]=rd["polarization"];o["motorRunning"]=rd["motorRunning"];o["motorFunctionId"]=rd["motorFunctionId"];o["motorRemainingMs"]=rd["motorRemainingMs"];o["txActive"]=rd["txActive"];o["stormMode"]=rd["stormMode"];o["location"]=rd["location"];o["firmware"]=rd["firmwareVersion"];o["functions"].set(rd["functions"]);o["devices"].set(rd["devices"]);}}}}
@@ -810,7 +800,7 @@ void WebUi::otaRollback(){
 void WebUi::apiStop(){
  rel_->emergencyOff();JsonDocument r;r["scope"]=fed_->isCoordinator()?"system":"local";r["local"]=true;bool complete=true;auto nodes=r["nodes"].to<JsonArray>();
  if(fed_->isCoordinator())for(auto&p:fed_->peers())if(fed_->sameSystem(p)){auto n=nodes.add<JsonObject>();n["name"]=p.name;n["ip"]=p.ip;if(!p.online){n["ok"]=false;n["error"]=c_->language=="en"?"offline":"nicht erreichbar";complete=false;continue;}HTTPClient h;h.setTimeout(1500);h.begin("http://"+p.ip+"/api/federation/stop");fed_->addSystemHeaders(h);int code=h.POST("");String body=h.getString();h.end();bool ok=code>=200&&code<300;n["ok"]=ok;if(!ok){n["error"]="HTTP "+String(code);complete=false;}}
- r["ok"]=complete;r["complete"]=complete;sendJson(r);
+ r["ok"]=complete;r["complete"]=complete;if(complete){activeRouteIds_.clear();activeRouteStateKnown_=true;store_->saveActiveRoutes(activeRouteIds_);}sendJson(r);
 }
 void WebUi::apiFederationStop(){if(!federationRequestOk(server_,c_,fed_)){server_.send(403,"application/json","{\"ok\":false}");return;}rel_->emergencyOff();JsonDocument r;r["ok"]=true;r["local"]=true;sendJson(r);}
 void WebUi::apiSystemAdmission(){JsonDocument d;if(deserializeJson(d,server_.arg("plain"))){server_.send(400);return;}String mode=String((const char*)(d["mode"]|"")),e;bool ok=fed_->setAdmissionMode(mode,e);JsonDocument r;r["ok"]=ok;if(!ok)r["error"]=e;else r["mode"]=mode;sendJson(r,ok?200:409);}

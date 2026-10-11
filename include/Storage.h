@@ -16,6 +16,8 @@ class Storage {
   bool validate(const LocalConfig& c, String& err) const;
 
   RuntimeState loadState();
+  bool loadActiveRoutes(std::vector<String>& ids);
+  void saveActiveRoutes(const std::vector<String>& ids);
   void saveSelection(const String& group,const String& id);
   void clearSelections();
   void motorStart();
