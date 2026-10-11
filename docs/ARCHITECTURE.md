@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.36 / API 8, auf dem Test-ESP geprüft; Veröffentlichung noch offen. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback. Unabhängige Signalwege können gleichzeitig aktiv sein; der Master speichert die aktiven Signalweg-IDs dauerhaft, damit kombinierte Relaiszustände nicht als zusätzliche Signalwege fehlinterpretiert werden.
+Arbeitsstand: Firmware 1.8.36 / API 8, am Test-ESP geprüft und als stabiles GitHub-Release veröffentlicht. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback. Unabhängige Signalwege können gleichzeitig aktiv sein; der Master speichert die aktiven Signalweg-IDs dauerhaft, damit kombinierte Relaiszustände nicht als zusätzliche Signalwege fehlinterpretiert werden.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Sie enthalten die sieben öffentlichen NewsTicker-Standardquellen; nur n-tv ist standardmäßig aktiviert. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
