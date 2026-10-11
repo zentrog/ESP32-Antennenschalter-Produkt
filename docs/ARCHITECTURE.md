@@ -1,6 +1,6 @@
 # Architektur – ESP32-Antennenschalter
 
-Arbeitsstand: Firmware 1.8.20 / API 7. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback.
+Arbeitsstand: Firmware 1.8.35 / API 8, lokaler Buildkandidat. Die Diagnoseansicht enthält das freiwillige Fehler-/Wunschformular mit HTTPS-Vorschau und lokalem Download-Fallback. Hardwareprüfung und Veröffentlichung sind für diesen Stand noch nicht bestätigt.
 
 Neue Installationen und Factory-Resets beginnen ohne WLAN-Zugangsdaten, persönliche Identität, Relais, Funktionen oder logische Geräte. Sie enthalten die sieben öffentlichen NewsTicker-Standardquellen; nur n-tv ist standardmäßig aktiviert. Die WLAN-Zugänge werden durch den Benutzer eingerichtet. Ein normales OTA-Update erhält die gespeicherten Geräteeinstellungen. Schlägt der LittleFS-Mount fehl, formatiert der Startvorgang das Konfigurations-Dateisystem nicht automatisch.
 
@@ -8,12 +8,16 @@ Release-OTA-Dateien enthalten neben dem normalen ESP32-Programmabbild ein CRC32-
 
 Die Update-Seite zeigt die neueste stabile GitHub-Version an und führt durch den manuellen Download- und Uploadablauf: Sicherung dieses ESP herunterladen, das einzelne Release-Asset `firmware-esp32dev.bin` laden, die Datei auswählen und hochladen. Der Webserver schreibt den Upload blockweise in die inaktive OTA-Partition und aktiviert ihn nur nach erfolgreicher Firmware-Abbildprüfung. Vorher wird zusätzlich eine interne Sicherung erstellt. LittleFS wird nicht formatiert. Im Verbund muss jeder ESP separat über seine eigene Adresse gesichert und aktualisiert werden. Controller-ID und IP stehen im Sicherungsdateinamen.
 
-Der Wetterdienst aktualisiert nach einem erfolgreichen Abruf alle 30 Minuten. Schlägt ein Abruf fehl, bleibt der letzte gültige Stand sichtbar und der nächste Versuch erfolgt nach 5 Minuten.
+Die Wetteranzeige lässt sich unter **Konfigurieren → Dienste** unabhängig von der Blitzwarnung abschalten. Ohne Wetteranzeige wird keine Vorhersage abgerufen. Eine aktive Blitzwarnung kann weiterhin die gemeinsame Position aus der PLZ verwenden. Die PLZ-Koordinaten werden separat zwischengespeichert; Wetter wird nach einem erfolgreichen Abruf alle 30 Minuten aktualisiert, nach einem Fehler nach 5 Minuten erneut versucht und zeigt bis dahin den letzten gültigen Stand.
 
 Unvollständige Konfigurationsanfragen werden abgewiesen. Vorhandene Signalwege können nur durch eine ausdrücklich bestätigte Löschaktion reduziert werden. Die gemeinsame Konfiguration wird vor dem Austausch zusätzlich als vorherige Generation auf dem ESP gehalten.
 
 ## Implementierter Bestand
 Einzelcontroller führen Schaltaktionen über den lokalen RelayEngine aus. WebUI, externe API und Verbundaufrufe sollen diesen Steuerkern verwenden. GPIO-, Board- und Relaiszuordnung bleiben lokal. Gemeinsame Systemdaten werden über Revisionen zwischen zugeordneten Controllern synchronisiert.
+
+Die nicht benötigten Alias-Routen `/ext/status` und `/ext/execute` sowie der Schalter `features.externalApi` sind in Firmware 1.8.35 entfernt. Reguläre `/api/...`-Schnittstellen für Bedienoberfläche, Verbund, Update und spätere Windows-App bleiben bestehen. Ältere Konfigurationen mit dem zusätzlichen `features.externalApi`-Feld werden weiter eingelesen; das unbekannte Alt-Feld wird ignoriert und beim Speichern nicht mehr ausgegeben.
+
+**Ortswetter anzeigen** und **Blitzwarnung aktiv** sind getrennte Einstellungen unter **Konfigurieren → Dienste**. Die PLZ unter **Geräteidentität** ist der gemeinsame Standort. Bei abgeschalteter Wetteranzeige stoppt der Wettervorhersageabruf; eine aktive Blitzwarnung kann die PLZ-Koordinaten unabhängig davon auflösen. Konfigurationen ohne `weather.enabled` behalten den bisherigen Standard bei und aktivieren das Ortswetter.
 
 Die Verbunderkennung nutzt UDP und den Marker ANTCTRL3. Controller können als Master und Follower zugeordnet werden. Der konfigurierte Master bleibt dauerhaft; ein geeigneter Follower kann vorübergehend koordinieren. Der Code enthält Zustände für Rückkehr und Wiederübernahme durch den permanenten Master.
 

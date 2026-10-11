@@ -40,12 +40,13 @@ WLAN-Zugangsdaten werden im ESP gespeichert, nicht in der öffentlichen GitHub-V
 
 ## 5. Rufzeichen, Platine und Relais einrichten
 
-1. Öffne **Konfigurieren → Gerät**. Rufzeichen, Name, Standort und Postleitzahl sind freiwillig. Eine leere Postleitzahl schaltet die Wetteranzeige ab.
-2. Wähle unter **Platine/GPIO** das Profil deiner tatsächlichen ESP-Platine.
-3. Öffne **Relaiskanäle**. Lege für jeden Relais-Eingang einen Namen, GPIO und die passende Logik fest.
-4. „Relais EIN bei GPIO LOW“ bedeutet: Der ESP schaltet das Relais ein, indem er den Pin auf LOW (Masse) zieht. Bei HIGH gilt das Gegenteil.
-5. Ändere GPIOs nur, wenn du weißt, welcher Draht daran angeschlossen ist. Einige Pins können das Startverhalten des ESP beeinflussen.
-6. Teste Relais zuerst ohne angeschlossenen Sender. Sende nicht, solange du die Zuordnung prüfst.
+1. Öffne **Konfigurieren → Gerät**. Rufzeichen, Name, Standort und Postleitzahl sind freiwillig. Die Postleitzahl ist der gemeinsame Standort für Ortswetter und Blitzwarnung.
+2. Unter **Konfigurieren → Dienste** kannst du **Ortswetter anzeigen** und **Blitzwarnung aktiv** getrennt ein- oder ausschalten. Wenn nur die Wetteranzeige aus ist, kann die Blitzwarnung den Standort weiter verwenden. Für beide Funktionen muss eine gültige deutsche Postleitzahl eingetragen sein.
+3. Wähle unter **Platine/GPIO** das Profil deiner tatsächlichen ESP-Platine.
+4. Öffne **Relaiskanäle**. Lege für jeden Relais-Eingang einen Namen, GPIO und die passende Logik fest.
+5. „Relais EIN bei GPIO LOW“ bedeutet: Der ESP schaltet das Relais ein, indem er den Pin auf LOW (Masse) zieht. Bei HIGH gilt das Gegenteil.
+6. Ändere GPIOs nur, wenn du weißt, welcher Draht daran angeschlossen ist. Einige Pins können das Startverhalten des ESP beeinflussen.
+7. Teste Relais zuerst ohne angeschlossenen Sender. Sende nicht, solange du die Zuordnung prüfst.
 
 ## 6. Funkgeräte und Antennen festlegen
 

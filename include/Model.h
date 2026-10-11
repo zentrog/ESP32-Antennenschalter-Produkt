@@ -139,6 +139,10 @@ struct NewsConfig {
   std::vector<NewsFeed> feeds;
 };
 
+struct WeatherConfig {
+  bool enabled = true;
+};
+
 struct LightningConfig {
   bool enabled = true;
   uint16_t warningKm = 50;
@@ -170,12 +174,11 @@ struct TxInterlockConfig {
 };
 
 struct FeatureConfig {
-  bool externalApi = true;
   bool ota = true;
 };
 
 struct LocalConfig {
-  uint32_t schema = 11;
+  uint32_t schema = 12;
   String language = "de";
   uint32_t revision = 1;
   String controllerId;
@@ -184,6 +187,7 @@ struct LocalConfig {
   IdentityConfig identity;
   TimeConfig time;
   NewsConfig news;
+  WeatherConfig weather;
   LightningConfig lightning;
   FederationConfig federation;
   SecurityConfig security;

@@ -227,10 +227,11 @@ bool Storage::writeLocalFile(const char* path,const LocalConfig& c,String& err){
   auto n=d["news"].to<JsonObject>();n["enabled"]=c.news.enabled;n["language"]=c.news.language;n["refreshMinutes"]=c.news.refreshMinutes;n["maxItems"]=c.news.maxItems;
   auto nf=n["feeds"].to<JsonArray>();for(auto &x:c.news.feeds){auto o=nf.add<JsonObject>();o["id"]=x.id;o["name"]=x.name;o["language"]=x.language;o["url"]=x.url;o["enabled"]=x.enabled;}
   auto li=d["lightning"].to<JsonObject>();li["enabled"]=c.lightning.enabled;li["warningKm"]=c.lightning.warningKm;li["dangerKm"]=c.lightning.dangerKm;li["boxKm"]=c.lightning.boxKm;
+  auto we=d["weather"].to<JsonObject>();we["enabled"]=c.weather.enabled;
   auto f=d["federation"].to<JsonObject>();f["enabled"]=c.federation.enabled;f["systemId"]=c.federation.systemId;f["systemName"]=c.federation.systemName;f["udpPort"]=c.federation.udpPort;f["role"]=c.federation.role;f["permanentMasterId"]=c.federation.permanentMasterId;f["admissionMode"]=c.federation.admissionMode;f["failoverPriority"]=c.federation.failoverPriority;
   auto sec=d["security"].to<JsonObject>();sec["adminAuthEnabled"]=c.security.adminAuthEnabled;sec["adminUser"]=c.security.adminUser;sec["adminPassword"]=c.security.adminPassword;
   auto tx=d["txInterlock"].to<JsonObject>();tx["enabled"]=c.txInterlock.enabled;tx["gpio"]=c.txInterlock.gpio;tx["activeHigh"]=c.txInterlock.activeHigh;
-  auto fe=d["features"].to<JsonObject>();fe["externalApi"]=c.features.externalApi;fe["ota"]=c.features.ota;
+  auto fe=d["features"].to<JsonObject>();fe["ota"]=c.features.ota;
   uiTo(d["ui"].to<JsonObject>(),c.ui);
   auto rs=d["relays"].to<JsonArray>();for(auto&r:c.relays){auto o=rs.add<JsonObject>();o["id"]=r.id;o["name"]=r.name;o["gpio"]=r.gpio;o["activeLow"]=r.activeLow;o["enabled"]=r.enabled;}
   auto fs=d["functions"].to<JsonArray>();for(auto&x:c.functions){auto o=fs.add<JsonObject>();o["id"]=x.id;o["label"]=x.label;o["type"]=x.type==FunctionType::Timed?"timed":(x.type==FunctionType::Storm?"storm":(x.type==FunctionType::Toggle?"toggle":"antenna"));o["relayId"]=x.relayId;o["enabled"]=x.enabled;o["visible"]=x.visible;o["durationMs"]=x.durationMs;o["requiresFunctionId"]=x.requiresFunctionId;o["group"]=x.group;o["stateToken"]=x.stateToken;}
@@ -246,10 +247,11 @@ bool Storage::readLocalFile(const char* path,LocalConfig& c,String& err){
   JsonObject n=d["news"].as<JsonObject>();x.news.enabled=n["enabled"]|false;x.news.language=String((const char*)(n["language"]|"de"));x.news.refreshMinutes=n["refreshMinutes"]|30;x.news.maxItems=n["maxItems"]|5;
   for(JsonObject q:n["feeds"].as<JsonArray>()){NewsFeed z;z.id=String((const char*)(q["id"]|""));z.name=repairStoredText(String((const char*)(q["name"]|"")));z.language=String((const char*)(q["language"]|"de"));z.url=String((const char*)(q["url"]|""));z.enabled=q["enabled"]|true;x.news.feeds.push_back(z);}
   JsonObject li=d["lightning"].as<JsonObject>();x.lightning.enabled=li["enabled"]|true;x.lightning.warningKm=li["warningKm"]|50;x.lightning.dangerKm=li["dangerKm"]|25;x.lightning.boxKm=li["boxKm"]|70;
+  JsonObject we=d["weather"].as<JsonObject>();x.weather.enabled=we["enabled"]|true;
   JsonObject g=d["federation"].as<JsonObject>();x.federation.enabled=g["enabled"]|true;x.federation.systemId=String((const char*)(g["systemId"]|""));x.federation.systemName=repairStoredText(String((const char*)(g["systemName"]|"Antennenanlage")));x.federation.udpPort=g["udpPort"]|42142;x.federation.role=String((const char*)(g["role"]|"unassigned"));x.federation.permanentMasterId=String((const char*)(g["permanentMasterId"]|""));x.federation.admissionMode=String((const char*)(g["admissionMode"]|"ask"));x.federation.failoverPriority=g["failoverPriority"]|100;
   JsonObject s=d["security"].as<JsonObject>();x.security.adminAuthEnabled=s["adminAuthEnabled"]|false;x.security.adminUser=String((const char*)(s["adminUser"]|"admin"));x.security.adminPassword=String((const char*)(s["adminPassword"]|""));
   JsonObject tx=d["txInterlock"].as<JsonObject>();x.txInterlock.enabled=tx["enabled"]|false;x.txInterlock.gpio=tx["gpio"]|34;x.txInterlock.activeHigh=tx["activeHigh"]|true;
-  JsonObject fe=d["features"].as<JsonObject>();x.features.externalApi=fe["externalApi"]|true;x.features.ota=fe["ota"]|true;uiFrom(d["ui"],x.ui);
+  JsonObject fe=d["features"].as<JsonObject>();x.features.ota=fe["ota"]|true;uiFrom(d["ui"],x.ui);
   for(JsonObject q:d["relays"].as<JsonArray>()){RelayConfig z;z.id=String((const char*)(q["id"]|""));z.name=repairStoredText(String((const char*)(q["name"]|"")));z.gpio=q["gpio"]|-1;z.activeLow=q["activeLow"]|true;z.enabled=q["enabled"]|false;x.relays.push_back(z);}
   for(JsonObject q:d["functions"].as<JsonArray>()){FunctionConfig z;z.id=String((const char*)(q["id"]|""));z.label=repairStoredText(String((const char*)(q["label"]|"")));String ty=String((const char*)(q["type"]|"antenna"));z.type=ty=="timed"?FunctionType::Timed:(ty=="storm"?FunctionType::Storm:(ty=="toggle"?FunctionType::Toggle:FunctionType::Antenna));z.relayId=String((const char*)(q["relayId"]|""));z.enabled=q["enabled"]|true;z.visible=q["visible"]|true;z.durationMs=q["durationMs"]|7500;z.requiresFunctionId=String((const char*)(q["requiresFunctionId"]|""));z.group=String((const char*)(q["group"]|"ANT"));z.stateToken=String((const char*)(q["stateToken"]|""));x.functions.push_back(z);}
   for(JsonObjectConst q:d["devices"].as<JsonArrayConst>()){LogicalDeviceConfig z;deviceFrom(q,z);x.devices.push_back(z);}
@@ -283,6 +285,7 @@ bool Storage::loadLocal(LocalConfig& c,String& err){
       c.schema=10;migrated=true;
     }
     if(c.schema<11){c.lightning.enabled=true;c.lightning.warningKm=50;c.lightning.dangerKm=25;c.lightning.boxKm=70;c.schema=11;migrated=true;}
+    if(c.schema<12){c.weather.enabled=true;c.schema=12;migrated=true;}
 
     // One-time v1.3 migration: language, reliable additional feeds and a functional storm mode.
     if(!state_.getBool("mig130",false)){

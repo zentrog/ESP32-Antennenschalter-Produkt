@@ -35,6 +35,7 @@ struct NewsSnapshot {
 
 struct WeatherInfo {
   bool enabled=false;
+  bool locationValid=false;
   bool valid=false;
   bool fetching=false;
   String postalCode;

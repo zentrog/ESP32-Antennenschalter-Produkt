@@ -69,6 +69,16 @@ Nicht betroffene Dokumente müssen nicht künstlich geändert werden. Die Änder
 - Manifest nach jeder Änderung an erfassten Dateien neu erzeugen und gegen beide Kopien prüfen. Eine erfolgreiche Kopie ist erst nach dem Vergleich bestätigt.
 - Projektstatus und Übergabehinweise müssen denselben geprüften Commit und dieselben offenen Aufgaben nennen. Veraltete Projektstatusdateien sind vor Übergabe zu berichtigen.
 
+## Regelmäßige lokale Aufräumroutine
+
+- Vor jedem Firmware-Release und nach Abschluss eines größeren Test- oder Experimentierlaufs den lokalen Arbeitsbaum prüfen: `git status --short --ignored`, lokale Branches und Worktrees, ignorierte Buildreste sowie Dateien im Release-Ausgabeordner.
+- Eindeutig regenerierbare `.pio/build`-Ergebnisse und `.pio/ota-package`-Zwischendateien dürfen nach erfolgreicher Paketprüfung entfernt werden. PlatformIO-Abhängigkeiten (`.pio/libdeps`) bleiben für schnellere Builds erhalten, solange kein konkreter Grund zur Neuinstallation besteht.
+- Verwaiste lokale Branches nur löschen, wenn sie nicht in einem Worktree aktiv sind und ihr gesamter Commitverlauf nachweislich in `main` enthalten ist. Zweifelhafte, ungemergte oder noch bearbeitete Branches und Worktrees bleiben erhalten. Kein pauschales `git clean`, Reset oder Löschen ganzer Arbeitskopien.
+- Vor dem Entfernen einer Datei aus dem Quellbestand alle Verwendungen im Code, Buildskripten und Konfigurationen suchen. Nachweislich ungenutzte Altdateien entfernen und die betroffene Zielumgebung bauen, bevor eine Veröffentlichung erfolgt.
+- Historische Git-Tags, frühere Release-Dokumentation und frühere öffentliche Releases bleiben als Versions- und Fehlerhistorie erhalten; sie sind keine parallel gepflegten Produktversionen.
+- Gerätekonfigurationen, WLAN-Daten, Sicherungen und vollständige Flash-Abbilder bleiben unangetastet. Das aktuelle Release-Asset und noch nicht bestätigte Upload-/Bereitstellungsdateien bleiben erhalten, bis ihr Ersatz beziehungsweise erfolgreicher Einsatz geprüft ist.
+- Jede Bereinigung im Prüfprotokoll festhalten: geprüfter Commit, entfernte Pfade/Branches, aufbewahrte Sicherungen und Arbeitskopien sowie Ergebnis von Status- und Paketprüfung. Vor rekursivem Löschen absolute Zielpfade auf den vorgesehenen Projektordner begrenzen.
+
 ## Veröffentlichung auf GitHub
 
 1. Quelländerungen und Dokumentation auf demselben geprüften Stand vollständig committen und in `main` übernehmen.

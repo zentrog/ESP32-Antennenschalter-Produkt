@@ -1,4 +1,4 @@
-# HTTP/JSON-API – API 7
+# HTTP/JSON-API – API 8
 
 Die registrierten Routen stehen in src/WebUi.cpp. Vorhandene Handler beweisen nicht die Laufzeitfunktion.
 
@@ -10,7 +10,9 @@ POST /api/execute, /api/route/activate, /api/route/deactivate
 POST /api/stop, /api/system/storm, /api/federation/storm
 GET/PUT /api/config, /api/shared; PUT /api/layout/item
 GET /api/board, /api/errors; DELETE /api/errors
-GET /api/news; POST /api/news/refresh; GET /api/weather. Bei News kann `sources[].stale` zwischengespeicherte Meldungen kennzeichnen; Wetter liefert `stale=true`, `valid=true` und `error` zusammen, wenn der letzte erfolgreiche Stand wegen eines Abruffehlers weiter angezeigt wird.
+GET /api/news; POST /api/news/refresh; GET /api/weather. Bei News kann `sources[].stale` zwischengespeicherte Meldungen kennzeichnen; Wetter liefert `stale=true`, `valid=true` und `error` zusammen, wenn der letzte erfolgreiche Stand wegen eines Abruffehlers weiter angezeigt wird. `enabled` steuert nur die Wetterkarte und Vorhersage; `locationValid` meldet unabhängig davon, ob die PLZ-Position für eine aktive Blitzwarnung verfügbar ist.
+
+`/api/config` enthält getrennte Einstellungen `weather.enabled` und `lightning.enabled` sowie die Blitzradien. Eine fehlende Wetter-Einstellung in einer älteren Konfiguration wird als aktiviert gelesen. Bei abgeschalteter Wetteranzeige werden keine Vorhersagedaten abgerufen; eine aktive Blitzwarnung kann weiterhin die PLZ-Position auflösen und verwenden.
 
 ## Cluster / Verbund
 GET/PUT /api/federation/config
@@ -21,11 +23,11 @@ POST /api/provisioning/authorize
 GET/PUT /api/controller/config (PUT übernimmt im vollständigen Konfigurationsobjekt auch alle Federation-Metadaten)
 POST /api/controller/test-relay, /api/controller/restart, /api/controller/factory-reset
 
-## WLAN / Update / externe API
+## WLAN / Update
 GET /api/update/check prüft das neueste stabile GitHub-Release und zeigt die Versionsinformation an. GET /api/update-backup erstellt und lädt die Sicherung des geöffneten ESP herunter. POST /api/update/install nimmt das vom Browser ausgewählte `.bin`-Firmwareabbild als Multipart-Upload an; die Sicherung muss zuvor heruntergeladen worden sein. Die interne Sicherung wird vor dem Schreiben erneut geprüft. Das Firmwareabbild wird in die inaktive OTA-Partition geschrieben und erst nach erfolgreicher ESP-Abbildprüfung aktiviert. Danach startet das Gerät neu. LittleFS bleibt erhalten. Es wird nur der aufrufende ESP aktualisiert; Slaves müssen jeweils separat bearbeitet werden.
 /api/wifi, /api/wifi/saved, /api/wifi/restore, /api/setup-mode
 /api/update/check, /api/update-backup, /api/update/install, /api/ui-upload, /update, /rollback
-GET /ext/status, POST /ext/execute
+Die früheren Kompatibilitäts-Aliase `/ext/status` und `/ext/execute` sowie der dazugehörige Konfigurationsschalter wurden in Firmware 1.8.35 entfernt. Bestehende Sicherungen mit `features.externalApi` bleiben einlesbar; das nicht mehr verwendete Feld wird beim nächsten Speichern ausgelassen. Die regulären `/api/...`-Adressen bleiben bestehen.
 
 Administrative Handler verwenden die konfigurierte Admin-Authentisierung, soweit im jeweiligen Route-Handler registriert. Interne Verbundauthentisierung und lokale Safety sind getrennte Themen. Der Verbundmarker ist keine kryptografische Node-Authentisierung.
 
@@ -35,7 +37,7 @@ Fehlen bei einem Peer-Snapshot dessen Funktionen oder Geräte, markiert die Brow
 
 Die Bedienoberfläche verwendet die in `/api/shared` gespeicherten Signalwege als Freigabeliste: ein Funkgerät wird gewählt, danach eine zulässige Endantenne. Der zugehörige Eintrag wird über `/api/route/activate` vollständig über beteiligte Steuergeräte geschaltet; `/api/route/deactivate` trennt ihn.
 
-Statische aktive Funktionsgruppen und unabhängige Ein/Aus-Schaltfunktionen werden auf jedem ESP lokal gespeichert und beim Start auch auf zugeordneten Master-/Follower-Geräten wieder eingeschaltet. Ein Ein/Aus-Taster verwendet `type=toggle`, eine eigene Gruppe und ein optional noch nicht zugeordnetes Relais. Ohne Relaiszuordnung bleibt der Taster gesperrt. `/api/snapshot` und `/ext/status` liefern den bestätigten Laufzeitzustand. Eine bei Reset/Stromausfall unterbrochene H/V-Zeitaktion wird nicht wieder gestartet; ihre Rotorposition gilt als unbekannt.
+Statische aktive Funktionsgruppen und unabhängige Ein/Aus-Schaltfunktionen werden auf jedem ESP lokal gespeichert und beim Start auch auf zugeordneten Master-/Follower-Geräten wieder eingeschaltet. Ein Ein/Aus-Taster verwendet `type=toggle`, eine eigene Gruppe und ein optional noch nicht zugeordnetes Relais. Ohne Relaiszuordnung bleibt der Taster gesperrt. `/api/snapshot` liefert den bestätigten Laufzeitzustand. Eine bei Reset/Stromausfall unterbrochene H/V-Zeitaktion wird nicht wieder gestartet; ihre Rotorposition gilt als unbekannt.
 
 Die gemeinsame Oberflächenkonfiguration `ui` enthält `powerInactiveColor` und `powerActiveColor` für die Statusflächen von Anlagenteilen der Kategorie `supply` (Strom). Fehlen die Felder in einer älteren Konfiguration, gelten `#275c91` (inaktiv) und `#259b55` (aktiv). Die allgemeine Farbe `lockedColor` hat Vorrang, wenn ein Stromtaster gesperrt ist.
 

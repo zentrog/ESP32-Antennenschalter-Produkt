@@ -340,28 +340,31 @@ static String stripMarkup(String s){stripMarkupInPlace(s);return s;}
 static String tagValue(const String&s,const String&tag,int start=0){
   String a="<"+tag;int p=s.indexOf(a,start);if(p<0)return"";p=s.indexOf('>',p);if(p<0)return"";
   int e=s.indexOf("</"+tag+">",p+1);if(e<0)return"";
-  String v=s.substring(p+1,e);v.replace("<![CDATA[","");v.replace("]]>","");v.trim();return repairMojibake(decodeEntities(v));
+  String v=s.substring(p+1,e);v.replace("<![CDATA[","");v.replace("]]>","");v.trim();String decoded=decodeEntities(v);repairMojibakeInPlace(decoded);return decoded;
 }
 bool NewsService::fetchFeed(const NewsFeed&f,const String&language,std::vector<NewsItem>&out,int limit,String&error,int&httpCode){
   std::unique_ptr<WiFiClient> client;bool tls=f.url.startsWith("https://");if(tls){auto*c=new WiFiClientSecure();c->setInsecure();client.reset(c);}else client.reset(new WiFiClient());
   HTTPClient h;h.setTimeout(3500);h.setConnectTimeout(2500);h.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);h.setUserAgent(String("AntennaController/")+ANTCTRL_VERSION);
-  if(!h.begin(*client,f.url)){error=(language=="en"?"Could not open feed: ":"Meldungsquelle konnte nicht geöffnet werden: ")+repairMojibake(f.name);return false;}
-  int code=h.GET();httpCode=code;if(code!=HTTP_CODE_OK){error=repairMojibake(f.name)+": HTTP "+String(code);h.end();return false;}
-  WiFiClient* stream=h.getStreamPtr();String body;body.reserve(32768);uint32_t started=millis();
-  while((h.connected()||stream->available())&&millis()-started<3500&&body.length()<65536){while(stream->available()&&body.length()<65536)body+=(char)stream->read();delay(1);}h.end();
-  if(body.isEmpty()){error=repairMojibake(f.name)+(language=="en"?": empty response":": leere Antwort");return false;}
+  String feedName=f.name;repairMojibakeInPlace(feedName);
+  if(!h.begin(*client,f.url)){error=(language=="en"?"Could not open feed: ":"Meldungsquelle konnte nicht geöffnet werden: ")+feedName;return false;}
+  int code=h.GET();httpCode=code;if(code!=HTTP_CODE_OK){error=feedName+": HTTP "+String(code);h.end();return false;}
+  WiFiClient* stream=h.getStreamPtr();if(!stream){h.end();error=feedName+(language=="en"?": response stream unavailable":": Antwortdatenstrom nicht verfügbar");return false;}String body;body.reserve(24576);uint32_t started=millis();
+  // Feeds can contain long archives even though the UI shows at most ten items.
+  // Bound the response buffer to keep enough heap available for safe parsing.
+  while((h.connected()||stream->available())&&millis()-started<3500&&body.length()<24576){while(stream->available()&&body.length()<24576)body+=(char)stream->read();delay(1);}h.end();
+  if(body.isEmpty()){error=feedName+(language=="en"?": empty response":": leere Antwort");return false;}
   if(bodyDeclaresLatin1(body)&&!validUtf8(body))body=singleByteToUtf8(body);
   int pos=0,count=0;
   while(count<limit){
     int item=body.indexOf("<item",pos),entry=body.indexOf("<entry",pos);if(item<0||(entry>=0&&entry<item))item=entry;if(item<0)break;
     int end1=body.indexOf("</item>",item),end2=body.indexOf("</entry>",item);int finish=(end1>=0&&(end2<0||end1<end2))?end1:end2;if(finish<0)break;
-    String chunk=body.substring(item,finish);String title=stripMarkup(tagValue(chunk,"title"));String link=tagValue(chunk,"link");String itemDate=tagValue(chunk,"pubDate");if(itemDate.isEmpty())itemDate=tagValue(chunk,"published");if(itemDate.isEmpty())itemDate=tagValue(chunk,"updated");
+    String chunk=body.substring(item,finish);String title=tagValue(chunk,"title");stripMarkupInPlace(title);String link=tagValue(chunk,"link");String itemDate=tagValue(chunk,"pubDate");if(itemDate.isEmpty())itemDate=tagValue(chunk,"published");if(itemDate.isEmpty())itemDate=tagValue(chunk,"updated");
     if(link.isEmpty()){int lp=chunk.indexOf("<link");if(lp>=0){int hp=chunk.indexOf("href=\"",lp);if(hp>=0){hp+=6;int q=chunk.indexOf('"',hp);if(q>hp)link=chunk.substring(hp,q);}}}
     String summary=tagValue(chunk,"description");if(summary.isEmpty())summary=tagValue(chunk,"summary");if(summary.isEmpty())summary=tagValue(chunk,"content:encoded");if(summary.length()>4096)summary.remove(4096);stripMarkupInPlace(summary);if(summary.length()>420){summary.remove(417);summary+="...";}
-    if(!title.isEmpty()){NewsItem ni;ni.title=repairMojibake(title);ni.summary=repairMojibake(summary);ni.link=repairMojibake(link);ni.sourceId=f.id;ni.source=repairMojibake(f.name);ni.date=repairMojibake(itemDate);out.push_back(ni);count++;}
+    if(!title.isEmpty()){NewsItem ni;ni.title=title;repairMojibakeInPlace(ni.title);ni.summary=summary;repairMojibakeInPlace(ni.summary);ni.link=link;repairMojibakeInPlace(ni.link);ni.sourceId=f.id;ni.source=feedName;ni.date=itemDate;repairMojibakeInPlace(ni.date);out.push_back(ni);count++;}
     pos=finish+7;
   }
-  if(count==0){error=repairMojibake(f.name)+(language=="en"?": no RSS/Atom items found":": keine RSS/Atom-Meldungen gefunden");return false;}return true;
+  if(count==0){error=feedName+(language=="en"?": no RSS/Atom items found":": keine RSS/Atom-Meldungen gefunden");return false;}return true;
 }
 void NewsService::begin(LocalConfig*c){c_=c;ensureExternalServiceMutex();if(!mutex_)mutex_=xSemaphoreCreateMutex();configChanged();}
 void NewsService::configChanged(){if(!mutex_)mutex_=xSemaphoreCreateMutex();if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);if(c_){config_=c_->news;language_=c_->language;}if(language_.isEmpty())language_="de";lastFetch_=0;++generation_;if(!workerRunning_)fetching_=false;lastError_="";lastHttpCode_=0;items_.clear();sources_.clear();if(mutex_)xSemaphoreGive(mutex_);}
@@ -375,7 +378,7 @@ void NewsService::fetchAll(const NewsConfig&cfg,const String&language,uint32_t g
   if(cfg.enabled)for(const auto&f:cfg.feeds){
     if(!f.enabled||f.language!=cfg.language||f.url.isEmpty())continue;
     std::vector<NewsItem> bucket;String feedError;int feedCode=0;bool ok=fetchFeed(f,language,bucket,cfg.maxItems,feedError,feedCode);finalHttpCode=feedCode;
-    NewsSourceStatus st;st.id=f.id;st.name=repairMojibake(f.name);st.ok=ok;st.httpCode=feedCode;st.itemCount=(int)bucket.size();st.error=ok?"":feedError;
+    NewsSourceStatus st;st.id=f.id;st.name=f.name;repairMojibakeInPlace(st.name);st.ok=ok;st.httpCode=feedCode;st.itemCount=(int)bucket.size();st.error=ok?"":feedError;
     if(ok){any=true;for(auto&x:bucket){if(newItems.size()>=totalCap)break;newItems.push_back(x);}}
     else {if(!feedError.isEmpty())lastFailure=feedError;for(const auto&x:previousItems)if(x.sourceId==f.id&&newItems.size()<totalCap){newItems.push_back(x);st.stale=true;++st.itemCount;}}
     newSources.push_back(st);
@@ -388,9 +391,9 @@ void NewsService::fetchAll(const NewsConfig&cfg,const String&language,uint32_t g
 void WeatherService::begin(LocalConfig*c,Storage*store){c_=c;ensureExternalServiceMutex();store_=store;if(!mutex_)mutex_=xSemaphoreCreateMutex();configChanged();}
 WeatherInfo WeatherService::info()const{WeatherInfo copy;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);copy=info_;if(mutex_)xSemaphoreGive(mutex_);return copy;}
 void WeatherService::configChanged(){
-  if(!mutex_)mutex_=xSemaphoreCreateMutex();String postal=c_?c_->identity.postalCode:String();String language=c_?c_->language:String("de");String cachePostal,cachePlace;float cacheLat=0,cacheLon=0;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);cachePostal=cachedPostalCode_;cachePlace=cachedPlace_;cacheLat=cachedLat_;cacheLon=cachedLon_;if(mutex_)xSemaphoreGive(mutex_);
+  if(!mutex_)mutex_=xSemaphoreCreateMutex();String postal=c_?c_->identity.postalCode:String();String language=c_?c_->language:String("de");bool showWeather=c_&&c_->weather.enabled;String cachePostal,cachePlace;float cacheLat=0,cacheLon=0;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);cachePostal=cachedPostalCode_;cachePlace=cachedPlace_;cacheLat=cachedLat_;cacheLon=cachedLon_;if(mutex_)xSemaphoreGive(mutex_);
   if(cachePostal!=postal){cachePostal="";cachePlace="";cacheLat=0;cacheLon=0;float lat=0,lon=0;String place;if(store_&&store_->loadWeatherLocation(postal,lat,lon,place)){cachePostal=postal;cacheLat=lat;cacheLon=lon;cachePlace=place;}}
-  if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);WeatherInfo previous=info_;postalCode_=postal;language_=language;cachedPostalCode_=cachePostal;cachedLat_=cacheLat;cachedLon_=cacheLon;cachedPlace_=cachePlace;lastFetch_=0;++generation_;info_=previous.valid&&previous.postalCode==postal?previous:WeatherInfo{};info_.postalCode=postal;info_.enabled=!postal.isEmpty();if(workerRunning_)info_.fetching=true;if(mutex_)xSemaphoreGive(mutex_);
+  if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);WeatherInfo previous=info_;postalCode_=postal;language_=language;cachedPostalCode_=cachePostal;cachedLat_=cacheLat;cachedLon_=cacheLon;cachedPlace_=cachePlace;lastFetch_=0;++generation_;info_=previous.valid&&previous.postalCode==postal?previous:WeatherInfo{};info_.postalCode=postal;info_.enabled=showWeather&&!postal.isEmpty();info_.locationValid=cachePostal==postal&&!cachePlace.isEmpty()&&(cacheLat!=0.0f||cacheLon!=0.0f);if(info_.locationValid){info_.latitude=cacheLat;info_.longitude=cacheLon;info_.place=cachePlace;}if(!info_.enabled){info_.valid=false;info_.error="";}if(workerRunning_)info_.fetching=true;if(mutex_)xSemaphoreGive(mutex_);
 }
 bool WeatherService::geocode(const String&postal,const String&language,float&lat,float&lon,String&place,String&error){
   const bool en=language=="en";
@@ -468,14 +471,15 @@ bool WeatherService::forecast(float lat,float lon,const String&place,const Strin
 }
 void WeatherService::workerThunk(void*arg){auto*self=static_cast<WeatherService*>(arg);SemaphoreHandle_t gate=ensureExternalServiceMutex();if(gate)xSemaphoreTake(gate,portMAX_DELAY);self->fetchNow();if(gate)xSemaphoreGive(gate);vTaskDelete(nullptr);}
 void WeatherService::fetchNow(){
-  String postal,language,cachePostal,place;float lat=0,lon=0;uint32_t generation=0;WeatherInfo result,previous;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);postal=postalCode_;language=language_;cachePostal=cachedPostalCode_;place=cachedPlace_;lat=cachedLat_;lon=cachedLon_;generation=generation_;result=info_;previous=info_;if(mutex_)xSemaphoreGive(mutex_);
-  result.enabled=!postal.isEmpty();result.postalCode=postal;result.fetching=false;result.error="";result.valid=false;bool geocoded=false;bool cachedValid=cachePostal==postal&&!place.isEmpty()&&lat>=-90.0f&&lat<=90.0f&&lon>=-180.0f&&lon<=180.0f&&(lat!=0.0f||lon!=0.0f);
+  String postal,language,cachePostal,place;float lat=0,lon=0;uint32_t generation=0;bool showWeather=false;WeatherInfo result,previous;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);postal=postalCode_;language=language_;cachePostal=cachedPostalCode_;place=cachedPlace_;lat=cachedLat_;lon=cachedLon_;generation=generation_;showWeather=c_&&c_->weather.enabled;result=info_;previous=info_;if(mutex_)xSemaphoreGive(mutex_);
+  result.enabled=showWeather&&!postal.isEmpty();result.postalCode=postal;result.fetching=false;result.error="";result.valid=false;bool geocoded=false;bool cachedValid=cachePostal==postal&&!place.isEmpty()&&lat>=-90.0f&&lat<=90.0f&&lon>=-180.0f&&lon<=180.0f&&(lat!=0.0f||lon!=0.0f);
   if(!postal.isEmpty()){
     if(!cachedValid){if(!geocode(postal,language,lat,lon,place,result.error))goto commit;geocoded=true;}
-    result.latitude=lat;result.longitude=lon;result.valid=forecast(lat,lon,place,language,result);if(result.valid)result.lastSuccessEpoch=(uint32_t)time(nullptr);
+    result.locationValid=true;result.latitude=lat;result.longitude=lon;result.place=place;
+    if(showWeather){result.valid=forecast(lat,lon,place,language,result);if(result.valid)result.lastSuccessEpoch=(uint32_t)time(nullptr);}
   }
 commit:
-  if(!result.valid&&result.enabled&&result.postalCode==postal&&previous.valid&&previous.postalCode==postal){String fetchError=result.error;result=previous;result.error=fetchError;}
+  if(showWeather&&!result.valid&&result.enabled&&result.postalCode==postal&&previous.valid&&previous.postalCode==postal){String fetchError=result.error;result=previous;result.error=fetchError;}
   result.fetching=false;if(mutex_)xSemaphoreTake(mutex_,portMAX_DELAY);if(generation==generation_){info_=result;if(geocoded){cachedPostalCode_=postal;cachedLat_=lat;cachedLon_=lon;cachedPlace_=place;pendingLocationSave_=true;pendingPostal_=postal;pendingLat_=lat;pendingLon_=lon;pendingPlace_=place;}}else info_.fetching=false;workerRunning_=false;if(mutex_)xSemaphoreGive(mutex_);
 }
 void WeatherService::loop(){
@@ -484,7 +488,7 @@ void WeatherService::loop(){
   xSemaphoreTake(mutex_,portMAX_DELAY);if(pendingLocationSave_){save=true;savedPostal=pendingPostal_;savedPlace=pendingPlace_;savedLat=pendingLat_;savedLon=pendingLon_;pendingLocationSave_=false;}xSemaphoreGive(mutex_);
   if(save&&store_)store_->saveWeatherLocation(savedPostal,savedLat,savedLon,savedPlace);
   if(WiFi.status()!=WL_CONNECTED)return;
-  uint32_t now=millis();xSemaphoreTake(mutex_,portMAX_DELAY);uint32_t interval=info_.error.isEmpty()?30UL*60UL*1000UL:5UL*60UL*1000UL;if(postalCode_.isEmpty()||workerRunning_||(lastFetch_!=0&&now-lastFetch_<interval)){xSemaphoreGive(mutex_);return;}lastFetch_=now;workerRunning_=true;info_.enabled=true;info_.fetching=true;xSemaphoreGive(mutex_);
+  uint32_t now=millis();xSemaphoreTake(mutex_,portMAX_DELAY);bool showWeather=c_&&c_->weather.enabled;bool needLocation=c_&&c_->lightning.enabled&&!info_.locationValid;uint32_t interval=info_.error.isEmpty()?30UL*60UL*1000UL:5UL*60UL*1000UL;if(postalCode_.isEmpty()||(!showWeather&&!needLocation)||workerRunning_||(lastFetch_!=0&&now-lastFetch_<interval)){xSemaphoreGive(mutex_);return;}lastFetch_=now;workerRunning_=true;info_.enabled=showWeather;info_.fetching=true;xSemaphoreGive(mutex_);
   if(xTaskCreate(&WeatherService::workerThunk,"weather-fetch",8192,this,1,nullptr)!=pdPASS){xSemaphoreTake(mutex_,portMAX_DELAY);workerRunning_=false;info_.fetching=false;info_.error="Wetter-Hintergrundabruf konnte nicht gestartet werden";xSemaphoreGive(mutex_);}
 }
 

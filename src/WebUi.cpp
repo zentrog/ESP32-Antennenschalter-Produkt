@@ -235,10 +235,12 @@ static void cfgJson(JsonDocument&d,const LocalConfig&c,bool includeSecrets){
  auto i=d["identity"].to<JsonObject>();i["callSign"]=c.identity.callSign;i["postalCode"]=c.identity.postalCode;i["deviceName"]=c.identity.deviceName;i["description"]=c.identity.description;i["location"]=c.identity.location;i["hostName"]=c.identity.hostName;
  auto t=d["time"].to<JsonObject>();t["enabled"]=c.time.enabled;t["tz"]=c.time.tz;t["ntp1"]=c.time.ntp1;t["ntp2"]=c.time.ntp2;t["showLocal"]=c.time.showLocal;t["showUtc"]=c.time.showUtc;t["showDate"]=c.time.showDate;
  auto n=d["news"].to<JsonObject>();n["enabled"]=c.news.enabled;n["language"]=c.news.language;n["refreshMinutes"]=c.news.refreshMinutes;n["maxItems"]=c.news.maxItems;auto nf=n["feeds"].to<JsonArray>();for(auto&x:c.news.feeds){auto o=nf.add<JsonObject>();o["id"]=x.id;o["name"]=x.name;o["language"]=x.language;o["url"]=x.url;o["enabled"]=x.enabled;}
+ auto we=d["weather"].to<JsonObject>();we["enabled"]=c.weather.enabled;
+ auto li=d["lightning"].to<JsonObject>();li["enabled"]=c.lightning.enabled;li["warningKm"]=c.lightning.warningKm;li["dangerKm"]=c.lightning.dangerKm;li["boxKm"]=c.lightning.boxKm;
  auto f=d["federation"].to<JsonObject>();f["enabled"]=c.federation.enabled;f["systemName"]=c.federation.systemName;f["role"]=c.federation.role;f["admissionMode"]=c.federation.admissionMode;
  auto sec=d["security"].to<JsonObject>();sec["adminAuthEnabled"]=c.security.adminAuthEnabled;sec["adminUser"]=c.security.adminUser;sec["adminPassword"]=includeSecrets?c.security.adminPassword:"";
  auto tx=d["txInterlock"].to<JsonObject>();tx["enabled"]=c.txInterlock.enabled;tx["gpio"]=c.txInterlock.gpio;tx["activeHigh"]=c.txInterlock.activeHigh;
- auto fe=d["features"].to<JsonObject>();fe["externalApi"]=c.features.externalApi;fe["ota"]=c.features.ota;uiJson(d["ui"].to<JsonObject>(),c.ui);
+ auto fe=d["features"].to<JsonObject>();fe["ota"]=c.features.ota;uiJson(d["ui"].to<JsonObject>(),c.ui);
  auto rs=d["relays"].to<JsonArray>();for(auto&r:c.relays){auto o=rs.add<JsonObject>();o["id"]=r.id;o["name"]=r.name;o["gpio"]=r.gpio;o["activeLow"]=r.activeLow;o["enabled"]=r.enabled;}
  auto fs=d["functions"].to<JsonArray>();for(auto&x:c.functions){auto o=fs.add<JsonObject>();o["id"]=x.id;o["label"]=x.label;o["type"]=x.type==FunctionType::Timed?"timed":(x.type==FunctionType::Storm?"storm":(x.type==FunctionType::Toggle?"toggle":"antenna"));o["relayId"]=x.relayId;o["enabled"]=x.enabled;o["visible"]=x.visible;o["durationMs"]=x.durationMs;o["requiresFunctionId"]=x.requiresFunctionId;o["group"]=x.group;o["stateToken"]=x.stateToken;}
  auto ds=d["devices"].to<JsonArray>();for(const auto&x:c.devices)deviceJson(ds.add<JsonObject>(),x);
@@ -338,8 +340,6 @@ void WebUi::routes(){
  server_.on("/api/controller/config",HTTP_PUT,[this](){if(auth())apiControllerConfigPut();});
  server_.on("/api/federation/config",HTTP_GET,[this](){apiFederationConfigGet();});
  server_.on("/api/federation/config",HTTP_PUT,[this](){apiFederationConfigPut();});
- server_.on("/ext/status",HTTP_GET,[this](){if(!c_->features.externalApi){server_.send(404);return;}apiSnapshot();});
- server_.on("/ext/execute",HTTP_POST,[this](){if(!c_->features.externalApi){server_.send(404);return;}apiExecute();});
  server_.on("/api/peers",HTTP_GET,[this](){apiPeers();});
  server_.on("/api/combined",HTTP_GET,[this](){apiCombined();});
  server_.on("/api/time",HTTP_GET,[this](){server_.sendHeader("Cache-Control","no-store");JsonDocument d;d["localTime"]=time_->local();d["utcTime"]=time_->utc();d["showLocal"]=c_->time.showLocal;d["showUtc"]=c_->time.showUtc;d["showDate"]=c_->time.showDate;sendJson(d);});
@@ -380,7 +380,7 @@ void WebUi::apiConfigPut(){
   JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"Configuration save refused: an existing relay, function or device list would be erased.":"Speichern abgebrochen: Eine vorhandene Relais-, Funktions- oder Geräteliste würde vollständig gelöscht.";sendJson(r,409);return;
  }
  LocalConfig n=*c_;
- n.schema=11;
+ n.schema=12;
  n.language=String((const char*)(d["language"]|n.language.c_str()));
  n.boardProfile=String((const char*)(d["boardProfile"]|n.boardProfile.c_str()));customBoardFromJson(d["customBoard"],n.customBoard);JsonObject i=d["identity"].as<JsonObject>();n.identity.callSign=String((const char*)(i["callSign"]|n.identity.callSign.c_str()));n.identity.postalCode=String((const char*)(i["postalCode"]|n.identity.postalCode.c_str()));n.identity.deviceName=String((const char*)(i["deviceName"]|n.identity.deviceName.c_str()));n.identity.description=String((const char*)(i["description"]|n.identity.description.c_str()));n.identity.location=String((const char*)(i["location"]|n.identity.location.c_str()));n.identity.hostName=String((const char*)(i["hostName"]|n.identity.hostName.c_str()));
  JsonObject t=d["time"].as<JsonObject>();n.time.enabled=t["enabled"]|n.time.enabled;n.time.tz=String((const char*)(t["tz"]|n.time.tz.c_str()));n.time.ntp1=String((const char*)(t["ntp1"]|n.time.ntp1.c_str()));n.time.ntp2=String((const char*)(t["ntp2"]|n.time.ntp2.c_str()));n.time.showLocal=t["showLocal"]|n.time.showLocal;n.time.showUtc=t["showUtc"]|n.time.showUtc;n.time.showDate=t["showDate"]|n.time.showDate;
@@ -388,7 +388,9 @@ void WebUi::apiConfigPut(){
  JsonObject g=d["federation"].as<JsonObject>();n.federation.enabled=g["enabled"]|n.federation.enabled;n.federation.systemId=String((const char*)(g["systemId"]|n.federation.systemId.c_str()));n.federation.systemName=String((const char*)(g["systemName"]|n.federation.systemName.c_str()));n.federation.udpPort=g["udpPort"]|n.federation.udpPort;n.federation.role=String((const char*)(g["role"]|n.federation.role.c_str()));n.federation.permanentMasterId=String((const char*)(g["permanentMasterId"]|n.federation.permanentMasterId.c_str()));n.federation.admissionMode=String((const char*)(g["admissionMode"]|n.federation.admissionMode.c_str()));n.federation.failoverPriority=g["failoverPriority"]|n.federation.failoverPriority;
  JsonObject sec=d["security"].as<JsonObject>();n.security.adminAuthEnabled=sec["adminAuthEnabled"]|false;n.security.adminUser=String((const char*)(sec["adminUser"]|"admin"));n.security.adminPassword=String((const char*)(sec["adminPassword"]|""));
  JsonObject tx=d["txInterlock"].as<JsonObject>();n.txInterlock.enabled=tx["enabled"]|false;n.txInterlock.gpio=tx["gpio"]|34;n.txInterlock.activeHigh=tx["activeHigh"]|true;
- JsonObject fe=d["features"].as<JsonObject>();n.features.externalApi=fe["externalApi"]|true;n.features.ota=fe["ota"]|true;uiFrom(d["ui"],n.ui);
+ JsonObject we=d["weather"].as<JsonObject>();n.weather.enabled=we["enabled"]|n.weather.enabled;
+ JsonObject li=d["lightning"].as<JsonObject>();n.lightning.enabled=li["enabled"]|n.lightning.enabled;n.lightning.warningKm=li["warningKm"]|n.lightning.warningKm;n.lightning.dangerKm=li["dangerKm"]|n.lightning.dangerKm;n.lightning.boxKm=li["boxKm"]|n.lightning.boxKm;
+ JsonObject fe=d["features"].as<JsonObject>();n.features.ota=fe["ota"]|true;uiFrom(d["ui"],n.ui);
  n.relays.clear();for(JsonObject q:d["relays"].as<JsonArray>()){RelayConfig z;z.id=String((const char*)(q["id"]|""));z.name=String((const char*)(q["name"]|""));z.gpio=q["gpio"]|-1;z.activeLow=q["activeLow"]|true;z.enabled=q["enabled"]|false;n.relays.push_back(z);}
  n.functions.clear();for(JsonObject q:d["functions"].as<JsonArray>()){FunctionConfig z;z.id=String((const char*)(q["id"]|""));z.label=String((const char*)(q["label"]|""));String ftype=String((const char*)(q["type"]|"antenna"));z.type=ftype=="timed"?FunctionType::Timed:(ftype=="storm"?FunctionType::Storm:(ftype=="toggle"?FunctionType::Toggle:FunctionType::Antenna));z.relayId=String((const char*)(q["relayId"]|""));z.enabled=q["enabled"]|true;z.visible=q["visible"]|true;z.durationMs=q["durationMs"]|7500;z.requiresFunctionId=String((const char*)(q["requiresFunctionId"]|""));z.group=String((const char*)(q["group"]|"ANT"));z.stateToken=String((const char*)(q["stateToken"]|""));n.functions.push_back(z);}
  n.devices.clear();for(JsonObjectConst q:d["devices"].as<JsonArrayConst>()){LogicalDeviceConfig z;deviceFromJson(q,z);n.devices.push_back(z);}
@@ -398,7 +400,7 @@ void WebUi::apiConfigPut(){
  bool hostChanged=n.identity.hostName!=c_->identity.hostName;
  bool timeChanged=n.time.enabled!=c_->time.enabled||n.time.tz!=c_->time.tz||n.time.ntp1!=c_->time.ntp1||n.time.ntp2!=c_->time.ntp2;
  bool fedChanged=n.federation.enabled!=c_->federation.enabled||n.federation.systemId!=c_->federation.systemId||n.federation.systemName!=c_->federation.systemName||n.federation.udpPort!=c_->federation.udpPort||n.federation.role!=c_->federation.role||n.federation.permanentMasterId!=c_->federation.permanentMasterId||n.federation.admissionMode!=c_->federation.admissionMode||n.federation.failoverPriority!=c_->federation.failoverPriority;
- bool weatherChanged=n.identity.postalCode!=c_->identity.postalCode||n.language!=c_->language;
+ bool weatherChanged=n.identity.postalCode!=c_->identity.postalCode||n.language!=c_->language||n.weather.enabled!=c_->weather.enabled||n.lightning.enabled!=c_->lightning.enabled;
  bool newsChanged=n.news.enabled!=c_->news.enabled||n.news.language!=c_->news.language||n.news.refreshMinutes!=c_->news.refreshMinutes||n.news.maxItems!=c_->news.maxItems||n.news.feeds.size()!=c_->news.feeds.size();
  if(!newsChanged){for(size_t i=0;i<n.news.feeds.size();++i){const auto&a=n.news.feeds[i];const auto&b=c_->news.feeds[i];if(a.id!=b.id||a.name!=b.name||a.language!=b.language||a.url!=b.url||a.enabled!=b.enabled){newsChanged=true;break;}}}
  String e;if(!store_->saveLocal(n,e)){Serial.println("Config save: "+e);JsonDocument r;r["ok"]=false;r["error"]=c_->language=="en"?"Configuration could not be saved":e;sendJson(r,409);return;}
@@ -724,7 +726,7 @@ void WebUi::apiWeather(){
  JsonDocument d;if(!fed_->isCoordinator()){d["enabled"]=false;d["valid"]=false;d["fetching"]=false;d["centralService"]=false;sendJson(d);return;}
  if(!weather_){d["enabled"]=false;d["valid"]=false;d["fetching"]=false;sendJson(d);return;}
  WeatherInfo w=weather_->info();
- d["enabled"]=w.enabled;d["valid"]=w.valid;d["stale"]=w.valid&&!w.error.isEmpty();d["fetching"]=w.fetching;d["lightningEnabled"]=c_->lightning.enabled;d["lightningWarningKm"]=c_->lightning.warningKm;d["lightningDangerKm"]=c_->lightning.dangerKm;d["lightningBoxKm"]=c_->lightning.boxKm;d["postalCode"]=w.postalCode;d["place"]=w.place;d["latitude"]=w.latitude;d["longitude"]=w.longitude;d["error"]=w.error;d["temperature"]=w.temperature;d["apparentTemperature"]=w.apparentTemperature;d["humidity"]=w.humidity;d["precipitation"]=w.precipitation;d["weatherCode"]=w.weatherCode;d["windSpeed"]=w.windSpeed;d["windDirection"]=w.windDirection;d["windGusts"]=w.windGusts;d["todayMax"]=w.todayMax;d["todayMin"]=w.todayMin;d["todayPrecipitationProbability"]=w.todayPrecipitationProbability;d["todayWeatherCode"]=w.todayWeatherCode;d["lastSuccessEpoch"]=w.lastSuccessEpoch;
+ d["enabled"]=w.enabled;d["locationValid"]=w.locationValid;d["valid"]=w.valid;d["stale"]=w.valid&&!w.error.isEmpty();d["fetching"]=w.fetching;d["lightningEnabled"]=c_->lightning.enabled;d["lightningWarningKm"]=c_->lightning.warningKm;d["lightningDangerKm"]=c_->lightning.dangerKm;d["lightningBoxKm"]=c_->lightning.boxKm;d["postalCode"]=w.postalCode;d["place"]=w.place;d["latitude"]=w.latitude;d["longitude"]=w.longitude;d["error"]=w.error;d["temperature"]=w.temperature;d["apparentTemperature"]=w.apparentTemperature;d["humidity"]=w.humidity;d["precipitation"]=w.precipitation;d["weatherCode"]=w.weatherCode;d["windSpeed"]=w.windSpeed;d["windDirection"]=w.windDirection;d["windGusts"]=w.windGusts;d["todayMax"]=w.todayMax;d["todayMin"]=w.todayMin;d["todayPrecipitationProbability"]=w.todayPrecipitationProbability;d["todayWeatherCode"]=w.todayWeatherCode;d["lastSuccessEpoch"]=w.lastSuccessEpoch;
  sendJson(d);
 }
 void WebUi::setupSaved(){
